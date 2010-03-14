@@ -1,0 +1,72 @@
+# -*- mode: Makefile:gnu -*-
+#	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
+#	
+
+# The project top level directory is where you type 'make' in.
+SM_TOP_DIR := $(if $(PWD),$(PWD),$(shell pwd))
+ifeq ($(SM_TOP_DIR),)
+  $(info smart: ************************************************************)
+  $(info smart:  I can't calculate the value of top level directory.) #'
+  $(info smart: ************************************************************)
+  $(error "Can't detect the value of project top level directory.")
+endif
+
+# The variant of this building.
+SM_CONFIG_variant := debug
+SM_CONFIG_uname := $(shell uname)
+
+# The type of the platform the project is built on, the following platform is
+# regonized by smart-build system: linux, cygwin, mingw.
+SM_PLATFORM_TYPE :=
+
+# The sub-type of the platform the project is built on,
+# maybe: debian-5, ubuntu-44, ...
+SM_PLATFORM_SUBTYPE :=
+
+# The directory in which the module locates.
+SM_MODULE_DIR :=
+
+# The type of target which the smart build should generate, available value
+# would be: static, dynamic, executable
+SM_MODULE_TYPE :=
+SM_MODULE_TYPES_SUPPORTED := static dynamic executable
+
+# The name of the current compiling module, must be relative names.
+SM_MODULE_NAME :=
+
+# The source file list of the current compiling module, must be relative names.
+SM_MODULE_SOURCES :=
+
+SM_MODULE_HEADERS :=
+
+# Compile command log, provide a log name to enable that.
+SM_COMPILE_LOG :=
+
+SM_MODULE_DIR :=
+SM_MODULE_TYPE :=
+SM_MODULE_NAME :=
+SM_MODULE_SOURCES :=
+SM_MODULE_HEADERS :=
+SM_MODULE_INCLUDES :=
+SM_MODULE_COMPILE_FLAGS :=
+SM_MODULE_LINK_FLAGS :=
+SM_MODULE_LIB_DIRS :=
+SM_MODULE_LIBS :=
+SM_MODULE_DEPENDS :=
+SM_GLOBAL_INCLUDES :=
+SM_GLOBAL_COMPILE_FLAGS :=
+SM_GLOBAL_LINK_FLAGS :=
+SM_GLOBAL_LIB_DIRS :=
+SM_GLOBAL_LIBS :=
+
+# The ouput directory for generated objects and files.
+SM_OUT_DIR = $(SM_TOP_DIR)/out/$(SM_CONFIG_variant)
+SM_OUT_DIR_bin = $(SM_OUT_DIR)/bin
+SM_OUT_DIR_lib = $(SM_OUT_DIR)/lib
+SM_OUT_DIR_inc = $(SM_OUT_DIR)/include
+SM_OUT_DIR_obj = $(SM_OUT_DIR)/obj
+
+CC = gcc
+CP = cp
+PERL = perl
+ASM = as
