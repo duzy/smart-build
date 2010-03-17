@@ -4,74 +4,74 @@
 
 # Build the current 'binary' module according to these macros:
 #	SM_COMPILE_LOG		: log filename(relative) of compile commands
-#	SM_MODULE_DIR		: the directory in which the module locates
-#	SM_MODULE_TYPE		: the type of the module to be compiled
-#	SM_MODULE_NAME		: the name of the module to be compiled
-#	SM_MODULE_SOURCES	: the sources to be compiled into the module
-#	SM_MODULE_HEADERS	: (unused)
+#	sm.module.dir		: the directory in which the module locates
+#	sm.module.type		: the type of the module to be compiled
+#	sm.module.name		: the name of the module to be compiled
+#	sm.module.sources	: the sources to be compiled into the module
+#	sm.module.headers	: (unused)
 #
-#	SM_MODULE_OUT_IMPLIB	: --out-implib to linker on Win32, for dynamic
+#	sm.module.out_implib	: --out-implib to linker on Win32, for dynamic
 #				: module
 #	
-#	SM_MODULE_INCLUDES	: include pathes for compiling the module
-#	SM_MODULE_COMPILE_FLAGS : module specific compile flags
-#	SM_MODULE_LINK_FLAGS	: module link flags
-#	SM_MODULE_LIB_DIRS	: the search path of libs the module links to
-#	SM_MODULE_LIBS		: libs (-l switches) the module links to
-#	SM_MODULE_WHOLE_ARCHIVES: .a archives to be pulled into a dynamic
+#	sm.module.includes	: include pathes for compiling the module
+#	sm.module.options.compile : module specific compile flags
+#	sm.module.options.link	: module link flags
+#	sm.module.dirs.lib	: the search path of libs the module links to
+#	sm.module.libs		: libs (-l switches) the module links to
+#	sm.module.whole_archives: .a archives to be pulled into a dynamic
 #				: libraries as a whole, see --whole-archive.
 #	SM_MODULE_PREBUILT_OBJECTS: prebuilt objects
 #
-#	SM_GLOBAL_INCLUDES	:
-#	SM_GLOBAL_COMPILE_FLAGS	:
-#	SM_GLOBAL_LINK_FLAGS	:
-#	SM_GLOBAL_LIB_DIRS	:
-#	SM_GLOBAL_LIBS		:
+#	sm.global.includes	:
+#	sm.global.options.compile:
+#	sm.global.options.link	:
+#	sm.global.dirs.lib	:
+#	sm.global.libs		:
 #
-#	SM_OUT_DIR
-#	SM_OUT_DIR_bin
-#	SM_OUT_DIR_lib
-#	SM_OUT_DIR_obj
+#	sm.dir.out
+#	sm.dir.out.bin
+#	sm.dir.out.lib
+#	sm.dir.out.obj
 #	
 
-$(if $(strip $(SM_MODULE_DIR)),,$(error SM_MODULE_DIR must be set))
+$(if $(strip $(sm.module.dir)),,$(error sm.module.dir must be set))
 
-ifeq ($(SM_MODULE_NAME),)
-  $(info smart: You have to specify 'SM_MODULE_NAME'.)
-  $(error SM_MODULE_NAME unknown)
+ifeq ($(sm.module.name),)
+  $(info smart: You have to specify 'sm.module.name'.)
+  $(error sm.module.name unknown)
 endif
 
-#d := $(wildcard $(SM_MODULE_SOURCES))
-d := $(strip $(SM_MODULE_SOURCES))
+#d := $(wildcard $(sm.module.sources))
+d := $(strip $(sm.module.sources))
 ifeq ($d,)
   $(error Nothing to build, no sources)
 endif
 
-ifneq ($(SM_MODULE_TYPE),static)
- ifneq ($(SM_MODULE_TYPE),dynamic)
-  ifneq ($(SM_MODULE_TYPE),executable)
-    $(info smart: You have to specify 'SM_MODULE_TYPE', it can be one of )
-    $(info smart: '$(SM_MODULE_TYPES_SUPPORTED)'.)
-    $(error SM_MODULE_TYPE unknown: '$(SM_MODULE_TYPE)'.)
+ifneq ($(sm.module.type),static)
+ ifneq ($(sm.module.type),dynamic)
+  ifneq ($(sm.module.type),executable)
+    $(info smart: You have to specify 'sm.module.type', it can be one of )
+    $(info smart: '$(sm.module.types_supported)'.)
+    $(error sm.module.type unknown: '$(sm.module.type)'.)
   endif
  endif
 endif
 
 ## Compile log command.
 _sm_log = $(if $(SM_COMPILE_LOG),\
-    echo $1 >> $(SM_OUT_DIR)/$(SM_COMPILE_LOG),true)
+    echo $1 >> $(sm.dir.out)/$(SM_COMPILE_LOG),true)
 
 ## Command for making out dir
 _sm_mk_out_dir = $(if $(wildcard $1),,$(info mkdir: $1)$(shell mkdir -p $1))
 
-r := $(SM_MODULE_DIR:$(SM_TOP_DIR)%=%)
+r := $(sm.module.dir:$(sm.dir.top)%=%)
 
-include $(sm_build_dir)/objrules.mk
+include $(sm.dir.buildsys)/objrules.mk
 
-ifeq ($(SM_MODULE_TYPE),static)
-  include $(sm_build_dir)/archive.mk
+ifeq ($(sm.module.type),static)
+  include $(sm.dir.buildsys)/archive.mk
 else
-  include $(sm_build_dir)/binary.mk
+  include $(sm.dir.buildsys)/binary.mk
 endif
 
 _sm_objs :=

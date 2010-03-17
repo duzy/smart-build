@@ -5,16 +5,16 @@
 ## This file is expected to be included BEFORE including an 'smart.mk'(module).
 
 SM_COMPILE_LOG :=
-SM_MODULE_DIR :=
-SM_MODULE_TYPE :=
-SM_MODULE_NAME :=
-SM_MODULE_SOURCES :=
-SM_MODULE_HEADERS :=
-SM_MODULE_INCLUDES :=
-SM_MODULE_COMPILE_FLAGS :=
-SM_MODULE_LINK_FLAGS :=
-SM_MODULE_LIB_DIRS :=
-SM_MODULE_LIBS :=
-SM_MODULE_OUT_IMPLIB :=
-SM_MODULE_WHOLE_ARCHIVES :=
-SM_MODULE_DEPENDS :=
+sm.module.dir :=
+sm.module.type :=
+sm.module.name :=
+sm.module.sources :=
+sm.module.headers :=
+sm.module.includes :=
+sm.module.options.compile :=
+sm.module.options.link :=
+sm.module.dirs.lib :=
+sm.module.libs :=
+sm.module.out_implib :=
+sm.module.whole_archives :=
+sm.module.depends :=

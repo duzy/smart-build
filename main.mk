@@ -8,34 +8,34 @@ $(info TODO: check $$(MAKE_VERSION))
 SHELL := /bin/bash
 
 ## Smart Build directory, internal use only, must always contain a '/' tail.
-sm_build_dir := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+sm.dir.buildsys := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
-ifeq ($(sm_build_dir)/defuns.mk,)
+ifeq ($(sm.dir.buildsys)/defuns.mk,)
   $(error "Can't find smart build system directory.")
 else
   # Predefined functions.
-  include $(sm_build_dir)/defuns.mk
+  include $(sm.dir.buildsys)/defuns.mk
 endif
 
-ifeq ($(sm_build_dir)/conf.mk,)
+ifeq ($(sm.dir.buildsys)/conf.mk,)
   $(error "Can't find smart build system directory.")
 else
   # Automate configuration for build parameters.
-  include $(sm_build_dir)/conf.mk
+  include $(sm.dir.buildsys)/conf.mk
 endif
 
 .DEFAULT_GOAL := build-goals
 
 ##################################################
 
-_sm_mods := $(wildcard $(SM_TOP_DIR)/smart.mk)
-#_sm_mods += $(call sm-find-sub-modules, $(SM_TOP_DIR))
+_sm_mods := $(wildcard $(sm.dir.top)/smart.mk)
+#_sm_mods += $(call sm-find-sub-modules, $(sm.dir.top))
 
 ifneq ($(_sm_mods),)
-  SM_GLOBAL_GOALS :=
-  SM_GLOBAL_MODULE_NAMES :=
+  sm.global.goals :=
+  sm.global.module.names :=
   $(foreach v,$(_sm_mods),$(eval $$(call load-module,$v)))
-  $(foreach v,$(SM_GLOBAL_MODULE_NAMES),$(info smart: New module '$v'))
+  $(foreach v,$(sm.global.module.names),$(info smart: New module '$v'))
 else
   $(info smart: ************************************************************)
   $(info smart:  You have to provide the root build script 'smart.mk' at top)
@@ -45,8 +45,8 @@ else
 endif
 
 .PHONY: build-goals
-ifneq ($(SM_GLOBAL_GOALS),)
-  build-goals: $(SM_GLOBAL_GOALS)
+ifneq ($(sm.global.goals),)
+  build-goals: $(sm.global.goals)
 else
   build-goals:; $(info smart: No goals.) @true
 endif

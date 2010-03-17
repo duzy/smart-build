@@ -8,18 +8,18 @@ $(patsubst %/,%,$(dir $(_sm_this_dir)))
 endef
 
 define sm-module-dir
-$(if $(SM_MODULE_NAME),$(call sm-this-dir),\
-  $(error SM_MODULE_NAME is empty, please use sm-this-dir instead))
+$(if $(sm.module.name),$(call sm-this-dir),\
+  $(error sm.module.name is empty, please use sm-this-dir instead))
 endef
 
 define sm-new-module
-$(if $1,$(if $(findstring $1,$(SM_GLOBAL_MODULE_NAMES)),\
+$(if $1,$(if $(findstring $1,$(sm.global.module.names)),\
           $(error smart: Module of name '$1' already defined))\
-  $(eval SM_GLOBAL_MODULE_NAMES+=$(strip $1))\
-  $(eval SM_MODULE_NAME:=$(strip $1))\
+  $(eval sm.global.module.names+=$(strip $1))\
+  $(eval sm.module.name:=$(strip $1))\
   $(eval SM_MODULE_SUFFIX:=$$(suffix $(strip $1))))\
-$(if $2,$(eval SM_MODULE_TYPE:=$(strip $2)),)\
-$(eval SM_MODULE_DIR:=$$(call sm-module-dir))
+$(if $2,$(eval sm.module.type:=$(strip $2)),)\
+$(eval sm.module.dir:=$$(call sm-module-dir))
 endef
 
 ## Load the build script for the specified module.
@@ -27,9 +27,9 @@ define load-module
 $(if $1,\
   $(if $(wildcard $1),,$(error Module build script '$1' missed!))\
   $(eval $$(info smart: Load '$1'..)
-    include $(sm_build_dir)/preload.mk
+    include $(sm.dir.buildsys)/preload.mk
     include $1
-    -include $(sm_build_dir)/postload.mk
+    -include $(sm.dir.buildsys)/postload.mk
     ),\
   $(error "Must specify the smart.mk file for the module."))
 endef
@@ -41,10 +41,10 @@ endef
 
 ## Build the current module
 define sm-build-this
- $(if $(SM_MODULE_NAME),\
-    $(eval SM_GLOBAL_GOALS += goal-$(SM_MODULE_NAME)
-           include $(sm_build_dir)/buildmod.mk),\
-   $(error SM_MODULE_NAME must be specified.))
+ $(if $(sm.module.name),\
+    $(eval sm.global.goals += goal-$(sm.module.name)
+           include $(sm.dir.buildsys)/buildmod.mk),\
+   $(error sm.module.name must be specified.))
 endef
 
 ## Load all smart.mk in sub directories.
@@ -53,7 +53,7 @@ $(error Use sm-load-subdirs instead)
 endef
 
 define sm-load-subdirs
-$(eval include $(sm_build_dir)/subdirs.mk)
+$(eval include $(sm.dir.buildsys)/subdirs.mk)
 endef
 
 

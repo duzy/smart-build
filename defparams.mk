@@ -3,8 +3,8 @@
 #	
 
 # The project top level directory is where you type 'make' in.
-SM_TOP_DIR := $(if $(PWD),$(PWD),$(shell pwd))
-ifeq ($(SM_TOP_DIR),)
+sm.dir.top := $(if $(PWD),$(PWD),$(shell pwd))
+ifeq ($(sm.dir.top),)
   $(info smart: ************************************************************)
   $(info smart:  I can't calculate the value of top level directory.) #'
   $(info smart: ************************************************************)
@@ -12,8 +12,8 @@ ifeq ($(SM_TOP_DIR),)
 endif
 
 # The variant of this building.
-SM_CONFIG_variant := debug
-SM_CONFIG_uname := $(shell uname)
+sm.config.variant := debug
+sm.config.uname := $(shell uname)
 
 # The type of the platform the project is built on, the following platform is
 # regonized by smart-build system: linux, cygwin, mingw.
@@ -24,47 +24,47 @@ SM_PLATFORM_TYPE :=
 SM_PLATFORM_SUBTYPE :=
 
 # The directory in which the module locates.
-SM_MODULE_DIR :=
+sm.module.dir :=
 
 # The type of target which the smart build should generate, available value
 # would be: static, dynamic, executable
-SM_MODULE_TYPE :=
-SM_MODULE_TYPES_SUPPORTED := static dynamic executable
+sm.module.type :=
+sm.module.types_supported := static dynamic executable
 
 # The name of the current compiling module, must be relative names.
-SM_MODULE_NAME :=
+sm.module.name :=
 
 # The source file list of the current compiling module, must be relative names.
-SM_MODULE_SOURCES :=
+sm.module.sources :=
 
-SM_MODULE_HEADERS :=
+sm.module.headers :=
 
 # Compile command log, provide a log name to enable that.
 SM_COMPILE_LOG :=
 
-SM_MODULE_DIR :=
-SM_MODULE_TYPE :=
-SM_MODULE_NAME :=
-SM_MODULE_SOURCES :=
-SM_MODULE_HEADERS :=
-SM_MODULE_INCLUDES :=
-SM_MODULE_COMPILE_FLAGS :=
-SM_MODULE_LINK_FLAGS :=
-SM_MODULE_LIB_DIRS :=
-SM_MODULE_LIBS :=
-SM_MODULE_DEPENDS :=
-SM_GLOBAL_INCLUDES :=
-SM_GLOBAL_COMPILE_FLAGS :=
-SM_GLOBAL_LINK_FLAGS :=
-SM_GLOBAL_LIB_DIRS :=
-SM_GLOBAL_LIBS :=
+sm.module.dir :=
+sm.module.type :=
+sm.module.name :=
+sm.module.sources :=
+sm.module.headers :=
+sm.module.includes :=
+sm.module.options.compile :=
+sm.module.options.link :=
+sm.module.dirs.lib :=
+sm.module.libs :=
+sm.module.depends :=
+sm.global.includes :=
+sm.global.options.compile :=
+sm.global.options.link :=
+sm.global.dirs.lib :=
+sm.global.libs :=
 
 # The ouput directory for generated objects and files.
-SM_OUT_DIR = $(SM_TOP_DIR)/out/$(SM_CONFIG_variant)
-SM_OUT_DIR_bin = $(SM_OUT_DIR)/bin
-SM_OUT_DIR_lib = $(SM_OUT_DIR)/lib
-SM_OUT_DIR_inc = $(SM_OUT_DIR)/include
-SM_OUT_DIR_obj = $(SM_OUT_DIR)/obj
+sm.dir.out = $(sm.dir.top)/out/$(sm.config.variant)
+sm.dir.out.bin = $(sm.dir.out)/bin
+sm.dir.out.lib = $(sm.dir.out)/lib
+sm.dir.out.inc = $(sm.dir.out)/include
+sm.dir.out.obj = $(sm.dir.out)/obj
 
 CC = gcc
 CP = cp

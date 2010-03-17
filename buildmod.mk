@@ -3,42 +3,42 @@
 #
 
 # Build the current module according to these macros:
-#	SM_MODULE_TYPE		: the type of the module to be compiled
-#	SM_MODULE_NAME		: the name of the module to be compiled
-#	SM_MODULE_DEPENDS	: module depends on something to build,
+#	sm.module.type		: the type of the module to be compiled
+#	sm.module.name		: the name of the module to be compiled
+#	sm.module.depends	: module depends on something to build,
 #				: the dependences must exists first.
 #				
 
-ifeq ($(wildcard $(sm_build_dir)),)
-  $(info smart: Cannot locate the build system directory('sm_build_dir').)
+ifeq ($(wildcard $(sm.dir.buildsys)),)
+  $(info smart: Cannot locate the build system directory('sm.dir.buildsys').)
   $(error Invalid installed build system)
 endif
 
-ifeq ($(SM_MODULE_TYPE),subdirs)
+ifeq ($(sm.module.type),subdirs)
   $(error smart: Please try calling 'sm-load-sub-modules' instead)
 endif
 
 _do_building := true
-ifneq ($(SM_MODULE_TYPE),static)
-  ifneq ($(SM_MODULE_TYPE),dynamic)
-    ifneq ($(SM_MODULE_TYPE),executable)
-      # $(info smart: You have to specify 'SM_MODULE_TYPE', it can be one of )
-      # $(info smart: '$(SM_MODULE_TYPES_SUPPORTED)'.)
-      # $(error SM_MODULE_TYPE unknown: '$(SM_MODULE_TYPE)'.)
+ifneq ($(sm.module.type),static)
+  ifneq ($(sm.module.type),dynamic)
+    ifneq ($(sm.module.type),executable)
+      # $(info smart: You have to specify 'sm.module.type', it can be one of )
+      # $(info smart: '$(sm.module.types_supported)'.)
+      # $(error sm.module.type unknown: '$(sm.module.type)'.)
       _do_building := false
     endif
   endif
 endif
 
 ifeq ($(_do_building),true)
-  ifeq ($(SM_MODULE_TYPE),static)
-    g := $(SM_OUT_DIR_lib)/$(SM_MODULE_NAME)
+  ifeq ($(sm.module.type),static)
+    g := $(sm.dir.out.lib)/$(sm.module.name)
   else
-    g := $(SM_OUT_DIR_bin)/$(SM_MODULE_NAME)
+    g := $(sm.dir.out.bin)/$(sm.module.name)
   endif
-  goal-$(SM_MODULE_NAME):$(SM_MODULE_DEPENDS) $g
+  goal-$(sm.module.name):$(sm.module.depends) $g
   g :=
-  include $(sm_build_dir)/module.mk
+  include $(sm.dir.buildsys)/module.mk
 else
-  $(warning smart: $(SM_MODULE_NAME) will not be built)
+  $(warning smart: $(sm.module.name) will not be built)
 endif
