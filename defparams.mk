@@ -27,9 +27,9 @@ SM_PLATFORM_SUBTYPE :=
 sm.module.dir :=
 
 # The type of target which the smart build should generate, available value
-# would be: static, dynamic, executable
+# would be: static, shared/dynamic, executable
 sm.module.type :=
-sm.module.types_supported := static dynamic executable
+sm.module.types_supported := static shared executable
 
 # The name of the current compiling module, must be relative names.
 sm.module.name :=
@@ -40,24 +40,26 @@ sm.module.sources :=
 sm.module.headers :=
 
 # Compile command log, provide a log name to enable that.
-SM_COMPILE_LOG :=
+sm.log.filename :=
 
-sm.module.dir :=
-sm.module.type :=
-sm.module.name :=
-sm.module.sources :=
-sm.module.headers :=
-sm.module.includes :=
-sm.module.options.compile :=
-sm.module.options.link :=
-sm.module.dirs.lib :=
-sm.module.libs :=
-sm.module.depends :=
+sm.global.dirs.lib :=
 sm.global.includes :=
+sm.global.libs :=
 sm.global.options.compile :=
 sm.global.options.link :=
-sm.global.dirs.lib :=
-sm.global.libs :=
+sm.module.depends :=
+sm.module.dir :=
+sm.module.dirs.include :=
+sm.module.dirs.lib :=
+sm.module.headers :=
+#sm.module.includes :=
+sm.module.libs :=
+sm.module.name :=
+sm.module.suffix :=
+sm.module.options.compile :=
+sm.module.options.link :=
+sm.module.sources :=
+sm.module.type :=
 
 # The ouput directory for generated objects and files.
 sm.dir.out = $(sm.dir.top)/out/$(sm.config.variant)

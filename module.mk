@@ -3,24 +3,25 @@
 #
 
 # Build the current 'binary' module according to these macros:
-#	SM_COMPILE_LOG		: log filename(relative) of compile commands
+#	sm.log.filename		: log filename(relative) of compile commands
 #	sm.module.dir		: the directory in which the module locates
 #	sm.module.type		: the type of the module to be compiled
 #	sm.module.name		: the name of the module to be compiled
+#	sm.module.suffix	: the suffix of the module name(.exe, .so, .dll, etc.)
 #	sm.module.sources	: the sources to be compiled into the module
 #	sm.module.headers	: (unused)
 #
-#	sm.module.out_implib	: --out-implib to linker on Win32, for dynamic
+#	sm.module.out_implib	: --out-implib to linker on Win32, for shared
 #				: module
 #	
-#	sm.module.includes	: include pathes for compiling the module
+#	sm.module.dirs.include	: include pathes for compiling the module
 #	sm.module.options.compile : module specific compile flags
 #	sm.module.options.link	: module link flags
 #	sm.module.dirs.lib	: the search path of libs the module links to
 #	sm.module.libs		: libs (-l switches) the module links to
-#	sm.module.whole_archives: .a archives to be pulled into a dynamic
+#	sm.module.whole_archives: .a archives to be pulled into a shared
 #				: libraries as a whole, see --whole-archive.
-#	SM_MODULE_PREBUILT_OBJECTS: prebuilt objects
+#	sm.module.prebuilt_objects: prebuilt objects
 #
 #	sm.global.includes	:
 #	sm.global.options.compile:
@@ -36,6 +37,20 @@
 
 $(if $(strip $(sm.module.dir)),,$(error sm.module.dir must be set))
 
+ifeq ($(sm.module.type),dynamic)
+  sm.module.type := shared
+endif
+
+ifdef $(sm.module.includes)
+  $(warning sm.module.includes is deprecated, use sm.module.dirs.include instead)
+  sm.module.dirs.include := $(sm.module.includes) $(sm.module.dirs.include)
+endif
+
+ifdef $(sm.global.includes)
+  $(warning sm.global.includes is deprecated, use sm.global.dirs.include instead)
+  sm.global.dirs.include := $(sm.global.includes) $(sm.global.dirs.include)
+endif
+
 ifeq ($(sm.module.name),)
   $(info smart: You have to specify 'sm.module.name'.)
   $(error sm.module.name unknown)
@@ -48,7 +63,7 @@ ifeq ($d,)
 endif
 
 ifneq ($(sm.module.type),static)
- ifneq ($(sm.module.type),dynamic)
+ ifneq ($(sm.module.type),shared)
   ifneq ($(sm.module.type),executable)
     $(info smart: You have to specify 'sm.module.type', it can be one of )
     $(info smart: '$(sm.module.types_supported)'.)
@@ -58,14 +73,13 @@ ifneq ($(sm.module.type),static)
 endif
 
 ## Compile log command.
-_sm_log = $(if $(SM_COMPILE_LOG),\
-    echo $1 >> $(sm.dir.out)/$(SM_COMPILE_LOG),true)
+_sm_log = $(if $(sm.log.filename),\
+    echo $1 >> $(sm.dir.out)/$(sm.log.filename),true)
 
 ## Command for making out dir
 _sm_mk_out_dir = $(if $(wildcard $1),,$(info mkdir: $1)$(shell mkdir -p $1))
 
 r := $(sm.module.dir:$(sm.dir.top)%=%)
-
 include $(sm.dir.buildsys)/objrules.mk
 
 ifeq ($(sm.module.type),static)

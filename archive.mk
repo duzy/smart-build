@@ -7,8 +7,8 @@ _sm_archive = $(AR) crus
 
 
 #_sm_link = $(_sm_archive) $$@ $$^
-_sm_log = $(if $(SM_COMPILE_LOG),\
-  echo $(AR) cm $$@ ... >> $(sm.dir.out)/$(SM_COMPILE_LOG),true)
+_sm_log = $(if $(sm.log.filename),\
+  echo $(AR) cm $$@ ... >> $(sm.dir.out)/$(sm.log.filename),true)
 _sm_link = for o in $$^ ; do $(_sm_archive) $$@ $$$$o || exit ; done \
   && ranlib $$@
 

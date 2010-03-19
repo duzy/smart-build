@@ -13,9 +13,9 @@ _sm_sources.asm = $(filter %.s,$(sm.module.sources))
 
 ## Compute include path (-I switches).
 _sm_includes :=
-$(foreach v,$(sm.global.includes),\
+$(foreach v,$(sm.global.dirs.include),\
   $(if $(patsubst -I%,%,$v),$(eval _sm_includes += -I$$(patsubst -I%,%,$$v))))
-$(foreach v,$(sm.module.includes),\
+$(foreach v,$(sm.module.dirs.include),\
   $(if $(patsubst -I%,%,$v),$(eval _sm_includes += -I$$(patsubst -I%,%,$$v))))
 
 
@@ -56,24 +56,38 @@ endif
 
 ## Generate rules
 d := $(sm.dir.out.obj)
-$(foreach v,$(sm.module.sources),$(call _sm_mk_out_dir,$(dir $d$r/$v)))
+$(foreach v,$(sm.module.sources),\
+  $(call _sm_mk_out_dir,$(dir $d$r/$(subst ..,_,$v))))
+
+#  $(info $(dir $d$r/$(subst ..,_,$v)))
 
 static_rules := false
 ifeq ($(static_rules),true)
   $(_sm_sources.cpp): 
   $(_sm_sources.c): 
 else
+  # $(foreach v,$(_sm_sources.cpp),$(eval s := $(suffix $v))\
+  #   $(eval $(v:%$s=$d$r/%.o) : $(sm.module.dir)/$v ; $(_sm_compile_cmd.cpp)))
+  # $(foreach v,$(_sm_sources.c),$(eval s := $(suffix $v))\
+  #   $(eval $(v:%$s=$d$r/%.o) : $(sm.module.dir)/$v ; $(_sm_compile_cmd.c)))
   $(foreach v,$(_sm_sources.cpp),$(eval s := $(suffix $v))\
-    $(eval $(v:%$s=$d$r/%.o) : $(sm.module.dir)/$v ; $(_sm_compile_cmd.cpp)))
+    $(eval $d$r/$$(subst ..,_,$(v:%$s=%.o)) : $(sm.module.dir)/$v ; $(_sm_compile_cmd.cpp)))
   $(foreach v,$(_sm_sources.c),$(eval s := $(suffix $v))\
-    $(eval $(v:%$s=$d$r/%.o) : $(sm.module.dir)/$v ; $(_sm_compile_cmd.c)))
+    $(eval $d$r/$$(subst ..,_,$(v:%$s=%.o)) : $(sm.module.dir)/$v ; $(_sm_compile_cmd.c)))
 endif
+
+check_pure_source_type := false
 
 ## Compute objects
 _sm_objs := $(sm.module.prebuilt_objects)
 ifneq ($(check_pure_source_type),true)
+  # $(foreach v,$(sm.module.sources),$(eval s:=$(suffix $v))\
+  #    $(eval _sm_objs += $(v:%$s=$(sm.dir.out.obj)$r/%.o)))
   $(foreach v,$(sm.module.sources),$(eval s:=$(suffix $v))\
-     $(eval _sm_objs += $(v:%$s=$(sm.dir.out.obj)$r/%.o)))
+     $(eval _sm_objs += $(sm.dir.out.obj)$r/$$(subst ..,_,$(v:%$s=%.o))))
+# $(info r: $r)
+# $(info srcs: $(sm.module.sources))
+# $(info objs: $(_sm_objs))
 else
   d :=
   _sm_pure_src := yes

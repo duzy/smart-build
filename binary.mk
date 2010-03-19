@@ -21,20 +21,25 @@ _sm_append_lib :=
 _sm_link_flags.cpp := \
   $(strip $(filter-out -shared,$(sm.global.options.link))) \
   $(strip $(filter-out -shared,$(sm.module.options.link)))
-ifneq ($(sm.module.type),static)
-  ifeq ($(sm.module.type),dynamic)
-    _sm_link_flags.cpp := -shared $(strip $(_sm_link_flags.cpp))
+ifeq ($(sm.module.type),static)
+  $(error Internal error to build static target as 'binary', it should be 'archive'.)
+endif ## sm.module.type == static
 
+ifeq ($(sm.module.type),shared)
+  _sm_link_flags.cpp := -shared $(strip $(_sm_link_flags.cpp))
+
+  $(info TODO: --out-implib for $(sm.config.uname))
+  ifeq ($(sm.config.uname),MinGW)
     ## --out-implib on Win32
     _sm_implib := $(strip $(sm.module.out_implib))
     ifneq ($s,)
       _sm_implib := $(sm.dir.out.lib)/lib$(patsubst lib%.a,%,$(_sm_implib)).a
       _sm_link_flags.cpp += -Wl,--out-implib,$(_sm_implib)
     endif
-
   endif
-  _sm_link_flags.cpp += $(strip $(_sm_lib_dirs))
-endif
+
+endif ## sm.module.type == shared
+_sm_link_flags.cpp += $(strip $(_sm_lib_dirs))
 
 
 ## C++ link command
@@ -45,7 +50,7 @@ _sm_link.c = $(CC) $(_sm_link_flags.cpp)
 ## If sources contains mixed .cpp and .c suffix, we should use C++ linker.
 s := $(strip $(if $(_sm_sources.cpp), .cpp, .c))
 _sm_link = $(_sm_link$s) -o $$@ $$^
-ifeq ($(sm.module.type),dynamic)
+ifeq ($(sm.module.type),shared)
   ifneq ($(strip $(sm.module.whole_archives)),)
     _sm_link += -Wl,--whole-archive \
        $(sm.module.whole_archives:%=-l%) -Wl,--no-whole-archive
@@ -64,7 +69,7 @@ $(if $(sm.module.sources),\
 
 $(if $(_sm_implib), $(call _sm_mk_out_dir, $(dir $(_sm_implib))))
 
-$(eval $(sm.dir.out.bin)/$(sm.module.name) $(_sm_implib): $(_sm_objs) ; $(_sm_link_cmd))
+$(eval $(sm.dir.out.bin)/$(sm.module.name)$(sm.module.suffix) $(_sm_implib): $(_sm_objs) ; $(_sm_link_cmd))
 
 _sm_link_cmd :=
 

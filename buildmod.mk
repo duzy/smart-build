@@ -20,7 +20,7 @@ endif
 
 _do_building := true
 ifneq ($(sm.module.type),static)
-  ifneq ($(sm.module.type),dynamic)
+  ifneq ($(sm.module.type),shared)
     ifneq ($(sm.module.type),executable)
       # $(info smart: You have to specify 'sm.module.type', it can be one of )
       # $(info smart: '$(sm.module.types_supported)'.)
@@ -32,9 +32,9 @@ endif
 
 ifeq ($(_do_building),true)
   ifeq ($(sm.module.type),static)
-    g := $(sm.dir.out.lib)/$(sm.module.name)
+    g := $(sm.dir.out.lib)/$(sm.module.name)$(sm.module.suffix)
   else
-    g := $(sm.dir.out.bin)/$(sm.module.name)
+    g := $(sm.dir.out.bin)/$(sm.module.name)$(sm.module.suffix)
   endif
   goal-$(sm.module.name):$(sm.module.depends) $g
   g :=

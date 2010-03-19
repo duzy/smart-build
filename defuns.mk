@@ -18,7 +18,14 @@ $(if $1,$(if $(findstring $1,$(sm.global.module.names)),\
   $(eval sm.global.module.names+=$(strip $1))\
   $(eval sm.module.name:=$(strip $1))\
   $(eval SM_MODULE_SUFFIX:=$$(suffix $(strip $1))))\
-$(if $2,$(eval sm.module.type:=$(strip $2)),)\
+$(if $2,$(eval sm.module.type:=$(strip $2)
+  ifeq ($$(sm.module.type),static)
+    sm.module.suffix := .a
+  endif
+  ifeq ($$(sm.module.type),shared)
+    sm.module.suffix := .so
+  endif
+  ),)\
 $(eval sm.module.dir:=$$(call sm-module-dir))
 endef
 
