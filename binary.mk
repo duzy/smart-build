@@ -28,7 +28,10 @@ endif ## sm.module.type == static
 ifeq ($(sm.module.type),shared)
   _sm_link_flags.cpp := -shared $(strip $(_sm_link_flags.cpp))
 
-  $(info TODO: --out-implib for $(sm.config.uname))
+  ifneq ($(sm.module.out_implib),)
+    $(info TODO: --out-implib=$(sm.module.out_implib) for $(sm.config.uname))
+  endif
+
   ifeq ($(sm.config.uname),MinGW)
     ## --out-implib on Win32
     _sm_implib := $(strip $(sm.module.out_implib))

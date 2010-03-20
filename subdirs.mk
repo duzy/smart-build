@@ -16,7 +16,7 @@ _submods := $(if $(sm.module.dirs),\
 
 #$(info submods: $(_submods) in '$(sm.module.dir)')
 
-#$(foreach v,$(_submods),$(eval $$(call load-module,$v))\
+#$(foreach v,$(_submods),$(eval $$(call sm-load-module,$v))\
 #  $(eval include $(SB_DIR)/buildmod.mk))
-$(foreach v,$(_submods),$(eval $$(call load-module,$v)))
+$(foreach v,$(_submods),$(eval $$(call sm-load-module,$v)))
 

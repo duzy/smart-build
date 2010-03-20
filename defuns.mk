@@ -30,15 +30,18 @@ $(eval sm.module.dir:=$$(call sm-module-dir))
 endef
 
 ## Load the build script for the specified module.
-define load-module
+define sm-load-module
 $(if $1,\
   $(if $(wildcard $1),,$(error Module build script '$1' missed!))\
   $(eval $$(info smart: Load '$1'..)
     include $(sm.dir.buildsys)/preload.mk
     include $1
     -include $(sm.dir.buildsys)/postload.mk
+    ifeq ($(filter build-goals,$(.DEFAULT_GOAL)),)
+      $$(error smart: .DEFAULT_GOAL is damaged: $(.DEFAULT_GOAL))
+    endif
     ),\
-  $(error "Must specify the smart.mk file for the module."))
+  $(error "smart: Must specify the smart.mk file for the module."))
 endef
 
 ## Find level-one sub-modules.

@@ -23,7 +23,7 @@
 #				: libraries as a whole, see --whole-archive.
 #	sm.module.prebuilt_objects: prebuilt objects
 #
-#	sm.global.includes	:
+#	sm.global.dirs.include	:
 #	sm.global.options.compile:
 #	sm.global.options.link	:
 #	sm.global.dirs.lib	:
@@ -37,16 +37,12 @@
 
 $(if $(strip $(sm.module.dir)),,$(error sm.module.dir must be set))
 
-ifeq ($(sm.module.type),dynamic)
-  sm.module.type := shared
-endif
-
-ifdef $(sm.module.includes)
+ifneq ($(sm.module.includes),)
   $(warning sm.module.includes is deprecated, use sm.module.dirs.include instead)
   sm.module.dirs.include := $(sm.module.includes) $(sm.module.dirs.include)
 endif
 
-ifdef $(sm.global.includes)
+ifneq ($(sm.global.includes),)
   $(warning sm.global.includes is deprecated, use sm.global.dirs.include instead)
   sm.global.dirs.include := $(sm.global.includes) $(sm.global.dirs.include)
 endif

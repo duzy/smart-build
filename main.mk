@@ -7,17 +7,23 @@ $(info TODO: check $$(MAKE_VERSION))
 
 SHELL := /bin/bash
 
-## Smart Build directory, internal use only, must always contain a '/' tail.
+## Smart Build directory, internal use only, must not contain a '/' tail.
 sm.dir.buildsys := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
-ifeq ($(sm.dir.buildsys)/defuns.mk,)
-  $(error "Can't find smart build system directory.")
+ifeq ($(wildcard $(sm.dir.buildsys)/init.mk),)
+  $(error "smart: Can't find smart build system directory.")
+else
+  include $(sm.dir.buildsys)/init.mk
+endif
+
+ifeq ($(wildcard $(sm.dir.buildsys)/defuns.mk),)
+  $(error "smart: Can't find smart build system directory.")
 else
   # Predefined functions.
   include $(sm.dir.buildsys)/defuns.mk
 endif
 
-ifeq ($(sm.dir.buildsys)/conf.mk,)
+ifeq ($(wildcard $(sm.dir.buildsys)/conf.mk),)
   $(error "Can't find smart build system directory.")
 else
   # Automate configuration for build parameters.
@@ -34,7 +40,7 @@ _sm_mods := $(wildcard $(sm.dir.top)/smart.mk)
 ifneq ($(_sm_mods),)
   sm.global.goals :=
   sm.global.module.names :=
-  $(foreach v,$(_sm_mods),$(eval $$(call load-module,$v)))
+  $(foreach v,$(_sm_mods),$(eval $$(call sm-load-module,$v)))
   $(foreach v,$(sm.global.module.names),$(info smart: New module '$v'))
 else
   $(info smart: ************************************************************)
