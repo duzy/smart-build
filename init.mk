@@ -40,9 +40,11 @@ sm.log.filename :=
 
 sm.global.dirs.include :=
 sm.global.dirs.lib :=
+sm.global.dirs.* := include lib
 sm.global.libs :=
 sm.global.options.compile :=
 sm.global.options.link :=
+sm.global.options.* := compile link
 sm.global.* := \
   dirs \
   libs \
