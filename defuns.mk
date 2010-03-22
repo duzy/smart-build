@@ -3,34 +3,48 @@
 #	
 
 define sm-this-dir
-$(eval _sm_this_dir := $$(lastword $$(MAKEFILE_LIST)))\
+$(eval _sm_this_dir:=$$(lastword $$(MAKEFILE_LIST)))\
 $(patsubst %/,%,$(dir $(_sm_this_dir)))
+endef
+
+define sm-this-makefile
+$(eval _sm_this_makefile:=$$(lastword $$(MAKEFILE_LIST)))\
+$(_sm_this_makefile)
 endef
 
 define sm-module-dir
 $(if $(sm.module.name),$(call sm-this-dir),\
-  $(error sm.module.name is empty, please use sm-this-dir instead))
+  $(error 'sm.module.name' is empty, please use 'sm-this-dir' instead))
 endef
 
+# $(findstring $1,$(sm.global.modules))
 define sm-new-module
-$(if $1,$(if $(findstring $1,$(sm.global.module.names)),\
-          $(error smart: Module of name '$1' already defined))\
-  $(eval sm.global.module.names+=$(strip $1))\
-  $(eval sm.module.name:=$(strip $1))\
-  $(eval SM_MODULE_SUFFIX:=$$(suffix $(strip $1))))\
+$(if $1,$(if $(filter $1,$(sm.global.modules)),\
+          $(error Module of name '$1' already exists))\
+  $(eval sm.module.name:=$(basename $(strip $1))
+         sm.module.suffix:=$(suffix $(strip $1))
+         sm.module.dir:=$$(call sm-module-dir)
+         sm.module.makefile:=$$(call sm-this-makefile)
+         sm.global.modules+=$(strip $1)
+         sm.global.modules.$(strip $1):=$$(sm.module.makefile))\
+  ,$(error Invalid usage of 'sm-new-module', module name required))\
 $(if $2,$(eval sm.module.type:=$(strip $2)
-  ifeq ($$(sm.module.type),static)
-    sm.module.suffix := .a
+  ifeq ($$(filter $$(sm.module.type),$(sm.global.module_types)),)
+    $$(error Unsuported module type '$(strip $2)', only supports '$(sm.global.module_types)')
   endif
-  ifeq ($$(sm.module.type),shared)
-    sm.module.suffix := .so
+  ifeq ($$(sm.module.suffix),)
+    ifeq ($$(sm.module.type),static)
+      sm.module.suffix := .a
+    endif
+    ifeq ($$(sm.module.type),shared)
+      sm.module.suffix := .so
+    endif
   endif
-  ),)\
-$(eval sm.module.dir:=$$(call sm-module-dir))
+  ),)
 endef
 
 ## Load the build script for the specified module.
-define load-module
+define sm-load-module
 $(if $1,\
   $(if $(wildcard $1),,$(error Module build script '$1' missed!))\
   $(eval $$(info smart: Load '$1'..)
@@ -63,8 +77,23 @@ define sm-load-subdirs
 $(eval include $(sm.dir.buildsys)/subdirs.mk)
 endef
 
+## Define variable prefixed by 'sm.var.local.'.
+## NOTE: Donot use it in multi-level 'include's
+##   usage 1: $(call sm-var-local, :=, value list)
+##          : $(call sm-var-local, ?=, value list)
+define sm-var-local
+ $(if $(strip $1),$(if $(filter $(strip $2),= := ?=),\
+        $(eval sm.var.local.$(strip $1)$(strip $2)$(strip $3)
+           sm.var.local.*:=$(strip $1) $(sm.var.local.*)),
+       $(warning Invalid usage of fun 'sm-var-local'.)),\
+   $(warning Defining local variable must provide a name.))
+endef
 
-
+## Unset variables prefixed by 'sm.var.local.'
+define sm-var-local-clean
+$(foreach v,$(sm.var.local.*),$(eval sm.var.local.$v:=))\
+$(eval sm.var.local.*:=)
+endef
 
 ################
 # Check helpers

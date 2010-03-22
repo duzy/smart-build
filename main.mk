@@ -3,22 +3,32 @@
 #	
 
 # Check make version
-$(info TODO: check $$(MAKE_VERSION))
-
-SHELL := /bin/bash
+sm.make.version.compatible := 3.80 3.81
+ifeq ($(filter $(MAKE_VERSION),$(sm.make.version.compatible)),)
+  $(error "smart: Bad GNU/Make version, expects one of: $(sm.make.version.compatible)")
+endif
 
 ## Smart Build directory, internal use only, must always contain a '/' tail.
 sm.dir.buildsys := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
-ifeq ($(sm.dir.buildsys)/defuns.mk,)
-  $(error "Can't find smart build system directory.")
+SHELL := /bin/bash
+
+ifeq ($(wildcard $(sm.dir.buildsys)/init.mk),)
+  $(error "smart: Can't find smart build system directory.")
+else
+  # Variables of 'sm.*' spec
+  include $(sm.dir.buildsys)/init.mk
+endif
+
+ifeq ($(wildcard $(sm.dir.buildsys)/defuns.mk),)
+  $(error "smart: Can't find smart build system directory.")
 else
   # Predefined functions.
   include $(sm.dir.buildsys)/defuns.mk
 endif
 
-ifeq ($(sm.dir.buildsys)/conf.mk,)
-  $(error "Can't find smart build system directory.")
+ifeq ($(wildcard $(sm.dir.buildsys)/conf.mk),)
+  $(error "smart: Can't find smart build system directory.")
 else
   # Automate configuration for build parameters.
   include $(sm.dir.buildsys)/conf.mk
@@ -33,15 +43,15 @@ _sm_mods := $(wildcard $(sm.dir.top)/smart.mk)
 
 ifneq ($(_sm_mods),)
   sm.global.goals :=
-  sm.global.module.names :=
-  $(foreach v,$(_sm_mods),$(eval $$(call load-module,$v)))
-  $(foreach v,$(sm.global.module.names),$(info smart: New module '$v'))
+  sm.global.modules :=
+  $(foreach v,$(_sm_mods),$(eval $$(call sm-load-module,$v)))
+  $(foreach v,$(sm.global.modules),$(info smart: New module '$v' -> $(sm.global.modules.$v)))
 else
   $(info smart: ************************************************************)
   $(info smart:  You have to provide the root build script 'smart.mk' at top)
   $(info smart:  level directory of the project.)
   $(info smart: ************************************************************)
-  $(error "Can't find the root build script 'smart.mk'.")
+  $(error Can't find the root build script 'smart.mk') #'
 endif
 
 .PHONY: build-goals

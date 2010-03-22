@@ -22,4 +22,4 @@ _sm_link_cmd := \
 $(if $(sm.module.sources),\
    $(call _sm_mk_out_dir, $(dir $(sm.dir.out.lib)/$(sm.module.name))))
 
-$(eval $(sm.dir.out.lib)/$(sm.module.name): $(_sm_objs) ; $(_sm_link_cmd))
+$(eval $(sm.dir.out.lib)/$(sm.module.name): $(sm.module.objects) ; $(_sm_link_cmd))

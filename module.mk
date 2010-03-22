@@ -88,8 +88,6 @@ else
   include $(sm.dir.buildsys)/binary.mk
 endif
 
-_sm_objs :=
-
 s :=
 d :=
 r :=
