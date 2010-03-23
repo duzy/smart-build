@@ -45,7 +45,7 @@ ifneq ($(_sm_mods),)
   sm.global.goals :=
   sm.global.modules :=
   $(foreach v,$(_sm_mods),$(eval $$(call sm-load-module,$v)))
-  $(foreach v,$(sm.global.modules),$(info smart: New module '$v' -> $(sm.global.modules.$v)))
+  $(foreach v,$(sm.global.modules),$(info smart: module '$v' by $(sm.global.modules.$v)))
 else
   $(info smart: ************************************************************)
   $(info smart:  You have to provide the root build script 'smart.mk' at top)
@@ -62,4 +62,3 @@ else
 endif
 
 _sm_mods :=
-

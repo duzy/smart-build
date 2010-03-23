@@ -73,3 +73,4 @@ $(eval $(sm.dir.out.bin)/$(sm.module.name)$(sm.module.suffix) $(_sm_implib): $(s
 
 _sm_link_cmd :=
 
+$(sm-var-local-clean)

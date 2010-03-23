@@ -17,6 +17,7 @@ sm.dir.out.bin = $(sm.dir.out)/bin
 sm.dir.out.lib = $(sm.dir.out)/lib
 sm.dir.out.inc = $(sm.dir.out)/include
 sm.dir.out.obj = $(sm.dir.out)/obj
+sm.dir.out.tmp = $(sm.dir.out)/temp
 
 
 # The variant of this building.
