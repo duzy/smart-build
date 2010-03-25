@@ -6,10 +6,18 @@
 
 
 ## Compute sources
-$(call sm-var-local, _sources.cpp, :=, $(filter %.cpp %.C %.cc %.CC,$(sm.module.sources)))
-$(call sm-var-local, _sources.c,   :=, $(filter %.c,$(sm.module.sources)))
-$(call sm-var-local, _sources.asm, :=, $(filter %.s,$(sm.module.sources)))
-
+$(call sm-var-local, _suffix.cpp,	:=, %.cpp %.C %.cc %.CC)
+$(call sm-var-local, _suffix.c,		:=, %.c)
+$(call sm-var-local, _suffix.h,		:=, %.h %.hh %.H %.HH)
+$(call sm-var-local, _suffix.asm,	:=, %.s)
+$(call sm-var-local, _sources_rel.cpp,  :=, $(filter $(sm.var.local._suffix.cpp),$(sm.module.sources)))
+$(call sm-var-local, _sources_rel.c,    :=, $(filter $(sm.var.local._suffix.c),  $(sm.module.sources)))
+$(call sm-var-local, _sources_rel.h,    :=, $(filter $(sm.var.local._suffix.h),  $(sm.module.sources)))
+$(call sm-var-local, _sources_rel.asm,  :=, $(filter $(sm.var.local._suffix.asm),$(sm.module.sources)))
+$(call sm-var-local, _sources_fix.cpp,  :=, $(filter $(sm.var.local._suffix.cpp),$(sm.module.sources.generated)))
+$(call sm-var-local, _sources_fix.c,    :=, $(filter $(sm.var.local._suffix.c),  $(sm.module.sources.generated)))
+$(call sm-var-local, _sources_fix.h,    :=, $(filter $(sm.var.local._suffix.h),  $(sm.module.sources.generated)))
+$(call sm-var-local, _sources_fix.asm,  :=, $(filter $(sm.var.local._suffix.asm),$(sm.module.sources.generated)))
 
 ## Compute include path (-I switches).
 $(call sm-var-local, _includes, :=)
@@ -39,33 +47,22 @@ $(call sm-var-local, _compile.c, =)
 sm.var.local._compile.cpp = $(CXX) -c $(sm.var.local._compile_flags.cpp) -o $$@ $$<
 sm.var.local._compile.c = $(CC) -c $(sm.var.local._compile_flags.c) -o $$@ $$<
 
-$(call sm-var-local, _compile_cmd.cpp, =)
-$(call sm-var-local, _compile_cmd.c, =)
-sm.var.local._compile_cmd.cpp = \
-  @echo "C++: $(sm.module.name) += $$(<:$(sm.dir.top)/%=%)" \
-  && $(call _sm_log,$(sm.var.local._compile.cpp)) \
+$(call sm-var-local, _gen.cpp, =)
+$(call sm-var-local, _gen.c, =)
+$(call sm-var-local, _gen.asm, =)
+sm.var.local._gen.cpp = \
+  ( echo "C++: $(sm.module.name) += $$(<:$(sm.dir.top)/%=%)" )\
+  && ( $(call _sm_log,$(sm.var.local._compile.cpp)) )\
   && ( $(sm.var.local._compile.cpp) || $(call _sm_log,"failed: $$<") )
-sm.var.local._compile_cmd.c = \
-  @echo "C: $(sm.module.name) += $$(<:$(sm.dir.top)/%=%)" \
-  && $(call _sm_log,$(sm.var.local._compile.c)) \
+
+sm.var.local._gen.c = \
+  ( echo "C: $(sm.module.name) += $$(<:$(sm.dir.top)/%=%)" )\
+  && ( $(call _sm_log,$(sm.var.local._compile.c)) )\
   && ( $(sm.var.local._compile.c) || $(call _sm_log,"failed: $$<") )
 
+sm.var.local._gen.asm = \
+  ( echo "ASM: todo: $(sm.module.name) += $$(<:$(sm.dir.top)/%=%)" )
 
-## Generate rules
-d := $(sm.dir.out.obj)
-$(foreach v,$(sm.module.sources),\
-  $(call _sm_mk_out_dir,$(dir $d$r/$(subst ..,_,$v))))
-
-static_rules := false
-ifeq ($(static_rules),true)
-  $(sm.var.local._sources.cpp): 
-  $(sm.var.local._sources.c): 
-else
-  $(foreach v,$(sm.var.local._sources.cpp),$(eval s := $(suffix $v))\
-    $(eval $d$r/$$(subst ..,_,$(v:%$s=%.o)) : $(sm.module.dir)/$v ; $(sm.var.local._compile_cmd.cpp)))
-  $(foreach v,$(sm.var.local._sources.c),$(eval s := $(suffix $v))\
-    $(eval $d$r/$$(subst ..,_,$(v:%$s=%.o)) : $(sm.module.dir)/$v ; $(sm.var.local._compile_cmd.c)))
-endif
 
 ifneq ($(sm.module.prebuilt_objects),)
   $(error sm.module.prebuilt_objects is deprecated, use sm.module.objects instead)
@@ -73,10 +70,35 @@ endif
 
 #sm.module.objects := $(sm.module.prebuilt_objects)
 
-## Compute objects
-$(foreach v,$(sm.module.sources),$(eval s:=$(suffix $v))\
-   $(eval sm.module.objects += $(sm.dir.out.obj)$r/$$(subst ..,_,$(v:%$s=%.o))))
 
+$(call sm-var-local, _prefix, :=,$(sm.dir.out.obj)$(sm.module.dir:$(sm.dir.top)%=%))
+sm.fun.cal-obj = $(sm.var.local._prefix)/$(subst ..,_,$(basename $1).o)
+
+## Compute objects
+$(foreach v,$(sm.module.sources.generated) $(sm.module.sources),\
+   $(eval sm.module.objects += $(call sm.fun.cal-obj,$v)))
+
+
+## Prepare output directories
+$(foreach v,$(sm.module.objects),\
+   $(call _sm_mk_out_dir,$(dir $v)))
+
+sm.fun.cal-src-fix = $(strip $1)
+sm.fun.cal-src-rel = $(sm.module.dir)/$(strip $1)
+
+## Generate rules
+define sm.fun.gen-object-rules
+$(foreach v,$(sm.var.local._sources_$2.$1),\
+   $(eval $(call sm.fun.cal-obj,$v)\
+      : $(call sm.fun.cal-src-$2, $v)\
+      ; @$(sm.var.local._gen.$1)))
+endef
+$(call sm.fun.gen-object-rules,asm,fix)
+$(call sm.fun.gen-object-rules,asm,rel)
+$(call sm.fun.gen-object-rules,c,fix)
+$(call sm.fun.gen-object-rules,c,rel)
+$(call sm.fun.gen-object-rules,cpp,fix)
+$(call sm.fun.gen-object-rules,cpp,rel)
 
 #$(info smart: local vars: $(sm.var.local.*))
 $(sm-var-local-clean)

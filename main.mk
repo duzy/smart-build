@@ -54,7 +54,9 @@ else
   $(error Can't find the root build script 'smart.mk') #'
 endif
 
-.PHONY: build-goals
+#$(info PHONY: $(sm.rules.phony.*))
+#$(info rules: $(sm.rules.*))
+.PHONY: build-goals $(sm.rules.phony.*)
 ifneq ($(sm.global.goals),)
   build-goals: $(sm.global.goals)
 else

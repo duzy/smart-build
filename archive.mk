@@ -19,23 +19,12 @@ sm.var.local._log = $(if $(and $(sm.log.enabled),$(sm.log.filename)),\
 $(if $(sm.module.sources),\
    $(call _sm_mk_out_dir, $(dir $(sm.dir.out.lib)/$(sm.module.name))))
 
-$(eval sm.rules.prompt.* += $(sm.var.local._archive_name))
-$(eval sm.rules.prompt.$(sm.var.local._archive_name):; @$(sm.var.local._prompt))
-$(eval sm.rules.log.* += $(sm.var.local._archive_name))
-$(eval sm.rules.log.$(sm.var.local._archive_name):; @$(sm.var.local._log))
-$(eval sm.rules.phony += \
-    sm.rules.log.$(sm.var.local._archive_name) \
-    sm.rules.prompt.$(sm.var.local._archive_name))
-$(eval sm.rules.* += $(sm.var.local._archive))
-$(eval $(sm.var.local._archive): \
-    sm.rules.prompt.$(sm.var.local._archive_name) \
-    sm.rules.log.$(sm.var.local._archive_name) \
-    $(sm.module.objects) ; @$(sm.var.local._link))
+$(call sm-var-local, _gen, =,\
+   ($(sm.var.local._prompt))&&\
+   ($(sm.var.local._log))&&\
+   ($(sm.var.local._link)))
 
-#$(info sm.rules.prompt.* = $(sm.rules.prompt.*))
-#$(info sm.rules.log.* = $(sm.rules.log.*))
-#$(info sm.rules.phony = $(sm.rules.phony))
-#$(info sm.rules.* = $(sm.rules.*))
-#$(info $(sm.var.local.*))
+$(eval $(sm.var.local._archive): \
+    $(sm.module.objects) ; @$(sm.var.local._gen))
 
 $(sm-var-local-clean)

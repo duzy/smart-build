@@ -9,6 +9,7 @@
 #	sm.module.name		: the name of the module to be compiled
 #	sm.module.suffix	: the suffix of the module name(.exe, .so, .dll, etc.)
 #	sm.module.sources	: the sources to be compiled into the module
+#	sm.module.sources.generated	: the local generated sources to be compiled into the module
 #	sm.module.headers	: (unused)
 #
 #	sm.module.out_implib	: --out-implib to linker on Win32, for shared
@@ -56,8 +57,7 @@ ifeq ($(sm.module.name),)
   $(error sm.module.name unknown)
 endif
 
-#d := $(wildcard $(sm.module.sources))
-d := $(strip $(sm.module.sources))
+d := $(strip $(sm.module.sources)) $(strip $(sm.module.sources.generated))
 ifeq ($d,)
   $(error Nothing to build, no sources)
 endif
@@ -79,7 +79,6 @@ _sm_log = $(if $(sm.log.filename),\
 ## Command for making out dir
 _sm_mk_out_dir = $(if $(wildcard $1),,$(info mkdir: $1)$(shell mkdir -p $1))
 
-r := $(sm.module.dir:$(sm.dir.top)%=%)
 include $(sm.dir.buildsys)/objrules.mk
 
 ifeq ($(sm.module.type),static)

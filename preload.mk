@@ -17,6 +17,7 @@ sm.module.options.compile :=
 sm.module.options.link :=
 sm.module.out_implib :=
 sm.module.sources :=
+sm.module.sources.generated :=
 sm.module.suffix :=
 sm.module.type :=
 sm.module.whole_archives :=
