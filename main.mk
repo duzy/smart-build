@@ -3,16 +3,20 @@
 #	
 
 # Check make version
-$(info TODO: check $$(MAKE_VERSION))
+sm.make.version.compatible := 3.80 3.81
+ifeq ($(filter $(MAKE_VERSION),$(sm.make.version.compatible)),)
+  $(error "smart: Bad GNU/Make version, expects one of: $(sm.make.version.compatible)")
+endif
+
+## Smart Build directory, internal use only, must always contain a '/' tail.
+sm.dir.buildsys := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
 SHELL := /bin/bash
-
-## Smart Build directory, internal use only, must not contain a '/' tail.
-sm.dir.buildsys := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
 ifeq ($(wildcard $(sm.dir.buildsys)/init.mk),)
   $(error "smart: Can't find smart build system directory.")
 else
+  # Variables of 'sm.*' spec
   include $(sm.dir.buildsys)/init.mk
 endif
 
@@ -24,7 +28,7 @@ else
 endif
 
 ifeq ($(wildcard $(sm.dir.buildsys)/conf.mk),)
-  $(error "Can't find smart build system directory.")
+  $(error "smart: Can't find smart build system directory.")
 else
   # Automate configuration for build parameters.
   include $(sm.dir.buildsys)/conf.mk
@@ -39,18 +43,20 @@ _sm_mods := $(wildcard $(sm.dir.top)/smart.mk)
 
 ifneq ($(_sm_mods),)
   sm.global.goals :=
-  sm.global.module.names :=
+  sm.global.modules :=
   $(foreach v,$(_sm_mods),$(eval $$(call sm-load-module,$v)))
-  $(foreach v,$(sm.global.module.names),$(info smart: New module '$v'))
+  $(foreach v,$(sm.global.modules),$(info smart: module '$v' by $(sm.global.modules.$v)))
 else
   $(info smart: ************************************************************)
   $(info smart:  You have to provide the root build script 'smart.mk' at top)
   $(info smart:  level directory of the project.)
   $(info smart: ************************************************************)
-  $(error "Can't find the root build script 'smart.mk'.")
+  $(error Can't find the root build script 'smart.mk') #'
 endif
 
-.PHONY: build-goals
+#$(info PHONY: $(sm.rules.phony.*))
+#$(info rules: $(sm.rules.*))
+.PHONY: build-goals $(sm.rules.phony.*)
 ifneq ($(sm.global.goals),)
   build-goals: $(sm.global.goals)
 else
@@ -58,4 +64,3 @@ else
 endif
 
 _sm_mods :=
-

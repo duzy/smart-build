@@ -9,6 +9,7 @@
 #	sm.module.name		: the name of the module to be compiled
 #	sm.module.suffix	: the suffix of the module name(.exe, .so, .dll, etc.)
 #	sm.module.sources	: the sources to be compiled into the module
+#	sm.module.sources.generated	: the local generated sources to be compiled into the module
 #	sm.module.headers	: (unused)
 #
 #	sm.module.out_implib	: --out-implib to linker on Win32, for shared
@@ -23,7 +24,7 @@
 #				: libraries as a whole, see --whole-archive.
 #	sm.module.prebuilt_objects: prebuilt objects
 #
-#	sm.global.dirs.include	:
+#	sm.global.includes	:
 #	sm.global.options.compile:
 #	sm.global.options.link	:
 #	sm.global.dirs.lib	:
@@ -37,12 +38,16 @@
 
 $(if $(strip $(sm.module.dir)),,$(error sm.module.dir must be set))
 
-ifneq ($(sm.module.includes),)
+ifeq ($(sm.module.type),dynamic)
+  sm.module.type := shared
+endif
+
+ifdef $(sm.module.includes)
   $(warning sm.module.includes is deprecated, use sm.module.dirs.include instead)
   sm.module.dirs.include := $(sm.module.includes) $(sm.module.dirs.include)
 endif
 
-ifneq ($(sm.global.includes),)
+ifdef $(sm.global.includes)
   $(warning sm.global.includes is deprecated, use sm.global.dirs.include instead)
   sm.global.dirs.include := $(sm.global.includes) $(sm.global.dirs.include)
 endif
@@ -52,8 +57,7 @@ ifeq ($(sm.module.name),)
   $(error sm.module.name unknown)
 endif
 
-#d := $(wildcard $(sm.module.sources))
-d := $(strip $(sm.module.sources))
+d := $(strip $(sm.module.sources)) $(strip $(sm.module.sources.generated))
 ifeq ($d,)
   $(error Nothing to build, no sources)
 endif
@@ -75,7 +79,6 @@ _sm_log = $(if $(sm.log.filename),\
 ## Command for making out dir
 _sm_mk_out_dir = $(if $(wildcard $1),,$(info mkdir: $1)$(shell mkdir -p $1))
 
-r := $(sm.module.dir:$(sm.dir.top)%=%)
 include $(sm.dir.buildsys)/objrules.mk
 
 ifeq ($(sm.module.type),static)
@@ -83,8 +86,6 @@ ifeq ($(sm.module.type),static)
 else
   include $(sm.dir.buildsys)/binary.mk
 endif
-
-_sm_objs :=
 
 s :=
 d :=

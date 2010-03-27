@@ -2,24 +2,29 @@
 #	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
 #
 
-## Archive command
-_sm_archive = $(AR) crus
+$(call sm-var-local, _archive_cmd, :=, $(AR) crus)
+$(call sm-var-local, _archive_name, :=, $(sm.module.name)$(sm.module.suffix))
+$(call sm-var-local, _archive, :=, $(sm.dir.out.lib)/$(sm.var.local._archive_name))
+$(call sm-var-local, _prompt, :=, echo "$(sm.module.type): $(sm.var.local._archive)")
 
+$(call sm-var-local, _link, =)
+sm.var.local._link = for o in $(sm.module.objects) ; do \
+  $(sm.var.local._archive_cmd) $(sm.var.local._archive) $$$$o || exit ; done \
+  && ranlib $(sm.var.local._archive)
 
-#_sm_link = $(_sm_archive) $$@ $$^
-_sm_log = $(if $(sm.log.filename),\
-  echo $(AR) cm $$@ ... >> $(sm.dir.out)/$(sm.log.filename),true)
-_sm_link = for o in $$^ ; do $(_sm_archive) $$@ $$$$o || exit ; done \
-  && ranlib $$@
-
-
-## Target Rule
-_sm_rel_name = $(if $(1:$(sm.dir.top)/%=%),$(1:$(sm.dir.top)/%=%),$1)
-_sm_link_cmd := \
-  @echo "$(sm.module.type): $$(call _sm_rel_name,$$@)" \
-  && $(call _sm_log,$(_sm_link)) && $(_sm_link)
+$(call sm-var-local, _log, =)
+sm.var.local._log = $(if $(and $(sm.log.enabled),$(sm.log.filename)),\
+  echo $(sm.var.local._link) ... >> $(sm.dir.out)/$(sm.log.filename),true)
 
 $(if $(sm.module.sources),\
    $(call _sm_mk_out_dir, $(dir $(sm.dir.out.lib)/$(sm.module.name))))
 
-$(eval $(sm.dir.out.lib)/$(sm.module.name)$(sm.module.suffix): $(_sm_objs) ; $(_sm_link_cmd))
+$(call sm-var-local, _gen, =,\
+   ($(sm.var.local._prompt))&&\
+   ($(sm.var.local._log))&&\
+   ($(sm.var.local._link)))
+
+$(eval $(sm.var.local._archive): \
+    $(sm.module.objects) ; @$(sm.var.local._gen))
+
+$(sm-var-local-clean)

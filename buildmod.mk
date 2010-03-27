@@ -11,12 +11,7 @@
 
 ifeq ($(wildcard $(sm.dir.buildsys)),)
   $(info smart: Cannot locate the build system directory('sm.dir.buildsys').)
-  $(error smart: Invalid installed build system)
-endif
-
-ifeq ($(sm.module.type),dynamic)
-  $(warning Module type 'dynamic' is deprecated, use 'shared' instead!)
-  sm.module.type := shared
+  $(error Invalid installed build system)
 endif
 
 ifeq ($(sm.module.type),subdirs)

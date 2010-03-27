@@ -5,4 +5,8 @@
 CC = gcc
 CP = cp
 PERL = perl
+GPERF = gperf
 ASM = as
+FLEX = flex
+#YACC = yacc
+YACC = bison
