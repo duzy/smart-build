@@ -60,6 +60,14 @@ define sm-find-sub-modules
 $(wildcard $(strip $1)/*/smart.mk)
 endef
 
+## Generate compilation rules for sources
+define sm-generate-objects
+ $(if $(strip $(sm.module.sources) $(sm.module.sources.generated)),\
+    $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.dir.out)/$(sm.log.filename),true))\
+    $(eval include $(sm.dir.buildsys)/objrules.mk),\
+    $(error smart: No sources defined))
+endef
+
 ## Build the current module
 define sm-build-this
  $(if $(sm.module.name),\
@@ -95,9 +103,18 @@ $(foreach v,$(sm.var.local.*),$(eval sm.var.local.$v:=))\
 $(eval sm.var.local.*:=)
 endef
 
+## Command for making out dir
+define sm-util-mkdir
+$(if $(wildcard $1),,$(info mkdir: $1)$(shell mkdir -p $1))
+endef
+
+
 ################
 # Check helpers
 ################
 define check-exists
+  $(error smart: check-exists is deprecated, use sm-check-exists instead)
+endef
+define sm-check-exists
 $(if $(wildcard $(strip $1)),,$(error $(strip $2)))
 endef

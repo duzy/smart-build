@@ -57,29 +57,24 @@ ifeq ($(sm.module.name),)
   $(error sm.module.name unknown)
 endif
 
-d := $(strip $(sm.module.sources)) $(strip $(sm.module.sources.generated))
-ifeq ($d,)
-  $(error Nothing to build, no sources)
-endif
-
-ifneq ($(sm.module.type),static)
- ifneq ($(sm.module.type),shared)
-  ifneq ($(sm.module.type),executable)
-    $(info smart: You have to specify 'sm.module.type', it can be one of )
-    $(info smart: '$(sm.module.types_supported)'.)
-    $(error sm.module.type unknown: '$(sm.module.type)'.)
-  endif
- endif
+ifeq ($(filter $(sm.module.type),$(sm.global.module_types)),)
+  $(info smart: You have to specify 'sm.module.type', it can be one of )
+  $(info smart: '$(sm.module.types_supported)'.)
+  $(error sm.module.type unknown: '$(sm.module.type)'.)
 endif
 
 ## Compile log command.
 _sm_log = $(if $(sm.log.filename),\
     echo $1 >> $(sm.dir.out)/$(sm.log.filename),true)
 
-## Command for making out dir
-_sm_mk_out_dir = $(if $(wildcard $1),,$(info mkdir: $1)$(shell mkdir -p $1))
-
-include $(sm.dir.buildsys)/objrules.mk
+d := $(strip $(sm.module.sources) $(sm.module.sources.generated))
+ifneq ($d,)
+  include $(sm.dir.buildsys)/objrules.mk
+else
+  ifeq ($(strip $(sm.module.objects)),)
+    $(error Nothing to build, no sources or objects)
+  endif
+endif
 
 ifeq ($(sm.module.type),static)
   include $(sm.dir.buildsys)/archive.mk

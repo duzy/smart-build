@@ -13,6 +13,7 @@ sm.module.headers :=
 sm.module.libs :=
 sm.module.name :=
 sm.module.objects :=
+sm.module.objects.defined :=
 sm.module.options.compile :=
 sm.module.options.link :=
 sm.module.out_implib :=
