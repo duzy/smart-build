@@ -2,14 +2,14 @@
 #	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
 #
 
-$(call sm-var-local, _archive_cmd, :=, $(AR) crus)
+$(call sm-var-local, _archive_cmd, :=, $(AR) cr)
 $(call sm-var-local, _archive_name, :=, $(sm.module.name)$(sm.module.suffix))
 $(call sm-var-local, _archive, :=, $(sm.dir.out.lib)/$(sm.var.local._archive_name))
 $(call sm-var-local, _prompt, :=, echo "$(sm.module.type): $(sm.var.local._archive)")
 
 $(call sm-var-local, _link, =)
 sm.var.local._link = for o in $(sm.module.objects) ; do \
-  $(sm.var.local._archive_cmd) $(sm.var.local._archive) $$$$o || exit ; done \
+  $(sm.var.local._archive_cmd) $(sm.var.local._archive) $$$$$$$$o || exit ; done \
   && ranlib $(sm.var.local._archive)
 
 $(call sm-var-local, _log, =)
