@@ -40,12 +40,20 @@ sm.var.local._compile_flags.c += \
   $(strip $(sm.module.options.compile)) \
   $(strip $(sm.module.options.compile.c))
 
+$(call sm-var-local, _compile_flags.asm, :=, $(sm.var.local._includes))
+sm.var.local._compile_flags.asm += \
+  $(strip $(sm.global.options.compile)) \
+  $(strip $(sm.module.options.compile)) \
+  $(strip $(sm.module.options.compile.asm))
+
 
 ## The compilation command
 $(call sm-var-local, _compile.cpp, =)
 $(call sm-var-local, _compile.c, =)
+$(call sm-var-local, _compile.asm, =)
 sm.var.local._compile.cpp = $(CXX) -c $(sm.var.local._compile_flags.cpp) -o $$@ $$<
 sm.var.local._compile.c = $(CC) -c $(sm.var.local._compile_flags.c) -o $$@ $$<
+sm.var.local._compile.asm = $(AS) $(sm.var.local._compile_flags.asp) -o $$@ $$<
 
 $(call sm-var-local, _gen.cpp, =)
 $(call sm-var-local, _gen.c, =)
@@ -61,27 +69,28 @@ sm.var.local._gen.c = \
   && ( $(sm.var.local._compile.c) || $(call _sm_log,"failed: $$<") )
 
 sm.var.local._gen.asm = \
-  ( echo "ASM: todo: $(sm.module.name) += $$(<:$(sm.dir.top)/%=%)" )
+  ( echo "ASM: $(sm.module.name) += $$(<:$(sm.dir.top)/%=%)" )\
+  && ( $(call _sm_log,$(sm.var.local._compile.asm)) )\
+  && ( $(sm.var.local._compile.asm) || $(call _sm_log,"failed: $$<") )
 
 
 ifneq ($(sm.module.prebuilt_objects),)
   $(error sm.module.prebuilt_objects is deprecated, use sm.module.objects instead)
+  #sm.module.objects := $(sm.module.prebuilt_objects)
 endif
 
-#sm.module.objects := $(sm.module.prebuilt_objects)
-
-
 $(call sm-var-local, _prefix, :=,$(sm.dir.out.obj)$(sm.module.dir:$(sm.dir.top)%=%))
-sm.fun.cal-obj = $(sm.var.local._prefix)/$(subst ..,_,$(basename $1).o)
+sm.fun.to-relative = $(patsubst $(sm.dir.top)/%,%,$1)
+sm.fun.cal-obj = $(sm.var.local._prefix)/$(subst ..,_,$(basename $(call sm.fun.to-relative,$1)).o)
 
 ## Compute objects
 $(foreach v,$(sm.module.sources.generated) $(sm.module.sources),\
-   $(eval sm.module.objects += $(call sm.fun.cal-obj,$v)))
+   $(eval o := $(call sm.fun.cal-obj,$v))\
+   $(if $(filter $o,$(sm.module.objects)),,$(eval sm.module.objects += $o)))
 
 
 ## Prepare output directories
-$(foreach v,$(sm.module.objects),\
-   $(call _sm_mk_out_dir,$(dir $v)))
+$(foreach v,$(sm.module.objects),$(call sm-util-mkdir,$(dir $v)))
 
 sm.fun.cal-src-fix = $(strip $1)
 sm.fun.cal-src-rel = $(sm.module.dir)/$(strip $1)
@@ -89,9 +98,12 @@ sm.fun.cal-src-rel = $(sm.module.dir)/$(strip $1)
 ## Generate rules
 define sm.fun.gen-object-rules
 $(foreach v,$(sm.var.local._sources_$2.$1),\
-   $(eval $(call sm.fun.cal-obj,$v)\
-      : $(call sm.fun.cal-src-$2, $v)\
-      ; @$(sm.var.local._gen.$1)))
+   $(eval o := $(call sm.fun.cal-obj,$v))\
+   $(if $(filter $o,$(sm.module.objects.defined)),\
+        $(info smart: duplicated $v),\
+      $(eval sm.module.objects.defined += $o)\
+      $(eval $o : $(call sm.fun.cal-src-$2, $v)\
+         ; @$(sm.var.local._gen.$1))))
 endef
 $(call sm.fun.gen-object-rules,asm,fix)
 $(call sm.fun.gen-object-rules,asm,rel)

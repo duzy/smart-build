@@ -17,7 +17,7 @@ sm.var.local._log = $(if $(and $(sm.log.enabled),$(sm.log.filename)),\
   echo $(sm.var.local._link) ... >> $(sm.dir.out)/$(sm.log.filename),true)
 
 $(if $(sm.module.sources),\
-   $(call _sm_mk_out_dir, $(dir $(sm.dir.out.lib)/$(sm.module.name))))
+   $(call sm-util-mkdir, $(dir $(sm.dir.out.lib)/$(sm.module.name))))
 
 $(call sm-var-local, _gen, =,\
    ($(sm.var.local._prompt))&&\

@@ -11,7 +11,7 @@ ifeq ($(wildcard $(sm.dir.top)),)
   $(error Can't detect the value of project top level directory.) #'
 endif
 
-# The ouput directory for generated objects and files.
+# The ouput directory(related with current dir) for generated objects and files.
 sm.dir.out = $(sm.dir.top)/out/$(sm.config.variant)
 sm.dir.out.bin = $(sm.dir.out)/bin
 sm.dir.out.lib = $(sm.dir.out)/lib

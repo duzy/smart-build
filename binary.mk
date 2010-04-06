@@ -28,13 +28,16 @@ endif ## sm.module.type == static
 ifeq ($(sm.module.type),shared)
   _sm_link_flags.cpp := -shared $(strip $(_sm_link_flags.cpp))
 
-  $(info TODO: --out-implib for $(sm.config.uname))
   ifeq ($(sm.config.uname),MinGW)
     ## --out-implib on Win32
     _sm_implib := $(strip $(sm.module.out_implib))
     ifneq ($s,)
       _sm_implib := $(sm.dir.out.lib)/lib$(patsubst lib%.a,%,$(_sm_implib)).a
       _sm_link_flags.cpp += -Wl,--out-implib,$(_sm_implib)
+    endif
+  else
+    ifneq ($(sm.module.out_implib),)
+      $(info smart: TODO: --out-implib=$(sm.module.out_implib) for $(sm.config.uname))
     endif
   endif
 
@@ -65,9 +68,9 @@ _sm_link_cmd := \
   && $(call _sm_log,$(_sm_link)) && $(_sm_link)
 
 $(if $(sm.module.sources),\
-   $(call _sm_mk_out_dir, $(dir $(sm.dir.out.bin)/$(sm.module.name))))
+   $(call sm-util-mkdir, $(dir $(sm.dir.out.bin)/$(sm.module.name))))
 
-$(if $(_sm_implib), $(call _sm_mk_out_dir, $(dir $(_sm_implib))))
+$(if $(_sm_implib), $(call sm-util-mkdir, $(dir $(_sm_implib))))
 
 $(eval $(sm.dir.out.bin)/$(sm.module.name)$(sm.module.suffix) $(_sm_implib): $(sm.module.objects) ; $(_sm_link_cmd))
 
