@@ -51,7 +51,7 @@ _sm_link.c = $(CC) $(_sm_link_flags.cpp)
 
 
 ## If sources contains mixed .cpp and .c suffix, we should use C++ linker.
-s := $(strip $(if $(_sm_sources.cpp), .cpp, .c))
+s := $(strip $(if $(_sm_has_sources.cpp), .cpp, .c))
 _sm_link = $(_sm_link$s) -o $$@ $$^
 ifeq ($(sm.module.type),shared)
   ifneq ($(strip $(sm.module.whole_archives)),)
