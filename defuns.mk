@@ -85,22 +85,22 @@ define sm-load-subdirs
 $(eval include $(sm.dir.buildsys)/subdirs.mk)
 endef
 
-## Define variable prefixed by 'sm.var.local.'.
+## Define variable prefixed by 'sm.var.temp.'.
 ## NOTE: Donot use it in multi-level 'include's
-##   usage 1: $(call sm-var-local, :=, value list)
-##          : $(call sm-var-local, ?=, value list)
-define sm-var-local
+##   usage 1: $(call sm-var-temp, :=, value list)
+##          : $(call sm-var-temp, ?=, value list)
+define sm-var-temp
  $(if $(strip $1),$(if $(filter $(strip $2),= := ?=),\
-        $(eval sm.var.local.$(strip $1)$(strip $2)$(strip $3)
-           sm.var.local.*:=$(strip $1) $(sm.var.local.*)),
-       $(warning Invalid usage of fun 'sm-var-local'.)),\
+        $(eval sm.var.temp.$(strip $1)$(strip $2)$(strip $3)
+           sm.var.temp.*:=$(strip $1) $(sm.var.temp.*)),
+       $(warning Invalid usage of fun 'sm-var-temp'.)),\
    $(warning Defining local variable must provide a name.))
 endef
 
-## Unset variables prefixed by 'sm.var.local.'
-define sm-var-local-clean
-$(foreach v,$(sm.var.local.*),$(eval sm.var.local.$v:=))\
-$(eval sm.var.local.*:=)
+## Unset variables prefixed by 'sm.var.temp.'
+define sm-var-temp-clean
+$(foreach v,$(sm.var.temp.*),$(eval sm.var.temp.$v:=))\
+$(eval sm.var.temp.*:=)
 endef
 
 ## Command for making out dir
