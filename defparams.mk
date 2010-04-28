@@ -2,6 +2,7 @@
 #	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
 #	
 
+CXX = g++
 CC = gcc
 CP = cp
 PERL = perl

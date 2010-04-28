@@ -19,6 +19,11 @@ $(call sm-var-temp, _sources_fix.c,    :=, $(filter $(sm.var.temp._suffix.c),  $
 $(call sm-var-temp, _sources_fix.h,    :=, $(filter $(sm.var.temp._suffix.h),  $(sm.module.sources.generated)))
 $(call sm-var-temp, _sources_fix.asm,  :=, $(filter $(sm.var.temp._suffix.asm),$(sm.module.sources.generated)))
 
+_sm_has_sources.asm := $(if $(sm.var.local._sources_fix.asm),true,false)
+_sm_has_sources.cpp := $(if $(sm.var.local._sources_fix.cpp),true,false)
+_sm_has_sources.c   := $(if $(sm.var.local._sources_fix.c),true,false)
+_sm_has_sources.h   := $(if $(sm.var.local._sources_fix.h),true,false)
+
 ## Compute include path (-I switches).
 $(call sm-var-temp, _includes, :=)
 $(foreach v,$(sm.global.dirs.include),\
