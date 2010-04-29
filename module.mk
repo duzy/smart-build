@@ -65,6 +65,10 @@ ifeq ($(filter $(sm.module.type),$(sm.global.module_types)),)
   $(error sm.module.type unknown: '$(sm.module.type)'.)
 endif
 
+ifeq ($(sm.fun.to-relative),)
+  $(error sm.fun.to-relative undefined)
+endif
+
 ## Compile log command.
 _sm_log = $(if $(sm.log.filename),\
     echo $1 >> $(sm.dir.out)/$(sm.log.filename),true)

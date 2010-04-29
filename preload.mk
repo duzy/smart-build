@@ -1,6 +1,6 @@
 # -*- mode: Makefile:gnu -*-
 #	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
-#	
+#
 
 ## This file is expected to be included BEFORE including an 'smart.mk'(module).
 
@@ -22,3 +22,5 @@ sm.module.sources.generated :=
 sm.module.suffix :=
 sm.module.type :=
 sm.module.whole_archives :=
+sm.module.rpath :=
+sm.module.rpath_link :=
