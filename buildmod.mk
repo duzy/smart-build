@@ -30,15 +30,26 @@ ifneq ($(sm.module.type),static)
   endif
 endif
 
+sm.fun.to-relative = $(patsubst $(sm.dir.top)/%,%,$1)
+
 ifeq ($(_do_building),true)
+  $(call sm-var-temp, _out_bin, :=,$(call sm.fun.to-relative,$(sm.dir.out.bin)))
+  $(call sm-var-temp, _out_lib, :=,$(call sm.fun.to-relative,$(sm.dir.out.lib)))
+  $(call sm-var-temp, _g, :=)
+
   ifeq ($(sm.module.type),static)
-    g := $(sm.dir.out.lib)/$(sm.module.name)$(sm.module.suffix)
+    sm.var.temp._g := $(sm.var.temp._out_lib)/$(sm.module.name)$(sm.module.suffix)
   else
-    g := $(sm.dir.out.bin)/$(sm.module.name)$(sm.module.suffix)
+    sm.var.temp._g := $(sm.var.temp._out_bin)/$(sm.module.name)$(sm.module.suffix)
   endif
-  goal-$(sm.module.name):$(sm.module.depends) $g
-  g :=
+  goal-$(sm.module.name):$(sm.module.depends) $(sm.var.temp._g)
   include $(sm.dir.buildsys)/module.mk
 else
   $(warning smart: $(sm.module.name) will not be built)
 endif
+
+## unset fun
+sm.fun.to-relative :=
+
+$(sm-var-temp-clean)
+

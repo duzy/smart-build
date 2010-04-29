@@ -99,8 +99,8 @@ endef
 
 ## Unset variables prefixed by 'sm.var.temp.'
 define sm-var-temp-clean
-$(foreach v,$(sm.var.temp.*),$(eval sm.var.temp.$v:=))\
-$(eval sm.var.temp.*:=)
+ $(foreach v,$(sm.var.temp.*),$(eval sm.var.temp.$v:=))\
+ $(eval sm.var.temp.*:=)
 endef
 
 ## Command for making out dir
