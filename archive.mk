@@ -27,7 +27,7 @@ $(if $(sm.module.sources),\
 $(call sm-var-temp, _gen, =,\
    ($(sm.var.temp._prompt))&&\
    ($(sm.var.temp._log))&&\
-   (for o in $(sm.module.objects) ; do echo '  + '$$$$$$$$o ; $(sm.var.temp._ar) $$$$$$$$o || exit ; done)&&\
+   (for o in $(sm.module.objects) ; do ($(sm.var.temp._ar) $$$$$$$$o && echo '  + '$$$$$$$$o) || exit ; done)&&\
    (ranlib $(sm.var.temp._archive)))
 
 ifeq ($(sm.var.temp._archive),)

@@ -24,6 +24,9 @@
 #				: libraries as a whole, see --whole-archive.
 #	sm.module.prebuilt_objects: prebuilt objects
 #
+#	sm.module.rpath		: -rpath
+#	sm.module.rpath-link	: -rpath-link
+#	
 #	sm.global.includes	:
 #	sm.global.options.compile:
 #	sm.global.options.link	:

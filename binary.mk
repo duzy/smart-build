@@ -53,6 +53,14 @@ endif ## sm.module.type == shared
 _sm_link_flags.cpp += $(strip $(sm.var.temp._lib_dirs))
 
 
+## rpath and rpath-link
+ifneq ($(sm.module.rpath),)
+  _sm_link_flags.cpp += $(sm.module.rpath:%=-Wl,-rpath,%)
+endif
+ifneq ($(sm.module.rpath-link),)
+  _sm_link_flags.cpp += $(sm.module.rpath-link:%=-Wl,-rpath-link,%)
+endif
+
 ## C++ link command
 _sm_link.cpp = $(CXX) $(_sm_link_flags.cpp)
 _sm_link.c = $(CC) $(_sm_link_flags.cpp)
