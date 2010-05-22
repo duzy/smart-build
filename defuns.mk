@@ -2,6 +2,10 @@
 #	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
 #	
 
+define sm-deprecated
+$(error smart: $(strip $1) is deprecated, use $(strip $2) instead)
+endef
+
 define sm-this-dir
 $(eval _sm_this_dir:=$$(lastword $$(MAKEFILE_LIST)))\
 $(patsubst %/,%,$(dir $(_sm_this_dir)))
@@ -108,13 +112,16 @@ define sm-util-mkdir
 $(if $(wildcard $1),,$(info mkdir: $1)$(shell mkdir -p $1))
 endef
 
-
 ################
 # Check helpers
 ################
-define check-exists
-  $(error smart: check-exists is deprecated, use sm-check-exists instead)
-endef
+check-exists = $(sm-deprecated check-exists, sm-check-exists)
 define sm-check-exists
-$(if $(wildcard $(strip $1)),,$(error $(strip $2)))
+$(if $(wildcard $(strip $1)),,$(error $(or $(strip $2),$(strip $1) is not ready)))
+endef
+
+define sm-check-not-empty
+$(if $(strip $1),\
+  $(if $(strip $($(strip $1))),,$(error $(strip $1) is empty)),\
+  $(error sm-check-not-empty accept a var-name))
 endef

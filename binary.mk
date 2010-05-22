@@ -26,7 +26,8 @@ ifeq ($(sm.module.type),static)
 endif ## sm.module.type == static
 
 
-ifeq ($(sm.fun.to-relative),)
+#ifeq ($(sm.fun.to-relative),)
+ifndef sm.fun.to-relative
   $(error sm.fun.to-relative undefined)
 endif
 
