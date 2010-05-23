@@ -88,8 +88,10 @@ sm.var.temp._gen.asm = \
   && ( $(call _sm_log,$(sm.var.temp._compile.asm)) )\
   && ( $(sm.var.temp._compile.asm) || $(call _sm_log,"failed: $$<") )
 
-sm.var.temp._dep.c++ = $(CXX) -MM -MT $1 -MF $$@ $(sm.var.temp._compile_flags.c++) $$<
-sm.var.temp._dep.c = $(CC) -MM -MT $1 -MF $$@ $(sm.var.temp._compile_flags.c) $$<
+ifeq ($(sm.module.gen_deps),true)
+  sm.var.temp._dep.c++ = $(CXX) -MM -MT $1 -MF $$@ $(sm.var.temp._compile_flags.c++) $$<
+  sm.var.temp._dep.c = $(CC) -MM -MT $1 -MF $$@ $(sm.var.temp._compile_flags.c) $$<
+endif # $(sm.module.gen_deps) == true
 
 ifneq ($(sm.module.prebuilt_objects),)
   $(error sm.module.prebuilt_objects is deprecated, use sm.module.objects instead)
@@ -110,6 +112,7 @@ $(foreach v,$(sm.module.objects),$(call sm-util-mkdir,$(dir $v)))
 sm.fun.cal-src-fix = $(strip $1)
 sm.fun.cal-src-rel = $(sm.module.dir)/$(strip $1)
 
+ifeq ($(sm.module.gen_deps),true)
 define sm.fun.gen-depend
 ifneq ($(filter $1,c c++),)
 -include $(o:%.o=%.d)
@@ -118,12 +121,15 @@ $(o:%.o=%.d): $(call sm.fun.cal-src-$2, $s)
 	( $(call sm.var.temp._dep.$1,$o) )
 endif
 endef
+endif # $(sm.module.gen_deps) == true
 
 define sm.fun.gen-object-rule
 sm.module.objects.defined += $o
 $o : $(call sm.fun.cal-src-$2, $s)
 	$(sm.var.Q)$(sm.var.temp._gen.$1)
-$(call sm.fun.gen-depend,$1,$2)
+ifeq ($(sm.module.gen_deps),true)
+  $(call sm.fun.gen-depend,$1,$2)
+endif # $(sm.module.gen_deps) == true
 endef
 
 define sm.fun.gen-object-rules

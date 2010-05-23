@@ -12,3 +12,4 @@ FLEX = flex
 #YACC = yacc
 YACC = bison
 AWK = gawk
+MKDIR = mkdir

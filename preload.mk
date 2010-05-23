@@ -20,6 +20,7 @@ sm.module.options.compile.infile :=
 sm.module.options.link :=
 sm.module.options.link.infile :=
 sm.module.out_implib :=
+sm.module.gen_deps := true
 sm.module.rpath :=
 sm.module.rpath-link :=
 sm.module.sources :=
