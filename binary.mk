@@ -29,7 +29,7 @@ _sm_link_flags.c++ := \
 $(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.dir.out.bin)))
 $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
 
-_sm_ranlib :=
+_sm_ranlib := true
 ifeq ($(sm.module.type),shared)
   _sm_link_flags.c++ := -shared $(strip $(_sm_link_flags.c++))
 
@@ -39,7 +39,6 @@ ifeq ($(sm.module.type),shared)
     ifneq ($(_sm_implib),)
       _sm_implib := $(sm.var.temp._out_lib)/lib$(patsubst lib%.a,%,$(_sm_implib)).a
       _sm_link_flags.c++ += -Wl,--out-implib,$(_sm_implib)
-      _sm_ranlib :=
     endif
   else
     ## --out-implib for Linux: just make linkage to the shared library.
