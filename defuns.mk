@@ -68,8 +68,29 @@ endef
 define sm-generate-objects
  $(if $(strip $(sm.module.sources) $(sm.module.sources.generated)),\
     $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.dir.out)/$(sm.log.filename),true))\
+    $(info smart: objects for '$(sm.module.name)' by $(strip $(sm-this-makefile)))\
     $(eval include $(sm.dir.buildsys)/objrules.mk),\
     $(error smart: No sources defined))
+endef
+
+## Copy headers to $(sm.dir.out.inc)
+##	usage 1: $(call sm-copy-files, $(headers))
+##	usage 2: $(call sm-copy-files, $(headers), subdir)
+define sm-copy-files
+ $(if $(strip $1),\
+    $(eval sm.var.__copyfiles := $(strip $1)
+           sm.var.__copyfiles.to := $(strip $2)
+           include $(sm.dir.buildsys)/copyfiles.mk
+           sm.var.__copyfiles :=
+           sm.var.__copyfiles.to :=
+	),\
+    $(error smart: You must specify files for arg one))
+endef
+
+## Copy headers
+define sm-copy-headers
+ $(call sm-check-not-empty, sm.dir.out.inc)\
+ $(call sm-copy-files,$1,$(sm.dir.out.inc)/$(strip $2))
 endef
 
 ## Build the current module
@@ -110,6 +131,11 @@ endef
 ## Command for making out dir
 define sm-util-mkdir
 $(if $(wildcard $1),,$(info mkdir: $1)$(shell mkdir -p $1))
+endef
+
+## Convert path to relative path (to $(sm.dir.top)).
+define sm-to-relative-path
+$(patsubst $(sm.dir.top)/%,%,$(strip $1))
 endef
 
 ################

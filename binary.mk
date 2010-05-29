@@ -25,14 +25,8 @@ ifeq ($(sm.module.type),static)
   $(error Internal error to build static target as 'binary', it should be 'archive'.)
 endif ## sm.module.type == static
 
-
-#ifeq ($(sm.fun.to-relative),)
-ifndef sm.fun.to-relative
-  $(error sm.fun.to-relative undefined)
-endif
-
-$(call sm-var-temp, _out_bin, :=,$(call sm.fun.to-relative,$(sm.dir.out.bin)))
-$(call sm-var-temp, _out_lib, :=,$(call sm.fun.to-relative,$(sm.dir.out.lib)))
+$(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.dir.out.bin)))
+$(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
 
 ifeq ($(sm.module.type),shared)
   _sm_link_flags.cpp := -shared $(strip $(_sm_link_flags.cpp))

@@ -11,3 +11,4 @@ ASM = as
 FLEX = flex
 #YACC = yacc
 YACC = bison
+AWK = gawk

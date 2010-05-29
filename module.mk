@@ -68,9 +68,8 @@ ifeq ($(filter $(sm.module.type),$(sm.global.module_types)),)
   $(error sm.module.type unknown: '$(sm.module.type)'.)
 endif
 
-#ifeq ($(sm.fun.to-relative),)
-ifndef sm.fun.to-relative
-  $(error sm.fun.to-relative undefined)
+ifndef sm-to-relative-path
+  $(error sm-to-relative-path undefined)
 endif
 
 ## Compile log command.

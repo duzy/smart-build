@@ -14,7 +14,8 @@ endif
 ## The output dirs for objects.
 ## These will always be converted into sm.dir.top related path, this will restrict
 ## the command line arguments length.
-sm.dir.out = $(sm.dir.top)/out/$(sm.config.variant)
+#sm.dir.out = $(sm.dir.top)/out/$(sm.config.variant)
+sm.dir.out = out/$(sm.config.variant)
 sm.dir.out.bin = $(sm.dir.out)/bin
 sm.dir.out.lib = $(sm.dir.out)/lib
 sm.dir.out.inc = $(sm.dir.out)/include
@@ -28,11 +29,15 @@ sm.config.uname := $(shell uname)
 
 
 sm.os.name :=
+sm.os.name.linux :=
+sm.os.name.win32 :=
 ifeq ($(sm.config.uname),Linux)
   sm.os.name := linux
+  sm.os.name.linux := true
 endif
 ifeq ($(sm.config.uname),MinGW)
   sm.os.name := win32
+  s.mos.name.win32 := true
 endif
 
 

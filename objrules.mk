@@ -84,14 +84,9 @@ ifneq ($(sm.module.prebuilt_objects),)
   #sm.module.objects := $(sm.module.prebuilt_objects)
 endif
 
-#ifeq ($(sm.fun.to-relative),)
-ifndef sm.fun.to-relative
-  $(error sm.fun.to-relative undefined)
-endif
-
-$(call sm-var-temp, _out, :=,$(call sm.fun.to-relative,$(sm.dir.out.obj)))
+$(call sm-var-temp, _out, :=,$(call sm-to-relative-path,$(sm.dir.out.obj)))
 $(call sm-var-temp, _prefix, :=,$(sm.var.temp._out)$(sm.module.dir:$(sm.dir.top)%=%))
-sm.fun.cal-obj = $(sm.var.temp._prefix)/$(subst ..,_,$(basename $(call sm.fun.to-relative,$1)).o)
+sm.fun.cal-obj = $(sm.var.temp._prefix)/$(subst ..,_,$(basename $(call sm-to-relative-path,$1)).o)
 
 ## Compute objects
 $(foreach v,$(sm.module.sources.generated) $(sm.module.sources),\
