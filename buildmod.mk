@@ -49,7 +49,7 @@ else
 endif
 
 ## unset fun
-sm.fun.to-relative :=
+#sm.fun.to-relative :=
 
 $(sm-var-temp-clean)
 

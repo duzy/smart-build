@@ -26,7 +26,8 @@ ifeq ($(sm.module.type),static)
 endif ## sm.module.type == static
 
 
-ifeq ($(sm.fun.to-relative),)
+#ifeq ($(sm.fun.to-relative),)
+ifndef sm.fun.to-relative
   $(error sm.fun.to-relative undefined)
 endif
 
@@ -52,6 +53,14 @@ ifeq ($(sm.module.type),shared)
 endif ## sm.module.type == shared
 _sm_link_flags.cpp += $(strip $(sm.var.temp._lib_dirs))
 
+
+## rpath and rpath-link
+ifneq ($(sm.module.rpath),)
+  _sm_link_flags.cpp += $(sm.module.rpath:%=-Wl,-rpath,%)
+endif
+ifneq ($(sm.module.rpath-link),)
+  _sm_link_flags.cpp += $(sm.module.rpath-link:%=-Wl,-rpath-link,%)
+endif
 
 ## C++ link command
 _sm_link.cpp = $(CXX) $(_sm_link_flags.cpp)
@@ -85,3 +94,4 @@ $(eval $(sm.var.temp._out_bin)/$(sm.module.name)$(sm.module.suffix) $(_sm_implib
 _sm_link_cmd :=
 
 $(sm-var-temp-clean)
+

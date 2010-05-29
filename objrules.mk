@@ -84,7 +84,8 @@ ifneq ($(sm.module.prebuilt_objects),)
   #sm.module.objects := $(sm.module.prebuilt_objects)
 endif
 
-ifeq ($(sm.fun.to-relative),)
+#ifeq ($(sm.fun.to-relative),)
+ifndef sm.fun.to-relative
   $(error sm.fun.to-relative undefined)
 endif
 
@@ -125,3 +126,4 @@ $(call sm.fun.gen-object-rules,cpp,rel)
 
 #$(info smart: local vars: $(sm.var.temp.*))
 $(sm-var-temp-clean)
+

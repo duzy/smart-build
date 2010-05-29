@@ -24,10 +24,18 @@ sm.var.temp._log = $(if $(and $(sm.log.enabled),$(sm.log.filename)),\
 $(if $(sm.module.sources),\
    $(call sm-util-mkdir,$(dir $(sm.var.temp._out_lib)/$(sm.module.name))))
 
+#$(info objects: $(words $(sm.module.objects)) for $(sm.module.name))
+#$(info objects: $(wordlist 1,50,$(sm.module.objects)) for $(sm.module.name))
+
+# $(call sm-var-temp, _gen, =,\
+#    ($(sm.var.temp._prompt))&&\
+#    ($(sm.var.temp._log))&&\
+#    (for o in $(sm.module.objects) ; do ($(sm.var.temp._ar) $$$$$$$$o && echo '  + '$$$$$$$$o) || exit ; done)&&\
+#    (ranlib $(sm.var.temp._archive)))
 $(call sm-var-temp, _gen, =,\
    ($(sm.var.temp._prompt))&&\
    ($(sm.var.temp._log))&&\
-   (for o in $(sm.module.objects) ; do echo '  + '$$$$$$$$o ; $(sm.var.temp._ar) $$$$$$$$o || exit ; done)&&\
+   ($(sm.var.temp._ar) $(sm.module.objects) || exit)&&\
    (ranlib $(sm.var.temp._archive)))
 
 ifeq ($(sm.var.temp._archive),)

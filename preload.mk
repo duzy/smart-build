@@ -23,4 +23,5 @@ sm.module.suffix :=
 sm.module.type :=
 sm.module.whole_archives :=
 sm.module.rpath :=
-sm.module.rpath_link :=
+sm.module.rpath-link :=
+
