@@ -58,13 +58,25 @@ ifneq ($(sm.module.rpath-link),)
 endif
 
 ## C++ link command
-_sm_link.cpp = $(CXX) $(_sm_link_flags.cpp)
-_sm_link.c = $(CC) $(_sm_link_flags.cpp)
+ifeq ($(sm.module.options.link.infile),true)
+  $(shell echo $(_sm_link_flags.cpp) > $(sm.dir.out.tmp)/$(sm.module.name).opts)
+  _sm_link.cpp = $(CXX) @$(sm.dir.out.tmp)/$(sm.module.name).opts
+  _sm_link.c = $(CC) @$(sm.dir.out.tmp)/$(sm.module.name).opts
+else
+  _sm_link.cpp = $(CXX) $(_sm_link_flags.cpp)
+  _sm_link.c = $(CC) $(_sm_link_flags.cpp)
+endif
 
 
 ## If sources contains mixed .cpp and .c suffix, we should use C++ linker.
 s := $(strip $(if $(_sm_has_sources.cpp), .cpp, .c))
-_sm_link = $(_sm_link$s) -o $$@ $$^
+ifeq ($(sm.module.options.link.infile),true)
+  #_sm_link = $(_sm_link$s) -o $$@ $$(wordlist 1,100,$$^)
+  $(shell echo $(sm.module.objects) > $(sm.dir.out.tmp)/$(sm.module.name).objs)
+  _sm_link = $(_sm_link$s) -o $$@ @$(sm.dir.out.tmp)/$(sm.module.name).objs
+else
+  _sm_link = $(_sm_link$s) -o $$@ $$^
+endif
 ifeq ($(sm.module.type),shared)
   ifneq ($(strip $(sm.module.whole_archives)),)
     _sm_link += -Wl,--whole-archive \
@@ -86,6 +98,7 @@ $(sm.var.temp._out_bin)/$(sm.module.name)$(sm.module.suffix) $(_sm_implib): \
   $(sm.module.objects)
 	$(sm.var.Q)( echo "$(sm.module.type): $$(call _sm_rel_name,$$@)" )\
 	&&( $(call _sm_log,$(_sm_link)) )\
+	&&( echo $(_sm_link) )\
 	&&( $(_sm_link) )
 endef
 $(eval $(_sm_rules))
