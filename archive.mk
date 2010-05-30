@@ -42,7 +42,7 @@ ifeq ($(sm.var.temp._archive),)
   $(error archive target unknown)
 else
   $(eval $(sm.var.temp._archive): \
-      $(sm.module.objects) ; @$(sm.var.temp._gen))
+      $(sm.module.objects) ; $(sm.var.Q)$(sm.var.temp._gen))
 endif
 
 $(sm-var-temp-clean)

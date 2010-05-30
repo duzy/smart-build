@@ -2,6 +2,10 @@
 #	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
 #
 
+ifeq ($(sm.module.type),static)
+  $(error Internal error to build static target as 'binary', it should be 'archive')
+endif ## sm.module.type == static
+
 ## Compute lib path and libs for (-L and -l switches).
 $(call sm-var-temp, _libs, :=)
 $(call sm-var-temp, _lib_dirs, :=)
@@ -21,9 +25,6 @@ sm.fun._append_lib :=
 _sm_link_flags.cpp := \
   $(strip $(filter-out -shared,$(sm.global.options.link))) \
   $(strip $(filter-out -shared,$(sm.module.options.link)))
-ifeq ($(sm.module.type),static)
-  $(error Internal error to build static target as 'binary', it should be 'archive'.)
-endif ## sm.module.type == static
 
 $(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.dir.out.bin)))
 $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
@@ -31,7 +32,7 @@ $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
 ifeq ($(sm.module.type),shared)
   _sm_link_flags.cpp := -shared $(strip $(_sm_link_flags.cpp))
 
-  ifeq ($(sm.config.uname),MinGW)
+  ifeq ($(sm.os.name),win32)
     ## --out-implib on Win32
     _sm_implib := $(strip $(sm.module.out_implib))
     ifneq ($s,)
@@ -74,18 +75,22 @@ _sm_link += $(strip $(sm.var.temp._libs))
 
 ## Target Rule
 _sm_rel_name = $(if $(1:$(sm.dir.top)/%=%),$(1:$(sm.dir.top)/%=%),$1)
-_sm_link_cmd := \
-  @echo "$(sm.module.type): $$(call _sm_rel_name,$$@)" \
-  && $(call _sm_log,$(_sm_link)) && $(_sm_link)
 
 $(if $(sm.module.sources),\
    $(call sm-util-mkdir,$(dir $(sm.var.temp._out_bin)/$(sm.module.name))))
 
 $(if $(_sm_implib), $(call sm-util-mkdir,$(dir $(_sm_implib))))
 
-$(eval $(sm.var.temp._out_bin)/$(sm.module.name)$(sm.module.suffix) $(_sm_implib): $(sm.module.objects) ; $(_sm_link_cmd))
+define _sm_rules
+$(sm.var.temp._out_bin)/$(sm.module.name)$(sm.module.suffix) $(_sm_implib): \
+  $(sm.module.objects)
+	$(sm.var.Q)( echo "$(sm.module.type): $$(call _sm_rel_name,$$@)" )\
+	&&( $(call _sm_log,$(_sm_link)) )\
+	&&( $(_sm_link) )
+endef
+$(eval $(_sm_rules))
 
-_sm_link_cmd :=
+_sm_rules :=
 
 $(sm-var-temp-clean)
 

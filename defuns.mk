@@ -42,6 +42,7 @@ $(if $2,$(eval sm.module.type:=$(strip $2)
     endif
     ifeq ($$(sm.module.type),shared)
       sm.module.suffix := .so
+      sm.module.out_implib:=$(sm.module.name)
     endif
   endif
   ),)

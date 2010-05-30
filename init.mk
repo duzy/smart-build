@@ -26,8 +26,9 @@ sm.dir.out.tmp = $(sm.dir.out)/temp
 # The variant of this building.
 sm.config.variant := debug
 sm.config.uname := $(shell uname)
+sm.config.machine := $(shell uname -m)
 
-
+sm.os.arch := $(sm.config.machine)
 sm.os.name :=
 sm.os.name.linux :=
 sm.os.name.win32 :=
@@ -35,9 +36,9 @@ ifeq ($(sm.config.uname),Linux)
   sm.os.name := linux
   sm.os.name.linux := true
 endif
-ifeq ($(sm.config.uname),MinGW)
+ifneq ($(findstring MINGW32,$(sm.config.uname)),)
   sm.os.name := win32
-  s.mos.name.win32 := true
+  sm.os.name.win32 := true
 endif
 
 
@@ -50,3 +51,5 @@ sm.global.libs :=
 sm.global.options.compile :=
 sm.global.options.link :=
 sm.global.module_types := static shared executable
+
+sm.var.Q := @

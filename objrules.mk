@@ -110,7 +110,7 @@ $(foreach v,$(sm.var.temp._sources_$2.$1),\
         $(info smart: duplicated $v),\
       $(eval sm.module.objects.defined += $o)\
       $(eval $o : $(call sm.fun.cal-src-$2, $v)\
-         ; @$(sm.var.temp._gen.$1))))
+         ; $(sm.var.Q)$(sm.var.temp._gen.$1))))
 endef
 $(call sm.fun.gen-object-rules,asm,fix)
 $(call sm.fun.gen-object-rules,asm,rel)

@@ -54,6 +54,9 @@ else
   $(error Can't find the root build script 'smart.mk') #'
 endif
 
+# .PRECIOUS: foo bar
+# .DELETE_ON_ERROR: foo bar
+
 #$(info PHONY: $(sm.rules.phony.*))
 #$(info rules: $(sm.rules.*))
 .PHONY: build-goals $(sm.rules.phony.*)
