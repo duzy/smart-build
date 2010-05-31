@@ -78,8 +78,8 @@ sm.var.temp._gen.asm = \
   && ( $(call _sm_log,$(sm.var.temp._compile.asm)) )\
   && ( $(sm.var.temp._compile.asm) || $(call _sm_log,"failed: $$<") )
 
-sm.var.temp._dep.c = gcc -MM -MT $1 -MF $$@ $$<
-sm.var.temp._dep.cpp = g++ -MM -MT $1 -MF $$@ $$<
+sm.var.temp._dep.c = gcc -MM -MT $1 -MF $$@ $(sm.var.temp._includes) $$<
+sm.var.temp._dep.cpp = g++ -MM -MT $1 -MF $$@ $(sm.var.temp._includes) $$<
 
 ifneq ($(sm.module.prebuilt_objects),)
   $(error sm.module.prebuilt_objects is deprecated, use sm.module.objects instead)
