@@ -87,7 +87,7 @@ ifneq ($d,)
   include $(sm.dir.buildsys)/objrules.mk
 else
   ifeq ($(strip $(sm.module.objects)),)
-    $(error Nothing to build, no sources or objects)
+    $(error Nothing to build, no sources or objects for $(sm.module.name))
   endif
 endif
 
