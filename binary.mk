@@ -93,17 +93,16 @@ $(if $(sm.module.sources),\
 
 $(if $(_sm_implib), $(call sm-util-mkdir,$(dir $(_sm_implib))))
 
-define _sm_rules
+define sm.fun.gen-binary-rule
 $(sm.var.temp._out_bin)/$(sm.module.name)$(sm.module.suffix) $(_sm_implib): \
   $(sm.module.objects)
 	$(sm.var.Q)( echo "$(sm.module.type): $$(call _sm_rel_name,$$@)" )\
 	&&( $(call _sm_log,$(_sm_link)) )\
-	&&( echo $(_sm_link) )\
 	&&( $(_sm_link) )
 endef
-$(eval $(_sm_rules))
+$(eval $(sm.fun.gen-binary-rule))
 
-_sm_rules :=
+sm.fun.gen-binary-rule :=
 
 $(sm-var-temp-clean)
 

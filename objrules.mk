@@ -6,10 +6,10 @@
 
 
 ## Compute sources
-$(call sm-var-temp, _suffix.cpp,	:=, %.cpp %.C %.cc %.CC)
-$(call sm-var-temp, _suffix.c,		:=, %.c)
-$(call sm-var-temp, _suffix.h,		:=, %.h %.hh %.H %.HH)
-$(call sm-var-temp, _suffix.asm,	:=, %.s)
+$(call sm-var-temp, _suffix.cpp,       :=, %.cpp %.C %.cc %.CC)
+$(call sm-var-temp, _suffix.c,         :=, %.c)
+$(call sm-var-temp, _suffix.h,         :=, %.h %.hh %.H %.HH)
+$(call sm-var-temp, _suffix.asm,       :=, %.s)
 $(call sm-var-temp, _sources_rel.cpp,  :=, $(filter $(sm.var.temp._suffix.cpp),$(sm.module.sources)))
 $(call sm-var-temp, _sources_rel.c,    :=, $(filter $(sm.var.temp._suffix.c),  $(sm.module.sources)))
 $(call sm-var-temp, _sources_rel.h,    :=, $(filter $(sm.var.temp._suffix.h),  $(sm.module.sources)))
@@ -58,7 +58,7 @@ $(call sm-var-temp, _compile.c, =)
 $(call sm-var-temp, _compile.asm, =)
 sm.var.temp._compile.cpp = $(CXX) -c $(sm.var.temp._compile_flags.cpp) -o $$@ $$<
 sm.var.temp._compile.c = $(CC) -c $(sm.var.temp._compile_flags.c) -o $$@ $$<
-sm.var.temp._compile.asm = $(AS) $(sm.var.temp._compile_flags.asp) -o $$@ $$<
+sm.var.temp._compile.asm = $(AS) $(sm.var.temp._compile_flags.asm) -o $$@ $$<
 
 $(call sm-var-temp, _gen.cpp, =)
 $(call sm-var-temp, _gen.c, =)
@@ -78,6 +78,8 @@ sm.var.temp._gen.asm = \
   && ( $(call _sm_log,$(sm.var.temp._compile.asm)) )\
   && ( $(sm.var.temp._compile.asm) || $(call _sm_log,"failed: $$<") )
 
+sm.var.temp._dep.c = gcc -MM -MT $1 -MF $$@ $$<
+sm.var.temp._dep.cpp = g++ -MM -MT $1 -MF $$@ $$<
 
 ifneq ($(sm.module.prebuilt_objects),)
   $(error sm.module.prebuilt_objects is deprecated, use sm.module.objects instead)
@@ -93,25 +95,36 @@ $(foreach v,$(sm.module.sources.generated) $(sm.module.sources),\
    $(eval o := $(call sm.fun.cal-obj,$v))\
    $(if $(filter $o,$(sm.module.objects)),,$(eval sm.module.objects += $o)))
 
-## Paths related to sm.dir.top
-#sm.module.objects := $(sm.module.objects:$(sm.dir.top)/%=%)
-
 ## Prepare output directories
 $(foreach v,$(sm.module.objects),$(call sm-util-mkdir,$(dir $v)))
 
 sm.fun.cal-src-fix = $(strip $1)
 sm.fun.cal-src-rel = $(sm.module.dir)/$(strip $1)
 
-## Generate rules
-define sm.fun.gen-object-rules
-$(foreach v,$(sm.var.temp._sources_$2.$1),\
-   $(eval o := $(call sm.fun.cal-obj,$v))\
-   $(if $(filter $o,$(sm.module.objects.defined)),\
-        $(info smart: duplicated $v),\
-      $(eval sm.module.objects.defined += $o)\
-      $(eval $o : $(call sm.fun.cal-src-$2, $v)\
-         ; $(sm.var.Q)$(sm.var.temp._gen.$1))))
+define sm.fun.gen-depend
+ifneq ($(filter $1,c cpp),)
+-include $(o:%.o=%.d)
+$(o:%.o=%.d): $(call sm.fun.cal-src-$2, $s)
+	$(sm.var.Q)( echo dep: $$@ )&&\
+	( $(call sm.var.temp._dep.$1,$o) )
+endif
 endef
+
+define sm.fun.gen-object-rule
+sm.module.objects.defined += $o
+$o : $(call sm.fun.cal-src-$2, $s)
+	$(sm.var.Q)$(sm.var.temp._gen.$1)
+$(call sm.fun.gen-depend,$1,$2)
+endef
+
+define sm.fun.gen-object-rules
+$(foreach s,$(sm.var.temp._sources_$2.$1),\
+   $(eval o := $(call sm.fun.cal-obj,$s))\
+   $(if $(filter $o,$(sm.module.objects.defined)),\
+        $(info smart: duplicated $s),\
+      $(eval $(call sm.fun.gen-object-rule,$1,$2))))
+endef
+
 $(call sm.fun.gen-object-rules,asm,fix)
 $(call sm.fun.gen-object-rules,asm,rel)
 $(call sm.fun.gen-object-rules,c,fix)
