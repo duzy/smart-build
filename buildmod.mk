@@ -33,13 +33,19 @@ endif
 ifeq ($(_do_building),true)
   $(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.dir.out.bin)))
   $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
-  $(call sm-var-temp, _g, :=)
+  $(call sm-var-temp, _g, :=,$(sm.module.name)$(sm.module.suffix))
 
   ifeq ($(sm.module.type),static)
-    sm.var.temp._g := $(sm.var.temp._out_lib)/$(sm.module.name)$(sm.module.suffix)
+    ifeq ($(sm.module.suffix),.a)
+      ifneq ($(sm.var.temp._g:lib%=ok),ok)
+        sm.var.temp._g := lib$(sm.var.temp._g)
+      endif
+    endif
+    sm.var.temp._g := $(sm.var.temp._out_lib)/$(sm.var.temp._g)
   else
-    sm.var.temp._g := $(sm.var.temp._out_bin)/$(sm.module.name)$(sm.module.suffix)
+    sm.var.temp._g := $(sm.var.temp._out_bin)/$(sm.var.temp._g)
   endif
+
   goal-$(sm.module.name):$(sm.module.depends) $(sm.module.depends.copy) $(sm.var.temp._g)
   include $(sm.dir.buildsys)/module.mk
 else
