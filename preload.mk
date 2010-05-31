@@ -6,6 +6,7 @@
 
 sm.log.filename :=
 sm.module.depends :=
+sm.module.depends.copy :=
 sm.module.dir :=
 sm.module.dirs.include :=
 sm.module.dirs.lib :=
@@ -15,12 +16,15 @@ sm.module.name :=
 sm.module.objects :=
 sm.module.objects.defined :=
 sm.module.options.compile :=
+sm.module.options.compile.infile :=
 sm.module.options.link :=
+sm.module.options.link.infile :=
 sm.module.out_implib :=
+sm.module.rpath :=
+sm.module.rpath-link :=
 sm.module.sources :=
 sm.module.sources.generated :=
 sm.module.suffix :=
 sm.module.type :=
 sm.module.whole_archives :=
-sm.module.rpath :=
-sm.module.rpath-link :=
+

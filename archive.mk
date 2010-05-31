@@ -2,8 +2,8 @@
 #	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
 #
 
-$(call sm-var-temp, _out,          :=, $(call sm.fun.to-relative,$(sm.dir.out)))
-$(call sm-var-temp, _out_lib,      :=, $(call sm.fun.to-relative,$(sm.dir.out.lib)))
+$(call sm-var-temp, _out,          :=, $(call sm-to-relative-path,$(sm.dir.out)))
+$(call sm-var-temp, _out_lib,      :=, $(call sm-to-relative-path,$(sm.dir.out.lib)))
 $(call sm-var-temp, _archive_cmd,  :=, $(AR) cur)
 $(call sm-var-temp, _archive_name, :=, $(sm.module.name)$(sm.module.suffix))
 $(call sm-var-temp, _archive,      :=, $(sm.var.temp._out_lib)/$(sm.var.temp._archive_name))
@@ -42,7 +42,7 @@ ifeq ($(sm.var.temp._archive),)
   $(error archive target unknown)
 else
   $(eval $(sm.var.temp._archive): \
-      $(sm.module.objects) ; @$(sm.var.temp._gen))
+      $(sm.module.objects) ; $(sm.var.Q)$(sm.var.temp._gen))
 endif
 
 $(sm-var-temp-clean)
