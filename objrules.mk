@@ -78,8 +78,8 @@ sm.var.temp._gen.asm = \
   && ( $(call _sm_log,$(sm.var.temp._compile.asm)) )\
   && ( $(sm.var.temp._compile.asm) || $(call _sm_log,"failed: $$<") )
 
-sm.var.temp._dep.c = gcc -MM -MT $1 -MF $$@ $$<
-sm.var.temp._dep.cpp = g++ -MM -MT $1 -MF $$@ $$<
+sm.var.temp._dep.cpp = g++ -MM -MT $1 -MF $$@ $(sm.var.temp._compile_flags.cpp) $$<
+sm.var.temp._dep.c = gcc -MM -MT $1 -MF $$@ $(sm.var.temp._compile_flags.c) $$<
 
 ifneq ($(sm.module.prebuilt_objects),)
   $(error sm.module.prebuilt_objects is deprecated, use sm.module.objects instead)
@@ -105,7 +105,7 @@ define sm.fun.gen-depend
 ifneq ($(filter $1,c cpp),)
 -include $(o:%.o=%.d)
 $(o:%.o=%.d): $(call sm.fun.cal-src-$2, $s)
-	$(sm.var.Q)( echo dep: $$@ )&&\
+	$(sm.var.Q)( echo depend: $$@ )&&\
 	( $(call sm.var.temp._dep.$1,$o) )
 endif
 endef
