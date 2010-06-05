@@ -38,11 +38,19 @@ $(if $(sm.module.sources),\
 #$(info objects: $(words $(sm.module.objects)) for $(sm.module.name))
 #$(info objects: $(wordlist 1,50,$(sm.module.objects)) for $(sm.module.name))
 
+$(call sm-var-temp, _objs, :=)
+ifeq ($(sm.module.options.link.infile),true)
+  $(shell echo $(sm.module.objects) > $(sm.dir.out.tmp)/$(sm.module.name).objs)
+   sm.var.temp._objs := @$(sm.dir.out.tmp)/$(sm.module.name).objs
+else
+   sm.var.temp._objs := $(sm.module.objects)
+endif
+
 define _sm_rules
  $(sm.var.temp._archive): $(sm.module.objects)
 	$(sm.var.Q)( $(sm.var.temp._prompt) )&&\
 	( $(sm.var.temp._log) )&&\
-	( $(sm.var.temp._ar) $(sm.module.objects) || exit -1 )&&\
+	( $(sm.var.temp._ar) $(sm.var.temp._objs) || exit -1 )&&\
 	( ranlib $(sm.var.temp._archive) )
 endef
 $(eval $(_sm_rules))
