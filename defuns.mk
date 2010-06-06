@@ -1,7 +1,21 @@
 # -*- mode: Makefile:gnu -*-
 #	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
-#	
+#
 
+#####
+# Logic
+#####
+define equal
+$(if $(findstring x$1x,x$2x),true,)
+endef
+# $(info equal: $(call equal,foo,foo))
+# $(info equal: $(call equal,foo, foo))
+# $(info equal: $(call equal,foobar,foo))
+# $(info equal: $(call equal,foo,foobar))
+
+#####
+# 
+#####
 define sm-deprecated
 $(error smart: $(strip $1) is deprecated, use $(strip $2) instead)
 endef

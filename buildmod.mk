@@ -15,22 +15,10 @@ ifeq ($(wildcard $(sm.dir.buildsys)),)
 endif
 
 ifeq ($(sm.module.type),subdirs)
-  $(error smart: Please try calling 'sm-load-sub-modules' instead)
+  $(error smart: Please try calling 'sm-load-subdirs' instead)
 endif
 
-_do_building := true
-ifneq ($(sm.module.type),static)
-  ifneq ($(sm.module.type),shared)
-    ifneq ($(sm.module.type),executable)
-      # $(info smart: You have to specify 'sm.module.type', it can be one of )
-      # $(info smart: '$(sm.module.types_supported)'.)
-      # $(error sm.module.type unknown: '$(sm.module.type)'.)
-      _do_building := false
-    endif
-  endif
-endif
-
-ifeq ($(_do_building),true)
+ifneq ($(filter $(sm.module.type),$(sm.global.module_types)),)
   $(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.dir.out.bin)))
   $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
   $(call sm-var-temp, _g, :=,$(sm.module.name)$(sm.module.suffix))

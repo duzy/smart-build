@@ -47,13 +47,11 @@ ifeq ($(sm.module.type),dynamic)
   sm.module.type := shared
 endif
 
-#ifdef $(sm.module.includes)
 ifneq ($(sm.module.includes),)
   $(warning sm.module.includes is deprecated, use sm.module.dirs.include instead)
   sm.module.dirs.include := $(sm.module.includes) $(sm.module.dirs.include)
 endif
 
-#ifdef $(sm.global.includes)
 ifneq ($(sm.global.includes),)
   $(warning sm.global.includes is deprecated, use sm.global.dirs.include instead)
   sm.global.dirs.include := $(sm.global.includes) $(sm.global.dirs.include)
@@ -78,10 +76,10 @@ endif
 _sm_log = $(if $(sm.log.filename),\
     echo $1 >> $(sm.dir.out)/$(sm.log.filename),true)
 
-_sm_has_sources.asm := false
-_sm_has_sources.cpp := false
-_sm_has_sources.c := false
-_sm_has_sources.h := false
+_sm_has_sources.asm :=
+_sm_has_sources.c :=
+_sm_has_sources.c++ :=
+_sm_has_sources.h :=
 
 ifneq ($(strip $(sm.module.sources) $(sm.module.sources.generated)),)
   include $(sm.dir.buildsys)/objrules.mk

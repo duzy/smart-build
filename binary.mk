@@ -22,7 +22,7 @@ sm.fun._append_lib :=
 
 
 ## Compute the link flags.
-_sm_link_flags.cpp := \
+_sm_link_flags.c++ := \
   $(strip $(filter-out -shared,$(sm.global.options.link))) \
   $(strip $(filter-out -shared,$(sm.module.options.link)))
 
@@ -30,14 +30,14 @@ $(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.dir.out.bin)))
 $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
 
 ifeq ($(sm.module.type),shared)
-  _sm_link_flags.cpp := -shared $(strip $(_sm_link_flags.cpp))
+  _sm_link_flags.c++ := -shared $(strip $(_sm_link_flags.c++))
 
   ifeq ($(sm.os.name),win32)
     ## --out-implib on Win32
     _sm_implib := $(strip $(sm.module.out_implib))
     ifneq ($s,)
       _sm_implib := $(sm.var.temp._out_lib)/lib$(patsubst lib%.a,%,$(_sm_implib)).a
-      _sm_link_flags.cpp += -Wl,--out-implib,$(_sm_implib)
+      _sm_link_flags.c++ += -Wl,--out-implib,$(_sm_implib)
     endif
   else
     ifneq ($(sm.module.out_implib),)
@@ -46,33 +46,34 @@ ifeq ($(sm.module.type),shared)
   endif
 
 endif ## sm.module.type == shared
-_sm_link_flags.cpp += $(strip $(sm.var.temp._lib_dirs))
+_sm_link_flags.c++ += $(strip $(sm.var.temp._lib_dirs))
 
 
 ## rpath and rpath-link
 ifneq ($(sm.module.rpath),)
-  _sm_link_flags.cpp += $(sm.module.rpath:%=-Wl,-rpath,%)
+  _sm_link_flags.c++ += $(sm.module.rpath:%=-Wl,-rpath,%)
 endif
 ifneq ($(sm.module.rpath-link),)
-  _sm_link_flags.cpp += $(sm.module.rpath-link:%=-Wl,-rpath-link,%)
+  _sm_link_flags.c++ += $(sm.module.rpath-link:%=-Wl,-rpath-link,%)
 endif
 
 ## C++ link command
 ifeq ($(sm.module.options.link.infile),true)
   $(call sm-util-mkdir,$(sm.dir.out.tmp))
-  $(shell echo $(_sm_link_flags.cpp) > $(sm.dir.out.tmp)/$(sm.module.name).opts)
-  _sm_link.cpp = $(CXX) @$(sm.dir.out.tmp)/$(sm.module.name).opts
+  $(shell echo $(_sm_link_flags.c++) > $(sm.dir.out.tmp)/$(sm.module.name).opts)
+  _sm_link.c++ = $(CXX) @$(sm.dir.out.tmp)/$(sm.module.name).opts
   _sm_link.c = $(CC) @$(sm.dir.out.tmp)/$(sm.module.name).opts
 else
-  _sm_link.cpp = $(CXX) $(_sm_link_flags.cpp)
-  _sm_link.c = $(CC) $(_sm_link_flags.cpp)
+  _sm_link.c++ = $(CXX) $(_sm_link_flags.c++)
+  _sm_link.c = $(CC) $(_sm_link_flags.c++)
 endif
 
 
-## If sources contains mixed .cpp and .c suffix, we should use C++ linker.
-s := $(strip $(if $(_sm_has_sources.cpp), .cpp, .c))
+## If sources contains mixed .c++ and .c suffix, we should use C++ linker.
+s := $(if $(_sm_has_sources.c++),.c++,.c)
 ifeq ($(sm.module.options.link.infile),true)
   #_sm_link = $(_sm_link$s) -o $$@ $$(wordlist 1,100,$$^)
+  $(call sm-util-mkdir,$(sm.dir.out.tmp))
   $(shell echo $(sm.module.objects) > $(sm.dir.out.tmp)/$(sm.module.name).objs)
   _sm_link = $(_sm_link$s) -o $$@ @$(sm.dir.out.tmp)/$(sm.module.name).objs
 else
