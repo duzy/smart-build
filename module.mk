@@ -17,7 +17,9 @@
 #	
 #	sm.module.dirs.include	: include pathes for compiling the module
 #	sm.module.options.compile : module specific compile flags
+#	sm.module.options.compile.infile
 #	sm.module.options.link	: module link flags
+#	sm.module.options.link.infile
 #	sm.module.dirs.lib	: the search path of libs the module links to
 #	sm.module.libs		: libs (-l switches) the module links to
 #	sm.module.whole_archives: .a archives to be pulled into a shared
@@ -81,8 +83,7 @@ _sm_has_sources.cpp := false
 _sm_has_sources.c := false
 _sm_has_sources.h := false
 
-d := $(strip $(sm.module.sources) $(sm.module.sources.generated))
-ifneq ($d,)
+ifneq ($(strip $(sm.module.sources) $(sm.module.sources.generated)),)
   include $(sm.dir.buildsys)/objrules.mk
 else
   ifeq ($(strip $(sm.module.objects)),)

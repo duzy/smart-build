@@ -6,23 +6,23 @@
 
 
 ## Compute sources
-$(call sm-var-temp, _suffix.cpp,       :=, %.cpp %.C %.cc %.CC)
+$(call sm-var-temp, _suffix.c++,       :=, %.cpp %.c++ %.C %.cc %.CC)
 $(call sm-var-temp, _suffix.c,         :=, %.c)
 $(call sm-var-temp, _suffix.h,         :=, %.h %.hh %.H %.HH)
 $(call sm-var-temp, _suffix.asm,       :=, %.s)
-$(call sm-var-temp, _sources_rel.cpp,  :=, $(filter $(sm.var.temp._suffix.cpp),$(sm.module.sources)))
-$(call sm-var-temp, _sources_rel.c,    :=, $(filter $(sm.var.temp._suffix.c),  $(sm.module.sources)))
-$(call sm-var-temp, _sources_rel.h,    :=, $(filter $(sm.var.temp._suffix.h),  $(sm.module.sources)))
-$(call sm-var-temp, _sources_rel.asm,  :=, $(filter $(sm.var.temp._suffix.asm),$(sm.module.sources)))
-$(call sm-var-temp, _sources_fix.cpp,  :=, $(filter $(sm.var.temp._suffix.cpp),$(sm.module.sources.generated)))
-$(call sm-var-temp, _sources_fix.c,    :=, $(filter $(sm.var.temp._suffix.c),  $(sm.module.sources.generated)))
-$(call sm-var-temp, _sources_fix.h,    :=, $(filter $(sm.var.temp._suffix.h),  $(sm.module.sources.generated)))
 $(call sm-var-temp, _sources_fix.asm,  :=, $(filter $(sm.var.temp._suffix.asm),$(sm.module.sources.generated)))
+$(call sm-var-temp, _sources_fix.c,    :=, $(filter $(sm.var.temp._suffix.c),  $(sm.module.sources.generated)))
+$(call sm-var-temp, _sources_fix.c++,  :=, $(filter $(sm.var.temp._suffix.c++),$(sm.module.sources.generated)))
+$(call sm-var-temp, _sources_fix.h,    :=, $(filter $(sm.var.temp._suffix.h),  $(sm.module.sources.generated)))
+$(call sm-var-temp, _sources_rel.asm,  :=, $(filter $(sm.var.temp._suffix.asm),$(sm.module.sources)))
+$(call sm-var-temp, _sources_rel.c,    :=, $(filter $(sm.var.temp._suffix.c),  $(sm.module.sources)))
+$(call sm-var-temp, _sources_rel.c++,  :=, $(filter $(sm.var.temp._suffix.c++),$(sm.module.sources)))
+$(call sm-var-temp, _sources_rel.h,    :=, $(filter $(sm.var.temp._suffix.h),  $(sm.module.sources)))
 
-_sm_has_sources.asm := $(if $(sm.var.temp._sources_fix.asm),true,false)
-_sm_has_sources.cpp := $(if $(sm.var.temp._sources_fix.cpp),true,false)
-_sm_has_sources.c   := $(if $(sm.var.temp._sources_fix.c),true,false)
-_sm_has_sources.h   := $(if $(sm.var.temp._sources_fix.h),true,false)
+_sm_has_sources.asm := $(if $(sm.var.temp._sources_fix.asm)$(sm.var.temp._sources_rel.asm),true,)
+_sm_has_sources.c   := $(if $(sm.var.temp._sources_fix.c)$(sm.var.temp._sources_rel.c),true,)
+_sm_has_sources.c++ := $(if $(sm.var.temp._sources_fix.c++)$(sm.var.temp._sources_rel.c++),true,)
+_sm_has_sources.h   := $(if $(sm.var.temp._sources_fix.h)$(sm.var.temp._sources_rel.h),true,)
 
 ## Compute include path (-I switches).
 $(call sm-var-temp, _includes, :=)
@@ -33,11 +33,11 @@ $(foreach v,$(sm.module.dirs.include),\
 
 
 ## Compute compile flages for sources
-$(call sm-var-temp, _compile_flags.cpp, :=, $(sm.var.temp._includes))
-sm.var.temp._compile_flags.cpp += \
+$(call sm-var-temp, _compile_flags.c++, :=, $(sm.var.temp._includes))
+sm.var.temp._compile_flags.c++ += \
   $(strip $(sm.global.options.compile)) \
   $(strip $(sm.module.options.compile)) \
-  $(strip $(sm.module.options.compile.cpp))
+  $(strip $(sm.module.options.compile.c++))
 
 $(call sm-var-temp, _compile_flags.c, :=, $(sm.var.temp._includes))
 sm.var.temp._compile_flags.c += \
@@ -53,20 +53,30 @@ sm.var.temp._compile_flags.asm += \
 
 
 ## The compilation command
-$(call sm-var-temp, _compile.cpp, =)
+$(call sm-var-temp, _compile.c++, =)
 $(call sm-var-temp, _compile.c, =)
 $(call sm-var-temp, _compile.asm, =)
-sm.var.temp._compile.cpp = $(CXX) -c $(sm.var.temp._compile_flags.cpp) -o $$@ $$<
-sm.var.temp._compile.c = $(CC) -c $(sm.var.temp._compile_flags.c) -o $$@ $$<
-sm.var.temp._compile.asm = $(AS) $(sm.var.temp._compile_flags.asm) -o $$@ $$<
+ifeq ($(sm.module.options.compile.infile),true)
+  $(call sm-util-mkdir,$(sm.dir.out.tmp))
+  $(if $(_sm_has_sources.c++),$(shell echo -c $(sm.var.temp._compile_flags.c++) > $(sm.dir.out.tmp)/$(sm.module.name).c++.opts))
+  $(if $(_sm_has_sources.c),$(shell echo -c $(sm.var.temp._compile_flags.c) > $(sm.dir.out.tmp)/$(sm.module.name).c.opts))
+  $(if $(_sm_has_sources.asm),$(shell echo $(sm.var.temp._compile_flags.asm) > $(sm.dir.out.tmp)/$(sm.module.name).asm.opts))
+  sm.var.temp._compile.c++ = $(CXX) @$(sm.dir.out.tmp)/$(sm.module.name).c++.opts -o $$@ $$<
+  sm.var.temp._compile.c = $(CC) @$(sm.dir.out.tmp)/$(sm.module.name).c.opts -o $$@ $$<
+  sm.var.temp._compile.asm = $(AS) @$(sm.dir.out.tmp)/$(sm.module.name).asm.opts -o $$@ $$<
+else
+  sm.var.temp._compile.c++ = $(CXX) -c $(sm.var.temp._compile_flags.c++) -o $$@ $$<
+  sm.var.temp._compile.c = $(CC) -c $(sm.var.temp._compile_flags.c) -o $$@ $$<
+  sm.var.temp._compile.asm = $(AS) $(sm.var.temp._compile_flags.asm) -o $$@ $$<
+endif
 
-$(call sm-var-temp, _gen.cpp, =)
+$(call sm-var-temp, _gen.c++, =)
 $(call sm-var-temp, _gen.c, =)
 $(call sm-var-temp, _gen.asm, =)
-sm.var.temp._gen.cpp = \
+sm.var.temp._gen.c++ = \
   ( echo "C++: $(sm.module.name) += $$(<:$(sm.dir.top)/%=%)" )\
-  && ( $(call _sm_log,$(sm.var.temp._compile.cpp)) )\
-  && ( $(sm.var.temp._compile.cpp) || $(call _sm_log,"failed: $$<") )
+  && ( $(call _sm_log,$(sm.var.temp._compile.c++)) )\
+  && ( $(sm.var.temp._compile.c++) || $(call _sm_log,"failed: $$<") )
 
 sm.var.temp._gen.c = \
   ( echo "C: $(sm.module.name) += $$(<:$(sm.dir.top)/%=%)" )\
@@ -78,12 +88,11 @@ sm.var.temp._gen.asm = \
   && ( $(call _sm_log,$(sm.var.temp._compile.asm)) )\
   && ( $(sm.var.temp._compile.asm) || $(call _sm_log,"failed: $$<") )
 
-sm.var.temp._dep.cpp = g++ -MM -MT $1 -MF $$@ $(sm.var.temp._compile_flags.cpp) $$<
-sm.var.temp._dep.c = gcc -MM -MT $1 -MF $$@ $(sm.var.temp._compile_flags.c) $$<
+sm.var.temp._dep.c++ = $(CXX) -MM -MT $1 -MF $$@ $(sm.var.temp._compile_flags.c++) $$<
+sm.var.temp._dep.c = $(CC) -MM -MT $1 -MF $$@ $(sm.var.temp._compile_flags.c) $$<
 
 ifneq ($(sm.module.prebuilt_objects),)
   $(error sm.module.prebuilt_objects is deprecated, use sm.module.objects instead)
-  #sm.module.objects := $(sm.module.prebuilt_objects)
 endif
 
 $(call sm-var-temp, _out, :=,$(call sm-to-relative-path,$(sm.dir.out.obj)))
@@ -102,10 +111,10 @@ sm.fun.cal-src-fix = $(strip $1)
 sm.fun.cal-src-rel = $(sm.module.dir)/$(strip $1)
 
 define sm.fun.gen-depend
-ifneq ($(filter $1,c cpp),)
+ifneq ($(filter $1,c c++),)
 -include $(o:%.o=%.d)
 $(o:%.o=%.d): $(call sm.fun.cal-src-$2, $s)
-	$(sm.var.Q)( echo depend: $$@ )&&\
+	$(sm.var.Q)( echo smart: dependency $$@ )&&\
 	( $(call sm.var.temp._dep.$1,$o) )
 endif
 endef
@@ -129,9 +138,7 @@ $(call sm.fun.gen-object-rules,asm,fix)
 $(call sm.fun.gen-object-rules,asm,rel)
 $(call sm.fun.gen-object-rules,c,fix)
 $(call sm.fun.gen-object-rules,c,rel)
-$(call sm.fun.gen-object-rules,cpp,fix)
-$(call sm.fun.gen-object-rules,cpp,rel)
+$(call sm.fun.gen-object-rules,c++,fix)
+$(call sm.fun.gen-object-rules,c++,rel)
 
-#$(info smart: local vars: $(sm.var.temp.*))
 $(sm-var-temp-clean)
-

@@ -59,6 +59,7 @@ endif
 
 ## C++ link command
 ifeq ($(sm.module.options.link.infile),true)
+  $(call sm-util-mkdir,$(sm.dir.out.tmp))
   $(shell echo $(_sm_link_flags.cpp) > $(sm.dir.out.tmp)/$(sm.module.name).opts)
   _sm_link.cpp = $(CXX) @$(sm.dir.out.tmp)/$(sm.module.name).opts
   _sm_link.c = $(CC) @$(sm.dir.out.tmp)/$(sm.module.name).opts

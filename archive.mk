@@ -40,6 +40,7 @@ $(if $(sm.module.sources),\
 
 $(call sm-var-temp, _objs, :=)
 ifeq ($(sm.module.options.link.infile),true)
+  $(call sm-util-mkdir,$(sm.dir.out.tmp))
   $(shell echo $(sm.module.objects) > $(sm.dir.out.tmp)/$(sm.module.name).objs)
    sm.var.temp._objs := @$(sm.dir.out.tmp)/$(sm.module.name).objs
 else
