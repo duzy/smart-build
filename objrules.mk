@@ -47,10 +47,13 @@ sm.var.temp._compile_flags.c += \
 
 $(call sm-var-temp, _compile_flags.asm, :=, $(sm.var.temp._includes))
 sm.var.temp._compile_flags.asm += \
-  $(strip $(sm.global.options.compile)) \
+  $(strip $(sm.module.options.compile.asm))
+
+#  $(strip $(sm.global.options.compile)) \
   $(strip $(sm.module.options.compile)) \
   $(strip $(sm.module.options.compile.asm))
 
+#sm.var.temp._compile_flags.asm := $(filter-out -O3,$(sm.var.temp._compile_flags.asm))
 
 ## The compilation command
 $(call sm-var-temp, _compile.c++, =)
