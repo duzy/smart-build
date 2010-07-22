@@ -29,26 +29,26 @@ _sm_link_flags.c++ := \
 $(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.dir.out.bin)))
 $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
 
-_sm_ranlib := true
 ifeq ($(sm.module.type),shared)
   _sm_link_flags.c++ := -shared $(strip $(_sm_link_flags.c++))
 
+  _sm_ranlib := true
   _sm_implib := $(strip $(sm.module.out_implib))
+  ifneq ($(_sm_implib),)
   ifeq ($(sm.os.name),win32)
     ## --out-implib on Win32
-    ifneq ($(_sm_implib),)
-      _sm_implib := $(sm.var.temp._out_lib)/lib$(patsubst lib%.a,%,$(_sm_implib)).a
-      _sm_link_flags.c++ += -Wl,--out-implib,$(_sm_implib)
-    endif
+    _sm_implib := $(sm.var.temp._out_lib)/lib$(patsubst lib%.a,%,$(_sm_implib)).a
+    _sm_link_flags.c++ += -Wl,--out-implib,$(_sm_implib)
   else
+  ifeq ($(sm.os.name),linux)
     ## --out-implib for Linux: just make linkage to the shared library.
-    ifneq ($(_sm_implib),)
-      _sm_implib := $(sm.var.temp._out_lib)/lib$(patsubst lib%.so,%,$(_sm_implib)).so
-      _sm_ranlib := ( mkdir -p $(sm.var.temp._out_lib) )\
-        &&( cd $(sm.var.temp._out_lib) )\
-        &&( ln -svf ../bin/$(sm.module.name)$(sm.module.suffix) ./$(_sm_implib) )
-    endif
-  endif
+    _sm_implib := $(sm.var.temp._out_lib)/lib$(patsubst lib%.so,%,$(_sm_implib)).so
+    _sm_ranlib := ( mkdir -p $(sm.var.temp._out_lib) )\
+      &&( cd $(sm.var.temp._out_lib) )\
+      &&( ln -svf ../bin/$(sm.module.name)$(sm.module.suffix) ./$(_sm_implib) )
+  endif#if linux
+  endif#if win32
+  endif#if has sm.module.out_impllib
 
 endif ## sm.module.type == shared
 _sm_link_flags.c++ += $(strip $(sm.var.temp._lib_dirs))
