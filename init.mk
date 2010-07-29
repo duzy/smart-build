@@ -24,7 +24,9 @@ sm.dir.out.tmp = $(sm.dir.out)/temp
 
 
 # The variant of this building.
-sm.config.variant := debug
+ifeq ($(strip $(sm.config.variant)),)
+  sm.config.variant := debug
+endif
 sm.config.uname := $(shell uname)
 sm.config.machine := $(shell uname -m)
 
@@ -45,11 +47,17 @@ endif
 sm.log.enabled :=
 sm.log.filename :=
 
-sm.global.dirs.lib :=
+sm.global.libdirs :=
 sm.global.includes :=
 sm.global.libs :=
-sm.global.options.compile :=
-sm.global.options.link :=
-sm.global.module_types := static shared executable
+sm.global.compile.flags :=
+sm.global.compile.options :=
+sm.global.link.flags :=
+sm.global.link.options :=
+sm.global.module_types := static shared executable exe tests t
 
 sm.var.Q := @
+
+ifeq ($(strip $(sm.config.variant)),debug)
+  sm.global.compile.options := -g -ggdb
+endif

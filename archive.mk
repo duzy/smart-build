@@ -39,7 +39,12 @@ $(if $(sm.module.sources),\
 #$(info objects: $(wordlist 1,50,$(sm.module.objects)) for $(sm.module.name))
 
 $(call sm-var-temp, _objs, :=)
-ifeq ($(sm.module.options.link.infile),true)
+$(call sm-var-temp, _flags_infile, :=, $(strip $(sm.module.link.flags.infile)))
+ifeq ($(sm.var.temp._flags_infile),)
+  sm.var.temp._flags_infile := true
+endif
+
+ifeq ($(sm.var.temp._flags_infile),true)
   $(call sm-util-mkdir,$(sm.dir.out.tmp))
   $(shell echo $(sm.module.objects) > $(sm.dir.out.tmp)/$(sm.module.name).objs)
    sm.var.temp._objs := @$(sm.dir.out.tmp)/$(sm.module.name).objs

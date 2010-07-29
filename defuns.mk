@@ -35,18 +35,25 @@ $(if $(sm.module.name),$(call sm-this-dir),\
   $(error 'sm.module.name' is empty, please use 'sm-this-dir' instead))
 endef
 
+define sm-module-type-name
+  $(if $(call equal,$1,dynamic),shared,\
+      $(if $(call equal,$1,executable),exe,\
+          $(if $(call equal,$1,tests),t,$1)))
+endef
+
 # $(findstring $1,$(sm.global.modules))
 define sm-new-module
 $(if $1,$(if $(filter $1,$(sm.global.modules)),\
           $(error Module of name '$1' already exists))\
   $(eval sm.module.name:=$(basename $(strip $1))
+         $$(if $$(sm.module.name),,$$(error The module name is empty))
          sm.module.suffix:=$(suffix $(strip $1))
          sm.module.dir:=$$(call sm-module-dir)
          sm.module.makefile:=$$(call sm-this-makefile)
          sm.global.modules+=$(strip $1)
          sm.global.modules.$(strip $1):=$$(sm.module.makefile))\
   ,$(error Invalid usage of 'sm-new-module', module name required))\
-$(if $2,$(eval sm.module.type:=$(strip $2)
+$(if $2,$(eval sm.module.type:=$(call sm-module-type-name,$(strip $2))
   ifeq ($$(filter $$(sm.module.type),$(sm.global.module_types)),)
     $$(error Unsuported module type '$(strip $2)', only supports '$(sm.global.module_types)')
   endif
@@ -57,6 +64,14 @@ $(if $2,$(eval sm.module.type:=$(strip $2)
     ifeq ($$(sm.module.type),shared)
       sm.module.suffix := .so
       sm.module.out_implib:=$(sm.module.name)
+    else
+     ifeq ($$(sm.module.type),exe)
+       sm.module.suffix := $(if $(sm.os.name.win32),.exe)
+     else
+      ifeq ($$(sm.module.type),t)
+       sm.module.suffix := $(if $(sm.os.name.win32),.test.exe,.test)
+      endif
+     endif
     endif
   endif
   ),)
@@ -110,6 +125,8 @@ endef
 
 ## Build the current module
 define sm-build-this
+ $(if $(sm.module.sources)$(sm.module.sources.generated)$(sm.module.objects),,\
+   $(error No source or objects defined for '$(sm.module.name)'))\
  $(if $(sm.module.name),\
     $(eval sm.global.goals += goal-$(sm.module.name)
            include $(sm.dir.buildsys)/buildmod.mk),\
