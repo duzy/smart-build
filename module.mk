@@ -41,8 +41,12 @@ $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
 
 sm.var.$(sm.this.name).archive.options :=
 sm.var.$(sm.this.name).archive.options.defined :=
+sm.var.$(sm.this.name).archive.objects =
+sm.var.$(sm.this.name).archive.objects.defined :=
 sm.var.$(sm.this.name).link.options :=
 sm.var.$(sm.this.name).link.options.defined :=
+sm.var.$(sm.this.name).link.objects =
+sm.var.$(sm.this.name).link.objects.defined :=
 sm.var.$(sm.this.name).link.libs :=
 sm.var.$(sm.this.name).link.libs.defined :=
 
@@ -54,11 +58,12 @@ endef #sm.code.append-list
 
 ##
 define sm.code.switch-options-into-file
+$(if $2,,$(error smart: 'sm.code.switch-options-into-file' needs options type in arg \#2))\
 $(if $(call is-true,$(sm.this.$1.options.infile)),\
      $$(call sm-util-mkdir,$(sm.out.tmp)/$(sm.this.name))\
-     $$(eval sm.var.$(sm.this.name).$1.options$2 := $$(subst \",\\\",$$(sm.var.$(sm.this.name).$1.options$2)))\
-     $$(shell echo $$(sm.var.$(sm.this.name).$1.options$2) > $(sm.out.tmp)/$(sm.this.name)/$1.options$2)\
-     $$(eval sm.var.$(sm.this.name).$1.options$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.options$2))
+     $$(eval sm.var.$(sm.this.name).$1.$2 := $$(subst \",\\\",$$(sm.var.$(sm.this.name).$1.$2)))\
+     $$(shell echo $$(sm.var.$(sm.this.name).$1.$2) > $(sm.out.tmp)/$(sm.this.name)/$1.$2)\
+     $$(eval sm.var.$(sm.this.name).$1.$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.$2))
 endef #sm.code.switch-options-into-file
 
 ##
@@ -71,7 +76,7 @@ define sm.code.calculate-compile-options
   $(strip $(sm.this.compile.flags.$1) $(sm.this.compile.options.$1))
  $$(call sm.code.append-list, sm.var.$(sm.this.name).compile.options.$1, $(sm.global.includes), -I)
  $$(call sm.code.append-list, sm.var.$(sm.this.name).compile.options.$1, $(sm.this.includes), -I)
- $(call sm.code.switch-options-into-file,compile,.$1)
+ $(call sm.code.switch-options-into-file,compile,options.$1)
 endef #sm.code.calculate-compile-options
 
 ##
@@ -83,17 +88,28 @@ define sm.code.calculate-link-options
  $(if $(call equal,$(sm.this.type),shared),\
      $$(if $$(filter -shared,$$(sm.var.$(sm.this.name).link.options)),,\
         $$(eval sm.var.$(sm.this.name).link.options += -shared)))
- $(call sm.code.switch-options-into-file,link)
+ $(call sm.code.switch-options-into-file,link,options)
 endef #sm.code.calculate-link-options
 
-## TODO: archive options infile support
 define sm.code.calculate-archive-options
  sm.var.$(sm.this.name).archive.options.defined := true
  sm.var.$(sm.this.name).archive.options := \
   $(strip $(sm.global.archive.flags) $(sm.global.archive.options)) \
   $(strip $(sm.this.archive.flags) $(sm.this.archive.options))
- $(call sm.code.switch-options-into-file,archive)
+ $(call sm.code.switch-options-into-file,archive,options)
 endef #sm.code.calculate-archive-options
+
+define sm.code.calculate-link-objects
+ sm.var.$(sm.this.name).link.objects.defined := true
+ sm.var.$(sm.this.name).link.objects := $(sm.var.$(sm.this.name).objects)
+ $(call sm.code.switch-options-into-file,link,objects)
+endef #sm.code.calculate-link-objects
+
+define sm.code.calculate-archive-objects
+ sm.var.$(sm.this.name).archive.objects.defined := true
+ sm.var.$(sm.this.name).link.objects := $(sm.var.$(sm.this.name).objects)
+ $(call sm.code.switch-options-into-file,archive,objects)
+endef #sm.code.calculate-archive-objects
 
 ##
 define sm.code.calculate-link-libs
@@ -103,23 +119,20 @@ define sm.code.calculate-link-libs
  $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, $(sm.this.libdirs), -L)
  $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, $(sm.global.libs), -l)
  $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, $(sm.this.libs), -l)
- $(if $(call is-true,$(sm.this.link.options.infile)),\
-     $$(call sm-util-mkdir,$(sm.out.tmp)/$(sm.this.name))\
-     $$(eval sm.var.$(sm.this.name).link.libs := $$(subst \",\\\",$$(sm.var.$(sm.this.name).link.libs)))\
-     $$(shell echo $$(sm.var.$(sm.this.name).link.libs) > $(sm.out.tmp)/$(sm.this.name)/link.libs)\
-     $$(eval sm.var.$(sm.this.name).link.libs := @$(sm.out.tmp)/$(sm.this.name)/link.libs))
+ $(call sm.code.switch-options-into-file,link,libs)
 endef #sm.code.calculate-link-libs
+#  $(if $(call is-true,$(sm.this.link.options.infile)),\
+#      $$(call sm-util-mkdir,$(sm.out.tmp)/$(sm.this.name))\
+#      $$(eval sm.var.$(sm.this.name).link.libs := $$(subst \",\\\",$$(sm.var.$(sm.this.name).link.libs)))\
+#      $$(shell echo $$(sm.var.$(sm.this.name).link.libs) > $(sm.out.tmp)/$(sm.this.name)/link.libs)\
+#      $$(eval sm.var.$(sm.this.name).link.libs := @$(sm.out.tmp)/$(sm.this.name)/link.libs))
 
 ## TODO: something like switch-objects-into-file for linking and archiving
 
-$(call sm-check-defined,sm.code.calculate-compile-options,\
-       smart: 'sm.code.calculate-compile-options' not defined)
-$(call sm-check-defined,sm.code.calculate-archive-options,\
-       smart: 'sm.code.calculate-archive-options' not defined)
-$(call sm-check-defined,sm.code.calculate-link-options,\
-       smart: 'sm.code.calculate-link-options' not defined)
-$(call sm-check-defined,sm.code.calculate-link-libs,\
-       smart: 'sm.code.calculate-link-libs' not defined)
+$(call sm-check-defined,sm.code.calculate-compile-options, smart: 'sm.code.calculate-compile-options' not defined)
+$(call sm-check-defined,sm.code.calculate-archive-options, smart: 'sm.code.calculate-archive-options' not defined)
+$(call sm-check-defined,sm.code.calculate-link-options,	   smart: 'sm.code.calculate-link-options' not defined)
+$(call sm-check-defined,sm.code.calculate-link-libs,       smart: 'sm.code.calculate-link-libs' not defined)
 
 define sm.fun.$(sm.this.name).calculate-compile-options
 $(if $(sm.var.$(sm.this.name).compile.options.$1.defined),,\
@@ -135,6 +148,16 @@ define sm.fun.$(sm.this.name).calculate-link-options
  $(if $(sm.var.$(sm.this.name).link.options.defined),,\
    $(eval $(call sm.code.calculate-link-options)))
 endef #sm.fun.$(sm.this.name).calculate-link-options
+
+define sm.fun.$(sm.this.name).calculate-archive-objects
+ $(if $(sm.var.$(sm.this.name).archive.objects.defined),,\
+   $(eval $(call sm.code.calculate-archive-objects)))
+endef #sm.fun.$(sm.this.name).calculate-archive-objects
+
+define sm.fun.$(sm.this.name).calculate-link-objects
+ $(if $(sm.var.$(sm.this.name).link.objects.defined),,\
+   $(eval $(call sm.code.calculate-link-objects)))
+endef #sm.fun.$(sm.this.name).calculate-link-objects
 
 define sm.fun.$(sm.this.name).calculate-link-libs
  $(if $(sm.var.$(sm.this.name).link.libs.defined),,\
@@ -191,6 +214,7 @@ endef #sm.fun.calculate-static-module-targets
 
 ##################################################
 
+# TODO: move $(call sm.fun.$(sm.this.name).calculate-compile-options,$(strip $1)) into sm.fun.make-rules
 ## Make rule for building object
 ##   eg. $(call sm.fun.make-object-rule, c++, foobar.cpp)
 ##   eg. $(call sm.fun.make-object-rule, c++, ~/sources/foobar.cpp, external)
@@ -252,20 +276,29 @@ $(if $(sm.var.$(sm.this.name).objects),\
     $(call sm-check-defined,sm.var.build_action.$(sm.this.type))\
     $(call sm-check-defined,sm.var.$(sm.this.name).lang)\
     $(call sm-check-defined,sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.var.$(sm.this.name).lang))\
+    $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-options)\
+    $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-objects)\
+    $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-libs)\
     $(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-options)\
-    $(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-libs)\
+    $(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-objects)\
     $(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).options)\
+    $(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects)\
     $(if $(call equal,$(sm.this.type),static),,\
+      $(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-libs)\
       $(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).libs))\
     $(call sm-check-not-empty,sm.var.$(sm.this.name).lang)\
     $(call sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.var.$(sm.this.name).lang),\
        $$(sm.var.$(sm.this.name).targets),\
        $$(sm.var.$(sm.this.name).objects),\
+       $(if $(call is-true,$(sm.this.$(sm.var.build_action.$(sm.this.type)).options.infile)),\
+         $(sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects)),\
        sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).options,\
-       $(if $(call equal,$(sm.this.type),static),,\
+       $(if $(call equal,$(sm.var.build_action.$(sm.this.type)),link),\
          sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).libs)),\
   $(error smart: No objects for building '$(sm.this.name)'))
 endef #sm.fun.make-module-rule
+
+#sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects
 
 ##################################################
 
