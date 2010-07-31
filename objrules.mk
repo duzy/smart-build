@@ -148,41 +148,34 @@ $(foreach v,$(sm.var.temp._sources_fix) $(sm.var.temp._sources_rel),\
    $(eval o := $(call sm.fun.cal-obj,$v))\
    $(if $(filter $o,$(sm.module.objects)),,$(eval sm.module.objects += $o)))
 
-#_sm_has_sources.t
-
-## Prepare output directories
-$(foreach v,$(sm.module.objects),$(call sm-util-mkdir,$(dir $v)))
-
 sm.fun.cal-src-fix = $(strip $1)
 sm.fun.cal-src-rel = $(sm.module.dir)/$(strip $1)
 
-ifeq ($(sm.module.gen_deps),true)
-define sm.fun.gen-depend
- ifneq ($(filter $1,c c++ t),)
- -include $(o:%.o=%.d)
- $(o:%.o=%.d): $(call sm.fun.cal-src-$2, $s)
-	$(sm.var.Q)( echo smart: dependency $$@ )&&\
-	( $(call sm.var.temp._dep.$1,$o) )
- endif
-endef
-endif # $(sm.module.gen_deps) == true
-
 define sm.fun.gen-object-rule
-sm.module.objects.defined += $o
-$o : $(call sm.fun.cal-src-$2, $s)
+  ifeq ($(sm.module.gen_deps),true)
+    ifneq ($(filter $1,c c++ t),)
+      -include $(sm._var._obj:%.o=%.d)
+      $(sm._var._obj:%.o=%.d) : $(call sm.fun.cal-src-$2, $(sm._var._src))
+	$(call sm-util-mkdir,$(dir $(sm._var._obj:%.o=%.d)))
+	$(sm.var.Q)( echo smart: dependency $$@ )&&\
+	( $(call sm.var.temp._dep.$1,$(sm._var._obj)) )
+    endif
+  endif # $(sm.module.gen_deps) == true
+
+  sm.module.objects.defined += $(sm._var._obj)
+
+  $(sm._var._obj) : $(call sm.fun.cal-src-$2, $(sm._var._src))
+	$(call sm-util-mkdir,$(dir $(sm._var._obj)))
 	$(sm.var.Q)$(sm.var.temp._gen.$1)
-ifeq ($(sm.module.gen_deps),true)
-  $(call sm.fun.gen-depend,$1,$2)
-endif # $(sm.module.gen_deps) == true
-endef
+endef # sm.fun.gen-object-rule
 
 define sm.fun.gen-object-rules
-$(foreach s,$(sm.var.temp._sources_$2.$1),\
-   $(eval o := $(call sm.fun.cal-obj,$s))\
-   $(if $(filter $o,$(sm.module.objects.defined)),\
-        $(info smart: duplicated $s),\
-      $(eval $(call sm.fun.gen-object-rule,$1,$2))))
-endef
+ $(foreach sm._var._src,$(sm.var.temp._sources_$2.$1),\
+    $(eval sm._var._obj := $(call sm.fun.cal-obj,$(sm._var._src)))\
+    $(if $(filter $(sm._var._obj),$(sm.module.objects.defined)),\
+         $(info smart: duplicated $(sm._var._src)),\
+       $(eval $(call sm.fun.gen-object-rule,$1,$2))))
+endef # sm.fun.gen-object-rules
 
 $(call sm.fun.gen-object-rules,asm,fix)
 $(call sm.fun.gen-object-rules,asm,rel)
@@ -192,5 +185,8 @@ $(call sm.fun.gen-object-rules,t,fix)
 $(call sm.fun.gen-object-rules,t,rel)
 $(call sm.fun.gen-object-rules,c++,fix)
 $(call sm.fun.gen-object-rules,c++,rel)
+
+sm.fun.gen-object-rule :=
+sm.fun.gen-object-rules :=
 
 $(sm-var-temp-clean)
