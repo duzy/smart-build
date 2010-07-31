@@ -31,10 +31,11 @@ _sm_link_flags := $(filter-out -shared,$(_sm_link_flags))
 $(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.dir.out.bin)))
 $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
 
+_sm_implib :=
+_sm_ranlib := true
 ifeq ($(sm.module.type),shared)
   _sm_link_flags := -shared $(strip $(_sm_link_flags))
 
-  _sm_ranlib := true
   _sm_implib := $(strip $(sm.module.out_implib))
   ifneq ($(_sm_implib),)
   ifeq ($(sm.os.name),win32)
