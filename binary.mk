@@ -80,19 +80,20 @@ else
   _sm_link.c = $(CC) $(_sm_link_flags)
 endif
 
-
 ## If sources contains mixed .c++ and .c suffix, we should use C++ linker.
-s := $(if $(_sm_has_sources.c++),.c++,\
+_sm_suffix := $(if $(_sm_has_sources.c++),.c++,\
       $(if $(_sm_has_sources.c),.c,\
        $(if $(filter $(sm.module.lang),c c++),$(sm.module.lang),\
          $(error Unsupported langauge '$(sm.module.lang)'))))
+_sm_suffix := $(strip $(_sm_suffix))
+$(if $(_sm_link$(_sm_suffix)),,$(error Undefined link command for $(_sm_suffix)))
 ifeq ($(sm.var.temp._flags_infile),true)
-  #_sm_link = $(_sm_link$s) -o $$@ $$(wordlist 1,100,$$^)
+  #_sm_link = $(_sm_link$(_sm_suffix)) -o $$@ $$(wordlist 1,100,$$^)
   $(call sm-util-mkdir,$(sm.dir.out.tmp))
   $(shell echo $(sm.module.objects) > $(sm.dir.out.tmp)/$(sm.module.name).objs)
-  _sm_link = $(_sm_link$s) -o $$@ @$(sm.dir.out.tmp)/$(sm.module.name).objs
+  _sm_link = $(_sm_link$(_sm_suffix)) -o $$@ @$(sm.dir.out.tmp)/$(sm.module.name).objs
 else
-  _sm_link = $(_sm_link$s) -o $$@ $$^
+  _sm_link = $(_sm_link$(_sm_suffix)) -o $$@ $$^
 endif
 ifeq ($(sm.module.type),shared)
   ifneq ($(strip $(sm.module.whole_archives)),)
