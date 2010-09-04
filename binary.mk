@@ -110,8 +110,8 @@ _sm_rel_name = $(if $(1:$(sm.dir.top)/%=%),$(1:$(sm.dir.top)/%=%),$1)
 define sm.fun.gen-binary-rule
 $(sm.var.temp._out_bin)/$(sm.module.name)$(sm.module.suffix) $(_sm_implib): \
   $(sm.module.objects)
-	$(call sm-util-mkdir,$(dir $$@))
-	$(if $(_sm_implib),$(call sm-util-mkdir,$(dir $(_sm_implib))))
+	$$(call sm-util-mkdir,$$(dir $$@))
+	$(if $(_sm_implib),$$(call sm-util-mkdir,$(dir $(_sm_implib))))
 	$(sm.var.Q)( echo "$(sm.module.type): $$(call _sm_rel_name,$$@)" )\
 	&&( $(call _sm_log,$(_sm_link)) )\
 	&&( $(_sm_link) )&&( $(_sm_ranlib) )
