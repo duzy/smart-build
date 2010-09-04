@@ -186,6 +186,8 @@ $(call sm.fun.gen-object-rules,t,rel)
 $(call sm.fun.gen-object-rules,c++,ext)
 $(call sm.fun.gen-object-rules,c++,rel)
 
+#$(info $(call sm.tool.$(sm.toolset.for.c).compile.c,foo/bar/test.o,foo/bar/test.c))
+
 sm.fun.gen-object-rule :=
 sm.fun.gen-object-rules :=
 

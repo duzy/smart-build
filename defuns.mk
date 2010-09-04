@@ -14,6 +14,29 @@ endef
 # $(info equal: $(call equal,foo,foobar))
 
 #####
+# Toolset support
+#####
+
+#
+#  eg. $(call sm-register-sources, c++, gcc, .cpp .c++ .cc .CC .C)
+#  eg. $(call sm-register-sources, asm, gcc, .s .S)
+#
+define sm-register-sources
+ $(if $1,,$(error smart: Must provide lang-type as arg \#1))\
+ $(if $2,,$(error smart: Must provide toolset as arg \#2))\
+ $(if $3,,$(error smart: Must provide source extensions as arg \#3))\
+ $(eval sm._toolset.mk := $(sm.dir.buildsys)/tools/$(strip $2).mk)\
+ $(if $(wildcard $(sm._toolset.mk)),\
+      $(if $(sm.tool.$(strip $2)),,$(eval include $(sm._toolset.mk)))\
+      $(if $(sm.tool.$(strip $2)),\
+           $(warning TODO: multiple toolset/lang: '$(strip $2)/$(strip $1)')\
+           $(foreach s,$3,$(eval sm.toolset.for$s := $(strip $2)))\
+           ,\
+         $(error smart: Toolset '$(strip $2)' unimplemented)),\
+    $(error smart: Toolset '$(strip $2)' unsupported.))
+endef
+
+#####
 # 
 #####
 define sm-deprecated
@@ -170,17 +193,38 @@ define sm-to-relative-path
 $(patsubst $(sm.dir.top)/%,%,$(strip $1))
 endef
 
+
 ################
 # Check helpers
 ################
-check-exists = $(sm-deprecated check-exists, sm-check-exists)
+check-exists = $(call sm-deprecated, check-exists, sm-check-exists)
 define sm-check-exists
 $(if $(wildcard $(strip $1)),,$(error $(or $(strip $2),$(strip $1) is not ready)))
 endef
 
+## eg. $(call sm-check-not-empty, sm.top)
 define sm-check-not-empty
 $(if $(strip $1),\
   $(if $(strip $($(strip $1))),,$(error $(strip $1) is empty)),\
   $(error sm-check-not-empty accept a var-name))
 endef
 
+## eg. $(call sm-check-value, sm.top, foo/bar)
+define sm-check-value
+ $(if $(call equal,$(origin $(strip $1)),undefined),\
+      $(error smart: '$(strip $1)' is undefined))\
+ $(if $(call equal,$($(strip $1)),$(strip $2)),,\
+      $(error smart: $$($(strip $1)) != '$(strip $2)', but '$($(strip $1))'))
+endef
+
+## eg. $(call sm-check-equal, foo, foo)
+define sm-check-equal
+$(if $(call equal,$(strip $1),$(strip $2)),,\
+    $(error smart: '$(strip $1)' != '$(strip $2)'))
+endef
+
+## eg. $(call sm-check-origin, sm.top, file)
+define sm-check-origin
+ $(if $(call equal,$(origin $(strip $1)),$(strip $2)),,\
+      $(error smart: '$(strip $1)' is not '$(strip $2)', but of '$(origin $(strip $1))'))
+endef

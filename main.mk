@@ -13,6 +13,13 @@ sm.dir.buildsys := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
 SHELL := /bin/bash
 
+ifeq ($(wildcard $(sm.dir.buildsys)/defuns.mk),)
+  $(error "smart: Can't find smart build system directory.")
+else
+  # Predefined functions.
+  include $(sm.dir.buildsys)/defuns.mk
+endif
+
 ifeq ($(wildcard $(sm.dir.buildsys)/init.mk),)
   $(error "smart: Can't find smart build system directory.")
 else
@@ -20,11 +27,10 @@ else
   include $(sm.dir.buildsys)/init.mk
 endif
 
-ifeq ($(wildcard $(sm.dir.buildsys)/defuns.mk),)
+ifeq ($(wildcard $(sm.dir.buildsys)/rules.mk),)  # funs for gen rules
   $(error "smart: Can't find smart build system directory.")
 else
-  # Predefined functions.
-  include $(sm.dir.buildsys)/defuns.mk
+  include $(sm.dir.buildsys)/rules.mk
 endif
 
 ifeq ($(wildcard $(sm.dir.buildsys)/conf.mk),)
