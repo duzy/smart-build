@@ -31,8 +31,8 @@ $(_sm_this_makefile)
 endef
 
 define sm-module-dir
-$(if $(sm.module.name),$(call sm-this-dir),\
-  $(error 'sm.module.name' is empty, please use 'sm-this-dir' instead))
+$(if $(sm.this.name),$(call sm-this-dir),\
+  $(error 'sm.this.name' is empty, please use 'sm-this-dir' instead))
 endef
 
 define sm-module-type-name
@@ -45,31 +45,31 @@ endef
 define sm-new-module
 $(if $1,$(if $(filter $1,$(sm.global.modules)),\
           $(error Module of name '$1' already exists))\
-  $(eval sm.module.name:=$(basename $(strip $1))
-         $$(if $$(sm.module.name),,$$(error The module name is empty))
-         sm.module.suffix:=$(suffix $(strip $1))
-         sm.module.dir:=$$(call sm-module-dir)
-         sm.module.makefile:=$$(call sm-this-makefile)
+  $(eval sm.this.name:=$(basename $(strip $1))
+         $$(if $$(sm.this.name),,$$(error The module name is empty))
+         sm.this.suffix:=$(suffix $(strip $1))
+         sm.this.dir:=$$(call sm-module-dir)
+         sm.this.makefile:=$$(call sm-this-makefile)
          sm.global.modules+=$(strip $1)
-         sm.global.modules.$(strip $1):=$$(sm.module.makefile))\
+         sm.global.modules.$(strip $1):=$$(sm.this.makefile))\
   ,$(error Invalid usage of 'sm-new-module', module name required))\
-$(if $2,$(eval sm.module.type:=$(call sm-module-type-name,$(strip $2))
-  ifeq ($$(filter $$(sm.module.type),$(sm.global.module_types)),)
+$(if $2,$(eval sm.this.type:=$(call sm-module-type-name,$(strip $2))
+  ifeq ($$(filter $$(sm.this.type),$(sm.global.module_types)),)
     $$(error Unsuported module type '$(strip $2)', only supports '$(sm.global.module_types)')
   endif
-  ifeq ($$(sm.module.suffix),)
-    ifeq ($$(sm.module.type),static)
-      sm.module.suffix := .a
+  ifeq ($$(sm.this.suffix),)
+    ifeq ($$(sm.this.type),static)
+      sm.this.suffix := .a
     endif
-    ifeq ($$(sm.module.type),shared)
-      sm.module.suffix := .so
-      sm.module.out_implib:=$(sm.module.name)
+    ifeq ($$(sm.this.type),shared)
+      sm.this.suffix := .so
+      sm.this.out_implib:=$(sm.this.name)
     else
-     ifeq ($$(sm.module.type),exe)
-       sm.module.suffix := $(if $(sm.os.name.win32),.exe)
+     ifeq ($$(sm.this.type),exe)
+       sm.this.suffix := $(if $(sm.os.name.win32),.exe)
      else
-      ifeq ($$(sm.module.type),t)
-       sm.module.suffix := $(if $(sm.os.name.win32),.test.exe,.test)
+      ifeq ($$(sm.this.type),t)
+       sm.this.suffix := $(if $(sm.os.name.win32),.test.exe,.test)
       endif
      endif
     endif
@@ -96,9 +96,9 @@ endef
 
 ## Generate compilation rules for sources
 define sm-generate-objects
- $(if $(strip $(sm.module.sources) $(sm.module.sources.generated)),\
+ $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
     $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.dir.out)/$(sm.log.filename),true))\
-    $(info smart: objects for '$(sm.module.name)' by $(strip $(sm-this-makefile)))\
+    $(info smart: objects for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
     $(eval include $(sm.dir.buildsys)/objrules.mk),\
     $(error smart: No sources defined))
 endef
@@ -125,12 +125,12 @@ endef
 
 ## Build the current module
 define sm-build-this
- $(if $(sm.module.sources)$(sm.module.sources.generated)$(sm.module.objects),,\
-   $(error No source or objects defined for '$(sm.module.name)'))\
- $(if $(sm.module.name),\
-    $(eval sm.global.goals += goal-$(sm.module.name)
+ $(if $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects),,\
+   $(error No source or objects defined for '$(sm.this.name)'))\
+ $(if $(sm.this.name),\
+    $(eval sm.global.goals += goal-$(sm.this.name)
            include $(sm.dir.buildsys)/buildmod.mk),\
-   $(error sm.module.name must be specified.))
+   $(error sm.this.name must be specified.))
 endef
 
 ## Load all smart.mk in sub directories.

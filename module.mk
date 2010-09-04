@@ -4,39 +4,39 @@
 
 # Build the current 'binary' module according to these macros:
 #	sm.log.filename		: log filename(relative) of compile commands
-#	sm.module.dir		: the directory in which the module locates
-#	sm.module.type		: the type of the module to be compiled
-#	sm.module.name		: the name of the module to be compiled
-#	sm.module.suffix	: the suffix of the module name(.exe, .so, .dll, etc.)
-#	sm.module.sources	: the sources to be compiled into the module
-#	sm.module.sources.generated	: the local generated sources to be compiled into the module
-#	sm.module.headers	: (unused)
+#	sm.this.dir		: the directory in which the module locates
+#	sm.this.type		: the type of the module to be compiled
+#	sm.this.name		: the name of the module to be compiled
+#	sm.this.suffix	: the suffix of the module name(.exe, .so, .dll, etc.)
+#	sm.this.sources	: the sources to be compiled into the module
+#	sm.this.sources.external	: the local generated sources to be compiled into the module
+#	sm.this.headers	: (unused)
 #
-#	sm.module.out_implib	: --out-implib to linker on Win32, for shared
+#	sm.this.out_implib	: --out-implib to linker on Win32, for shared
 #				: module
 #	
-#	sm.module.includes	: include pathes for compiling the module
+#	sm.this.includes	: include pathes for compiling the module
 #	
-#	sm.module.compile.options, sm.module.compile.flags
+#	sm.this.compile.options, sm.this.compile.flags
 #				: module specific compile flags
 #	
-#	sm.module.compile.options.infile, sm.module.compile.flags.infile
+#	sm.this.compile.options.infile, sm.this.compile.flags.infile
 #				: put compile options/flags into temp file
 #	
-#	sm.module.link.options, sm.module.link.flags
+#	sm.this.link.options, sm.this.link.flags
 #				: module link flags
 #	
-#	sm.module.link.options.infile, sm.module.link.flags.infile
+#	sm.this.link.options.infile, sm.this.link.flags.infile
 #				: put link options/flags into temp file
 #	
-#	sm.module.libdirs	: the search path of libs the module links to
-#	sm.module.libs		: libs (-l switches) the module links to
-#	sm.module.whole_archives: .a archives to be pulled into a shared
+#	sm.this.libdirs	: the search path of libs the module links to
+#	sm.this.libs		: libs (-l switches) the module links to
+#	sm.this.whole_archives: .a archives to be pulled into a shared
 #				: libraries as a whole, see --whole-archive.
-#	sm.module.prebuilt_objects: prebuilt objects
+#	sm.this.prebuilt_objects: prebuilt objects
 #
-#	sm.module.rpath		: -rpath
-#	sm.module.rpath-link	: -rpath-link
+#	sm.this.rpath		: -rpath
+#	sm.this.rpath-link	: -rpath-link
 #	
 #	sm.global.includes	:
 #	sm.global.compile.options, sm.global.compile.flags
@@ -52,37 +52,37 @@
 #	sm.dir.out.obj
 #	
 
-$(if $(strip $(sm.module.dir)),,$(error 'sm.module.dir' must be set))
+$(if $(strip $(sm.this.dir)),,$(error 'sm.this.dir' must be set))
 
-ifneq ($(sm.global.options.compile)$(sm.module.options.compile),)
+ifneq ($(sm.global.options.compile)$(sm.this.options.compile),)
   $(error 'sm.*.options.compile' is deprecated, use 'sm.*.compile.options' or 'sm.*.compile.flags' instead)
 endif
 
-ifneq ($(sm.global.options.link)$(sm.module.options.link),)
+ifneq ($(sm.global.options.link)$(sm.this.options.link),)
   $(error 'sm.*.options.link' is deprecated, use 'sm.global.link.options' or 'sm.*.link.flags' instead)
 endif
 
-ifneq ($(sm.module.options.compile.infile)$(sm.module.options.link.infile),)
-  $(error 'sm.module.options.*.infile' is deprecated, use 'sm.module.*.options.infile' or 'sm.module.*.flags.infile' instead)
+ifneq ($(sm.this.options.compile.infile)$(sm.this.options.link.infile),)
+  $(error 'sm.this.options.*.infile' is deprecated, use 'sm.this.*.options.infile' or 'sm.this.*.flags.infile' instead)
 endif
 
-ifneq ($(sm.global.dirs.include)$(sm.module.dirs.include),)
+ifneq ($(sm.global.dirs.include)$(sm.this.dirs.include),)
   $(error 'sm.*.dirs.include' is deprecated, use 'sm.*.includes' instead)
 endif
 
-ifneq ($(sm.global.dirs.lib)$(sm.module.dirs.lib),)
+ifneq ($(sm.global.dirs.lib)$(sm.this.dirs.lib),)
   $(error 'sm.*.dirs.lib' is deprecated, use 'sm.*.libdirs' instead)
 endif
 
-ifeq ($(sm.module.name),)
-  $(info smart: You have to specify 'sm.module.name'.)
-  $(error sm.module.name unknown)
+ifeq ($(sm.this.name),)
+  $(info smart: You have to specify 'sm.this.name'.)
+  $(error sm.this.name unknown)
 endif
 
-ifeq ($(filter $(sm.module.type),$(sm.global.module_types)),)
-  $(info smart: You have to specify 'sm.module.type', it can be one of )
-  $(info smart: '$(sm.module.types_supported)'.)
-  $(error sm.module.type unknown: '$(sm.module.type)'.)
+ifeq ($(filter $(sm.this.type),$(sm.global.module_types)),)
+  $(info smart: You have to specify 'sm.this.type', it can be one of )
+  $(info smart: '$(sm.this.types_supported)'.)
+  $(error sm.this.type unknown: '$(sm.this.type)'.)
 endif
 
 ifndef sm-to-relative-path
@@ -98,15 +98,15 @@ _sm_has_sources.c :=
 _sm_has_sources.c++ :=
 _sm_has_sources.h :=
 
-ifneq ($(strip $(sm.module.sources) $(sm.module.sources.generated)),)
+ifneq ($(strip $(sm.this.sources) $(sm.this.sources.external)),)
   include $(sm.dir.buildsys)/objrules.mk
 else
-  ifeq ($(strip $(sm.module.objects)),)
-    $(error No sources or objects for $(sm.module.name))
+  ifeq ($(strip $(sm.this.objects)),)
+    $(error No sources or objects for $(sm.this.name))
   endif
 endif
 
-ifeq ($(sm.module.type),static)
+ifeq ($(sm.this.type),static)
   include $(sm.dir.buildsys)/archive.mk
 else
   include $(sm.dir.buildsys)/binary.mk
