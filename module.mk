@@ -1,118 +1,214 @@
-# -*- mode: Makefile:gnu -*-
-#	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
-#
 
-# Build the current 'binary' module according to these macros:
-#	sm.log.filename		: log filename(relative) of compile commands
-#	sm.this.dir		: the directory in which the module locates
-#	sm.this.type		: the type of the module to be compiled
-#	sm.this.name		: the name of the module to be compiled
-#	sm.this.suffix	: the suffix of the module name(.exe, .so, .dll, etc.)
-#	sm.this.sources	: the sources to be compiled into the module
-#	sm.this.sources.external	: the local generated sources to be compiled into the module
-#	sm.this.headers	: (unused)
-#
-#	sm.this.out_implib	: --out-implib to linker on Win32, for shared
-#				: module
-#	
-#	sm.this.includes	: include pathes for compiling the module
-#	
-#	sm.this.compile.options, sm.this.compile.flags
-#				: module specific compile flags
-#	
-#	sm.this.compile.options.infile, sm.this.compile.flags.infile
-#				: put compile options/flags into temp file
-#	
-#	sm.this.link.options, sm.this.link.flags
-#				: module link flags
-#	
-#	sm.this.link.options.infile, sm.this.link.flags.infile
-#				: put link options/flags into temp file
-#	
-#	sm.this.libdirs	: the search path of libs the module links to
-#	sm.this.libs		: libs (-l switches) the module links to
-#	sm.this.whole_archives: .a archives to be pulled into a shared
-#				: libraries as a whole, see --whole-archive.
-#	sm.this.prebuilt_objects: prebuilt objects
-#
-#	sm.this.rpath		: -rpath
-#	sm.this.rpath-link	: -rpath-link
-#	
-#	sm.global.includes	:
-#	sm.global.compile.options, sm.global.compile.flags
-#				:
-#	sm.global.link.options, sm.global.link.flags
-#				:
-#	sm.global.libdirs	:
-#	sm.global.libs		:
-#
-#	sm.dir.out
-#	sm.dir.out.bin
-#	sm.dir.out.lib
-#	sm.dir.out.obj
-#	
+$(call sm-check-not-empty,sm.top)
+$(call sm-check-not-empty,sm.this.toolset,smart: Must set 'sm.this.toolset')
 
-$(if $(strip $(sm.this.dir)),,$(error 'sm.this.dir' must be set))
-
-ifneq ($(sm.global.options.compile)$(sm.this.options.compile),)
-  $(error 'sm.*.options.compile' is deprecated, use 'sm.*.compile.options' or 'sm.*.compile.flags' instead)
+ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)),)
+  $(error smart: No sources for module '$(sm.this.name)')
 endif
 
-ifneq ($(sm.global.options.link)$(sm.this.options.link),)
-  $(error 'sm.*.options.link' is deprecated, use 'sm.global.link.options' or 'sm.*.link.flags' instead)
+##################################################
+
+sm.var.$(sm.this.name).compile.options. :=
+sm.var.$(sm.this.name).compile.options.c :=
+sm.var.$(sm.this.name).compile.options.c++ :=
+sm.var.$(sm.this.name).compile.options.asm :=
+sm.var.$(sm.this.name).link.options :=
+sm.var.$(sm.this.name).link.libs :=
+
+##
+define sm.code.calculate-includes
+ $(foreach sm._var._temp._include,$($(strip $2)),\
+   $(eval sm.var.$(sm.this.name).compile.options.$(strip $1) += -I$$(sm._var._temp._include:-I%=%)))
+endef #sm.code.calculate-includes
+
+##
+define sm.code.calculate-compile-options
+ sm.var.$(sm.this.name).compile.options.$1 := \
+  $(strip $(sm.global.compile.flags) $(sm.global.compile.options)) \
+  $(strip $(sm.global.compile.flags.$1) $(sm.global.compile.options.$1)) \
+  $(strip $(sm.this.compile.flags) $(sm.this.compile.options)) \
+  $(strip $(sm.this.compile.flags.$1) $(sm.this.compile.options.$1))
+ $$(call sm.code.calculate-includes,$1,sm.global.includes)
+ $$(call sm.code.calculate-includes,$1,sm.this.includes)
+endef #sm.code.calculate-compile-options
+
+##
+define sm.code.calculate-link-options
+ sm.var.$(sm.this.name).link.options := \
+  $(strip $(sm.global.link.flags) $(sm.global.link.options)) \
+  $(strip $(sm.this.link.flags) $(sm.this.link.options))
+endef #sm.code.calculate-link-options
+
+##
+define sm.code.calculate-libdirs
+ $(foreach sm._var._temp._libdir,$($(strip $1)),\
+   $(eval sm.var.$(sm.this.name).link.libs += -L$$(sm._var._temp._libdir:-L%=%)))
+endef #sm.code.calculate-libdirs
+
+##
+define sm.code.calculate-libs
+ $(foreach sm._var._temp._lib,$($(strip $1)),\
+   $(eval sm.var.$(sm.this.name).link.libs += -l$$(sm._var._temp._lib:-l%=%)))
+endef #sm.code.calculate-libs
+
+##
+define sm.code.calculate-link-libs
+ sm.var.$(sm.this.name).link.libs :=
+ $$(call sm.code.calculate-libdirs,sm.global.libdirs)
+ $$(call sm.code.calculate-libdirs,sm.this.libdirs)
+ $$(call sm.code.calculate-libs,sm.global.libs)
+ $$(call sm.code.calculate-libs,sm.this.libs)
+endef #sm.code.calculate-link-libs
+
+# $(info -----)
+# $(info $(call sm.code.calculate-compile-options,c))
+# $(info -----)
+# $(info $(call sm.code.calculate-link-libs))
+# $(info -----)
+
+##########
+##
+## callbacks for sm.rule.compile.* to get compile options
+##
+define sm.fun.$(sm.this.name).get-compile-options
+ $(if $(sm.var.$(sm.this.name).compile.options.$1),,\
+   $(eval $(call sm.code.calculate-compile-options,$1)))\
+ $(sm.var.$(sm.this.name).compile.options.$1)
+endef #sm.fun.$(sm.this.name).get-compile-options
+
+define sm.fun.$(sm.this.name).get-link-options.any
+ $(if $(sm.var.$(sm.this.name).link.options),,\
+   $(eval $(call sm.code.calculate-link-options)))\
+ $(sm.var.$(sm.this.name).link.options)
+endef #sm.fun.$(sm.this.name).get-link-options.any
+
+define sm.fun.$(sm.this.name).get-link-libs.any
+ $(if $(sm.var.$(sm.this.name).link.libs),,\
+   $(eval $(call sm.code.calculate-link-libs)))\
+ $(sm.var.$(sm.this.name).link.libs)
+endef #sm.fun.$(sm.this.name).get-link-libs.any
+
+sm.fun.$(sm.this.name).get-compile-options.c = $(strip $(call sm.fun.$(sm.this.name).get-compile-options,c))
+sm.fun.$(sm.this.name).get-compile-options.c++ = $(strip $(call sm.fun.$(sm.this.name).get-compile-options,c++))
+sm.fun.$(sm.this.name).get-compile-options.asm = $(strip $(call sm.fun.$(sm.this.name).get-compile-options,asm))
+
+sm.fun.$(sm.this.name).get-link-options = $(strip $(call sm.fun.$(sm.this.name).get-link-options.any))
+sm.fun.$(sm.this.name).get-link-libs = $(strip $(call sm.fun.$(sm.this.name).get-link-libs.any))
+
+#$(info c: x$(sm.fun.$(sm.this.name).get-compile-options.c)x)
+
+##################################################
+
+## The output object file prefix
+sm._var._temp._object_prefix := \
+  $(call sm-to-relative-path,$(sm.dir.out.obj))$(sm.this.dir:$(sm.dir.top)%=%)
+
+##
+##
+define sm.fun.calculate-object.
+$(sm._var._temp._object_prefix)/$(basename $(subst ..,_,$(call sm-to-relative-path,$1))).o
+endef #sm.fun.calculate-object.
+
+define sm.fun.calculate-object.external
+$(call sm.fun.calculate-object.,$1)
+endef #sm.fun.calculate-object.external
+
+##
+## source file of relative location
+define sm.fun.calculate-source.
+$(sm.this.dir)/$(strip $1)
+endef #sm.fun.calculate-source.
+
+##
+## source file of fixed location
+define sm.fun.calculate-source.external
+$(strip $1)
+endef #sm.fun.calculate-source.external
+
+##
+## binary module to be built
+define sm.fun.calculate-module.bin
+$(call sm-to-relative-path,$(sm.dir.out.bin))/$(sm.this.name)$(sm.this.suffix)
+endef #sm.fun.calculate-module.bin
+
+##
+## library module to be built
+#define sm.fun.calculate-module.lib
+#$(call sm-to-relative-path,$(sm.dir.out.lib))/$(sm.this.name)$(sm.this.suffix)
+#endef #sm.fun.calculate-module.lib
+
+##################################################
+
+## Make rule for building object
+##   eg. $(call sm.fun.make-object-rule, c++, foobar.cpp)
+##   eg. $(call sm.fun.make-object-rule, c++, ~/sources/foobar.cpp, external)
+define sm.fun.make-object-rule
+ $(if $1,,$(error smart: arg \#1 must be the lang type))\
+ $(if $2,,$(error smart: arg \#2 must be the source file))\
+ $(eval sm._var._temp._object := $(call sm.fun.calculate-object.$(strip $3),$2))\
+ $(eval sm.this.objects += $(sm._var._temp._object))\
+ $(call sm.rule.compile.$(strip $1),$(sm._var._temp._object),\
+    $(call sm.fun.calculate-source.$(strip $3),$2),\
+    sm.fun.$(sm.this.name).get-compile-options.$(strip $1))
+endef #sm.fun.make-object-rule
+
+##
+## Produce code for make object rules
+define sm.code.make-rules
+ $(if $(sm.tool.$(sm.this.toolset).$1.suffix),,$(error smart: No registered suffixes for $(sm.this.toolset)/$1))
+ sm._var._temp._suffix.$1 := $$(sm.tool.$(sm.this.toolset).$1.suffix:%=\%%)
+ sm.this.sources.$1 := $$(filter $$(sm._var._temp._suffix.$1),$$(sm.this.sources))
+ sm.this.sources.external.$1 := $$(filter $$(sm._var._temp._suffix.$1),$$(sm.this.sources.external))
+ sm.this.sources.has.$1 := $$(if $$(sm.this.sources.$1)$$(sm.this.sources.external.$1),true,)
+ ifeq ($$(sm.this.sources.has.$1),true)
+  $$(call sm-check-flavor, sm.fun.make-object-rule, recursive)
+  $$(foreach s,$$(sm.this.sources.$1),$$(call sm.fun.make-object-rule,$1,$$s))
+  $$(foreach s,$$(sm.this.sources.external.$1),$$(call sm.fun.make-object-rule,$1,$$s,external))
+ endif
+endef #sm.code.make-rules
+
+# $(info $(call sm.code.make-rules,c))
+##
+## Make object rules, eg. $(call sm.fun.make-rules,c++)
+define sm.fun.make-rules
+$(eval $(call sm.code.make-rules,$(strip $1)))
+endef #sm.fun.make-rules
+
+
+##
+## Make a choice in sm.rule.link.c, sm.rule.link.c++, etc.
+## Returns the lang-type suffix.
+define sm.fun.choose-linker
+.c
+endef #sm.fun.choose-linker
+
+##
+## Make module build rule
+define sm.fun.make-module-rule
+$(if $(sm.this.objects),\
+    $(call sm.rule.link$(call sm.fun.choose-linker),\
+       $(call sm.fun.calculate-module.bin) $(call sm.fun.calculate-module.lib),\
+       $(sm.this.objects), sm.fun.$(sm.this.name).get-link-options,\
+       sm.fun.$(sm.this.name).get-link-libs),\
+  $(error smart: No objects for building '$(sm.this.name)'))
+endef #sm.fun.make-module-rule
+
+##################################################
+
+$(call sm.fun.make-rules, c)
+$(call sm.fun.make-rules, c++)
+$(call sm.fun.make-rules, asm)
+$(call sm.fun.make-module-rule)
+
+ifeq ($(strip $(sm.this.sources.c)$(sm.this.sources.c++)$(sm.this.sources.asm)),)
+  $(error smart: internal error: sources mis-calculated)
 endif
 
-ifneq ($(sm.this.options.compile.infile)$(sm.this.options.link.infile),)
-  $(error 'sm.this.options.*.infile' is deprecated, use 'sm.this.*.options.infile' or 'sm.this.*.flags.infile' instead)
+ifeq ($(strip $(sm.this.objects)),)
+  $(error smart: internal error: objects mis-calculated)
 endif
 
-ifneq ($(sm.global.dirs.include)$(sm.this.dirs.include),)
-  $(error 'sm.*.dirs.include' is deprecated, use 'sm.*.includes' instead)
-endif
-
-ifneq ($(sm.global.dirs.lib)$(sm.this.dirs.lib),)
-  $(error 'sm.*.dirs.lib' is deprecated, use 'sm.*.libdirs' instead)
-endif
-
-ifeq ($(sm.this.name),)
-  $(info smart: You have to specify 'sm.this.name'.)
-  $(error sm.this.name unknown)
-endif
-
-ifeq ($(filter $(sm.this.type),$(sm.global.module_types)),)
-  $(info smart: You have to specify 'sm.this.type', it can be one of )
-  $(info smart: '$(sm.this.types_supported)'.)
-  $(error sm.this.type unknown: '$(sm.this.type)'.)
-endif
-
-ifndef sm-to-relative-path
-  $(error sm-to-relative-path undefined)
-endif
-
-## Compile log command.
-_sm_log = $(if $(sm.log.filename),\
-    echo $1 >> $(sm.dir.out)/$(sm.log.filename),true)
-
-_sm_has_sources.asm :=
-_sm_has_sources.c :=
-_sm_has_sources.c++ :=
-_sm_has_sources.h :=
-
-ifneq ($(strip $(sm.this.sources) $(sm.this.sources.external)),)
-  include $(sm.dir.buildsys)/objrules.mk
-else
-  ifeq ($(strip $(sm.this.objects)),)
-    $(error No sources or objects for $(sm.this.name))
-  endif
-endif
-
-ifeq ($(sm.this.type),static)
-  include $(sm.dir.buildsys)/archive.mk
-else
-  include $(sm.dir.buildsys)/binary.mk
-endif
-
-s :=
-d :=
-r :=
-
+##################################################
+# $(info objects: $(sm.this.objects))
+# $(info c: $(sm.this.sources.c))
+# $(info c++: $(sm.this.sources.c++))

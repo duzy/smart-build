@@ -5,14 +5,17 @@
 # Build the current module according to these macros:
 #	sm.this.type		: the type of the module to be compiled
 #	sm.this.name		: the name of the module to be compiled
-#	sm.this.depends	: module depends on something to build,
+#	sm.this.depends		: this module depends on other targets,
 #				: the dependences must exists first.
 #				
 
-ifeq ($(wildcard $(sm.dir.buildsys)),)
-  $(info smart: Cannot locate the build system directory('sm.dir.buildsys').)
-  $(error Invalid installed build system)
+## check origin of 'sm-check-origin' itself
+ifneq ($(origin sm-check-origin),file)
+  $(error smart: Please load 'build/main.mk' first)
 endif
+
+$(call sm-check-origin,sm-check-directory,file,Broken smart build system)
+$(call sm-check-directory,$(sm.dir.buildsys),Broken smart build system)
 
 ifeq ($(sm.this.type),subdirs)
   $(error smart: Please try calling 'sm-load-subdirs' instead)
@@ -34,8 +37,13 @@ ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
     sm.var.temp._g := $(sm.var.temp._out_bin)/$(sm.var.temp._g)
   endif
 
-  goal-$(sm.this.name):$(sm.this.depends) $(sm.this.depends.copy) $(sm.var.temp._g)
-  include $(sm.dir.buildsys)/module.mk
+  goal-$(sm.this.name) : $(sm.this.depends) $(sm.this.depends.copy) $(sm.var.temp._g)
+
+  ifeq ($(strip $(sm.this.toolset)),)
+    include $(sm.dir.buildsys)/old_style_module.mk
+  else
+    include $(sm.dir.buildsys)/module.mk
+  endif
 else
   $(warning smart: $(sm.this.name) will not be built)
 endif

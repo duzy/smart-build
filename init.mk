@@ -2,9 +2,12 @@
 #	Copyright(c) 2009-2010, by Zhan Xin-ming, duzy@duzy.info
 #	
 
-ifneq ($(origin sm-new-module),file)
- $(error "smart: Must include defuns before init.")
+## check origin of 'sm-check-origin' itself
+ifneq ($(origin sm-check-origin),file)
+  $(error smart: Please load 'build/main.mk' first)
 endif
+
+$(call sm-check-origin,sm-new-module,file,Broken smart build system)
 
 # The project top level directory is where you type 'make' in.
 sm.top := $(if $(wildcard $(PWD)),$(PWD),$(shell pwd))
@@ -54,20 +57,20 @@ endif
 sm.toolset := gcc
 
 ifneq ($(origin sm-register-sources),file)
- $(error "smart: 'sm-register-sources' unsafe: '$(sm-register-sources)'")
+ $(error smart: 'sm-register-sources' unsafe: '$(sm-register-sources)')
 else
  $(call sm-register-sources, c++, gcc, .cpp .c++ .cc .CC .C)
  $(call sm-register-sources, asm, gcc, .s .S)
  $(call sm-register-sources, c,   gcc, .c)
- $(call sm-check-equal,$(sm.tool.gcc),true)
- $(call sm-check-value, sm.toolset.for.cpp, gcc)
- $(call sm-check-value, sm.toolset.for.c++, gcc)
- $(call sm-check-value, sm.toolset.for.cc,  gcc)
- $(call sm-check-value, sm.toolset.for.CC,  gcc)
- $(call sm-check-value, sm.toolset.for.C,   gcc)
- $(call sm-check-value, sm.toolset.for.s,   gcc)
- $(call sm-check-value, sm.toolset.for.S,   gcc)
- $(call sm-check-value, sm.toolset.for.c,   gcc)
+ $(call sm-check-equal,$(sm.tool.gcc),true, smart: gcc toolset not well)
+ $(call sm-check-value, sm.toolset.for.cpp, gcc, smart: gcc toolset ignores .cpp)
+ $(call sm-check-value, sm.toolset.for.c++, gcc, smart: gcc toolset ignores .c++)
+ $(call sm-check-value, sm.toolset.for.cc,  gcc, smart: gcc toolset ignores .cc)
+ $(call sm-check-value, sm.toolset.for.CC,  gcc, smart: gcc toolset ignores .CC)
+ $(call sm-check-value, sm.toolset.for.C,   gcc, smart: gcc toolset ignores .C)
+ $(call sm-check-value, sm.toolset.for.s,   gcc, smart: gcc toolset ignores .s)
+ $(call sm-check-value, sm.toolset.for.S,   gcc, smart: gcc toolset ignores .S)
+ $(call sm-check-value, sm.toolset.for.c,   gcc, smart: gcc toolset ignores .c)
 endif
 
 sm.log.enabled :=

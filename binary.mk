@@ -23,8 +23,8 @@ sm.fun._append_lib :=
 
 ## Compute the link flags.
 _sm_link_flags := \
-  $(strip $(sm.global.link.flags) $(sm.this.link.options)) \
-  $(strip $(sm.global.link.flags) $(sm.this.link.options))
+  $(strip $(sm.global.link.flags) $(sm.global.link.options)) \
+  $(strip $(sm.this.link.flags) $(sm.this.link.options))
 
 _sm_link_flags := $(filter-out -shared,$(_sm_link_flags))
 

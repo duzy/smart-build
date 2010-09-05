@@ -29,11 +29,12 @@ define sm-register-sources
  $(if $(wildcard $(sm._toolset.mk)),\
       $(if $(sm.tool.$(strip $2)),,$(eval include $(sm._toolset.mk)))\
       $(if $(sm.tool.$(strip $2)),\
-           $(warning TODO: multiple toolset/lang: '$(strip $2)/$(strip $1)')\
+           $(call sm-check-origin,sm.tool.$(strip $2),file,smart: Toolset '$(strip $2)' unimplemented)\
+           $(eval sm.tool.$(strip $2).$(strip $1).suffix += $(strip $3))\
            $(foreach s,$3,$(eval sm.toolset.for$s := $(strip $2)))\
            ,\
-         $(error smart: Toolset '$(strip $2)' unimplemented)),\
-    $(error smart: Toolset '$(strip $2)' unsupported.))
+        $(error smart: Toolset '$(strip $2)' unimplemented)),\
+   $(error smart: Toolset '$(strip $2)' unsupported.))
 endef
 
 #####
@@ -197,34 +198,57 @@ endef
 ################
 # Check helpers
 ################
-check-exists = $(call sm-deprecated, check-exists, sm-check-exists)
-define sm-check-exists
-$(if $(wildcard $(strip $1)),,$(error $(or $(strip $2),$(strip $1) is not ready)))
+check-exists = $(call sm-deprecated, check-exists, sm-check-target-exists)
+sm-check-exists = $(call sm-deprecated, sm-check-exists, sm-check-target-exists)
+define sm-check-target-exists
+$(if $(wildcard $(strip $1)),,$(error $(or $(strip $2),target '$(strip $1)' is not ready)))
 endef
 
-## eg. $(call sm-check-not-empty, sm.top)
+define sm-check-directory
+$(if $(shell [[ -d $1 ]] && echo true),,\
+  $(error $(or $(strip $2),directory '$(strip 1)' is not ready)))
+endef
+
+define sm-check-file
+$(if $(shell [[ -d $1 ]] && echo true),,\
+  $(error $(or $(strip $2),file '$(strip 1)' is not ready)))
+endef
+
+## Ensure not empty of var, eg. $(call sm-check-not-empty, sm.top)
 define sm-check-not-empty
-$(if $(strip $1),\
-  $(if $(strip $($(strip $1))),,$(error $(strip $1) is empty)),\
-  $(error sm-check-not-empty accept a var-name))
+$(if $(strip $1),,$(error sm-check-not-empty accept a var-name))\
+$(if $($(strip $1)),,$(error $(or $(strip $2),$(strip $1) is empty)))
+endef
+
+## Ensure empty of var, eg. $(call sm-check-empty, sm.var.blah)
+define sm-check-empty
+$(if $(strip $1),,$(error sm-check-not-empty accept a var-name))\
+$(if $($(strip $1)),$(error $(or $(strip $2),$(strip $1) is not empty)))
 endef
 
 ## eg. $(call sm-check-value, sm.top, foo/bar)
 define sm-check-value
- $(if $(call equal,$(origin $(strip $1)),undefined),\
-      $(error smart: '$(strip $1)' is undefined))\
- $(if $(call equal,$($(strip $1)),$(strip $2)),,\
-      $(error smart: $$($(strip $1)) != '$(strip $2)', but '$($(strip $1))'))
+$(if $(call equal,$(origin $(strip $1)),undefined),\
+  $(error $(or $(strip $3),smart: '$(strip $1)' is undefined)))\
+$(if $(call equal,$($(strip $1)),$(strip $2)),,\
+  $(error $(or $(strip $3),smart: $$($(strip $1)) != '$(strip $2)', but '$($(strip $1))')))
 endef
 
-## eg. $(call sm-check-equal, foo, foo)
+## Equals of two vars, eg. $(call sm-check-equal, foo, foo)
 define sm-check-equal
 $(if $(call equal,$(strip $1),$(strip $2)),,\
-    $(error smart: '$(strip $1)' != '$(strip $2)'))
+  $(error $(or $(strip $3),smart: '$(strip $1)' != '$(strip $2)')))
 endef
 
 ## eg. $(call sm-check-origin, sm.top, file)
 define sm-check-origin
- $(if $(call equal,$(origin $(strip $1)),$(strip $2)),,\
-      $(error smart: '$(strip $1)' is not '$(strip $2)', but of '$(origin $(strip $1))'))
+$(if $(call equal,$(origin $(strip $1)),$(strip $2)),,\
+  $(error $(or $(strip $3),smart: '$(strip $1)' is not '$(strip $2)', but of '$(origin $(strip $1))')))
+endef
+
+## Check the flavor of a var (undefined, recursive, simple)
+## eg. (call sm-check-flavor, sm.top, simple, Bad sm.top var)
+define sm-check-flavor
+$(if $(call equal,$(flavor $(strip $1)),$(strip $2)),,\
+  $(error $(or $(strip $3),smart: '$(strip $1)' is not '$(strip $2)', but '$(flavor $(strip $1))')))
 endef
