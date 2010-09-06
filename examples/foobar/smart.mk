@@ -11,5 +11,5 @@ foo: foo.o
 
 sm.this.toolset := gcc
 
-$(call sm.rule.compile.c, foo/bar/a.o, foobar.c)
-$(call sm.rule.link.c, foo/bar/a, foo/bar/a.o)
+$(call sm.rule.compile.c, foo/bar/a.o, foobar.c, my.compile.flags)
+$(call sm.rule.link.c, foo/bar/a, foo/bar/a.o, my.link.flags)

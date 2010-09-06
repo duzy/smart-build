@@ -13,7 +13,7 @@ $(call sm-check-flavor,sm.tool.$(sm.this.toolset).$1.$2,recursive,\
 	$$(call sm.tool.$(sm.this.toolset).$1.$2,$$@,$$^,$5,$6)
 endef #sm.rule.template
 
-## $(call sm.rule, ACTION, LANG, TARGET, PREREQUISITES, callback-FLAGS, callack-LIBS)
+## eg. $(call sm.rule, ACTION, LANG, TARGET, PREREQUISITES, callback-FLAGS [,callack-LIBS])
 define sm.rule
 $(if $1,,$(error smart: arg \#1 must be the action (eg. compile, link)))\
 $(if $2,,$(error smart: arg \#2 must be the source language))\
@@ -23,12 +23,27 @@ $(if $5,,$(error smart: arg \#5 must be a callback for command line flags))\
 $(eval $(call sm.rule.template,$(strip $1),$(strip $2),$(strip $3),$(strip $4),$(strip $5),$(strip $6)))
 endef #sm.rule
 
-sm.rule.compile     = $(call sm.rule,compile,$1,$2,$3,$4)
-sm.rule.compile.c   = $(call sm.rule,compile,c,$1,$2,$3)
-sm.rule.compile.c++ = $(call sm.rule,compile,c++,$1,$2,$3)
-sm.rule.compile.asm = $(call sm.rule,compile,asm,$1,$2,$3)
+## eg. $(call sm.rule.compile, LANG, TARGET, PREREQUISITES, callback-FLAGS)
+define sm.rule.compile
+$(if $1,,$(error smart: arg \#1 must be the source language))\
+$(if $2,,$(error smart: arg \#2 must be the output target))\
+$(if $3,,$(error smart: arg \#3 must be the source file))\
+$(if $4,$(call sm-check-defined,$(strip $4),smart: '$(strip $4)' must be defined as a callback for compile flags),\
+  $(error smart: arg \#4 must be a callback for command line flags))\
+$(call sm.rule,compile,$(strip $1),$(strip $2),$(strip $3),$(strip $4))
+endef #sm.rule.compile
 
-sm.rule.link     = $(call sm.rule,link,$1,$2,$3,$4,$5)
-sm.rule.link.c   = $(call sm.rule,link,c,$1,$2,$3,$4)
-sm.rule.link.c++ = $(call sm.rule,link,c++,$1,$2,$3,$4)
-sm.rule.link.asm = $(call sm.rule,link,asm,$1,$2,$3,$4)
+## eg. $(call sm.rule.link, LANG, TARGET, PREREQUISITES, callback-FLAGS, [,callack-LIBS])
+define sm.rule.link
+$(if $1,,$(error smart: arg \#1 must be the source language))\
+$(if $2,,$(error smart: arg \#2 must be the output target))\
+$(if $3,,$(error smart: arg \#3 must be the source file))\
+$(if $4,,$(error smart: arg \#4 must be a callback for command line flags))\
+$(if $5,$(call sm-check-defined,$(strip $5),smart: '$(strip $5)' must be defined as a callback for libs to be linked))\
+$(call sm.rule,link,$(strip $1),$(strip $2),$(strip $3),$(strip $4),$(strip $5))
+endef #sm.rule.link
+
+## FIXME: at this time $(sm.this.toolset) is empty, ...
+$(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
+  $(eval sm.rule.compile.$(sm._var._temp._lang) = $$(call sm.rule,compile,$(sm._var._temp._lang),$$1,$$2,$$3))\
+  $(eval sm.rule.link.$(sm._var._temp._lang) = $$(call sm.rule,link,$(sm._var._temp._lang),$$1,$$2,$$3,$$4)))

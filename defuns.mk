@@ -31,8 +31,14 @@ define sm-register-sources
       $(if $(sm.tool.$(strip $2)),\
            $(call sm-check-in-list,$(strip $1),sm.tool.$(strip $2).langs,smart: Toolset '$(strip $2)' donnot support '$(strip $1)')\
            $(call sm-check-origin,sm.tool.$(strip $2),file,smart: Toolset '$(strip $2)' unimplemented)\
+           $(foreach sm._var._temp._lang,$(sm.tool.$(strip $2).langs),\
+               $(call sm-check-undefined,sm.rule.compile.$(sm._var._temp._lang),smart: '$(sm.toolset.for.$(strip $1))' has registered for '$(strip $1)')\
+               $(call sm-check-undefined,sm.rule.link.$(sm._var._temp._lang),smart: '$(sm.toolset.for.$(strip $1))' has registered for '$(strip $1)')\
+               $(eval sm.rule.compile.$(sm._var._temp._lang) = $$(call sm.rule,compile,$(sm._var._temp._lang),$$1,$$2,$$3))\
+               $(eval sm.rule.link.$(sm._var._temp._lang) = $$(call sm.rule,link,$(sm._var._temp._lang),$$1,$$2,$$3,$$4)))\
            $(eval sm.tool.$(strip $2).$(strip $1).suffix += $(strip $3))\
-           $(foreach s,$3,$(eval sm.toolset.for$s := $(strip $2)))\
+           $(eval sm.toolset.for.$(strip $1) := $(strip $2))\
+           $(foreach s,$3,$(eval sm.toolset.for.file$s := $(strip $2)))\
            ,\
         $(error smart: Toolset '$(strip $2)' unimplemented)),\
    $(error smart: Toolset '$(strip $2)' unsupported.))
@@ -233,26 +239,32 @@ $(if $(call equal,$(origin $(strip $1)),undefined),\
   $(error $(or $(strip $3),smart: '$(strip $1)' is undefined)))\
 $(if $(call equal,$($(strip $1)),$(strip $2)),,\
   $(error $(or $(strip $3),smart: $$($(strip $1)) != '$(strip $2)', but '$($(strip $1))')))
-endef
+endef #sm-check-value
 
 ## Equals of two vars, eg. $(call sm-check-equal, foo, foo)
 define sm-check-equal
 $(if $(call equal,$(strip $1),$(strip $2)),,\
   $(error $(or $(strip $3),smart: '$(strip $1)' != '$(strip $2)')))
-endef
+endef #sm-check-equal
 
 ## eg. $(call sm-check-origin, sm.top, file)
 define sm-check-origin
 $(if $(call equal,$(origin $(strip $1)),$(strip $2)),,\
   $(error $(or $(strip $3),smart: '$(strip $1)' is not '$(strip $2)', but of '$(origin $(strip $1))')))
-endef
+endef #sm-check-origin
+
+## eg. $(call sm-check-defined, sm.top)
+define sm-check-defined
+$(if $(call equal,$(origin $(strip $1)),undefined),\
+  $(error $(or $(strip $2),smart: '$(strip $1)' is undefined)))
+endef #sm-check-defined
 
 ## Check the flavor of a var (undefined, recursive, simple)
 ## eg. $(call sm-check-flavor, sm.top, simple, Bad sm.top var)
 define sm-check-flavor
 $(if $(call equal,$(flavor $(strip $1)),$(strip $2)),,\
   $(error $(or $(strip $3),smart: '$(strip $1)' is not '$(strip $2)', but '$(flavor $(strip $1))')))
-endef
+endef #sm-check-flavor
 
 ## eg. $(call sm-check-in-list,item,list-name)
 define sm-check-in-list

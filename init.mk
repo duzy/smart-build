@@ -63,14 +63,14 @@ else
  $(call sm-register-sources, asm, gcc, .s .S)
  $(call sm-register-sources, c,   gcc, .c)
  $(call sm-check-equal,$(sm.tool.gcc),true, smart: gcc toolset not well)
- $(call sm-check-value, sm.toolset.for.cpp, gcc, smart: gcc toolset ignores .cpp)
- $(call sm-check-value, sm.toolset.for.c++, gcc, smart: gcc toolset ignores .c++)
- $(call sm-check-value, sm.toolset.for.cc,  gcc, smart: gcc toolset ignores .cc)
- $(call sm-check-value, sm.toolset.for.CC,  gcc, smart: gcc toolset ignores .CC)
- $(call sm-check-value, sm.toolset.for.C,   gcc, smart: gcc toolset ignores .C)
- $(call sm-check-value, sm.toolset.for.s,   gcc, smart: gcc toolset ignores .s)
- $(call sm-check-value, sm.toolset.for.S,   gcc, smart: gcc toolset ignores .S)
- $(call sm-check-value, sm.toolset.for.c,   gcc, smart: gcc toolset ignores .c)
+ $(call sm-check-value, sm.toolset.for.file.cpp, gcc, smart: gcc toolset ignores .cpp)
+ $(call sm-check-value, sm.toolset.for.file.c++, gcc, smart: gcc toolset ignores .c++)
+ $(call sm-check-value, sm.toolset.for.file.cc,  gcc, smart: gcc toolset ignores .cc)
+ $(call sm-check-value, sm.toolset.for.file.CC,  gcc, smart: gcc toolset ignores .CC)
+ $(call sm-check-value, sm.toolset.for.file.C,   gcc, smart: gcc toolset ignores .C)
+ $(call sm-check-value, sm.toolset.for.file.s,   gcc, smart: gcc toolset ignores .s)
+ $(call sm-check-value, sm.toolset.for.file.S,   gcc, smart: gcc toolset ignores .S)
+ $(call sm-check-value, sm.toolset.for.file.c,   gcc, smart: gcc toolset ignores .c)
 endif
 
 sm.log.enabled :=
