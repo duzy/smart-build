@@ -92,9 +92,11 @@ define sm.fun.$(sm.this.name).get-link-libs.any
  $(sm.var.$(sm.this.name).link.libs)
 endef #sm.fun.$(sm.this.name).get-link-libs.any
 
-sm.fun.$(sm.this.name).get-compile-options.c = $(strip $(call sm.fun.$(sm.this.name).get-compile-options,c))
-sm.fun.$(sm.this.name).get-compile-options.c++ = $(strip $(call sm.fun.$(sm.this.name).get-compile-options,c++))
-sm.fun.$(sm.this.name).get-compile-options.asm = $(strip $(call sm.fun.$(sm.this.name).get-compile-options,asm))
+# sm.fun.$(sm.this.name).get-compile-options.c = $(strip $(call sm.fun.$(sm.this.name).get-compile-options,c))
+# sm.fun.$(sm.this.name).get-compile-options.c++ = $(strip $(call sm.fun.$(sm.this.name).get-compile-options,c++))
+# sm.fun.$(sm.this.name).get-compile-options.asm = $(strip $(call sm.fun.$(sm.this.name).get-compile-options,asm))
+$(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
+  $(eval sm.fun.$(sm.this.name).get-compile-options.$(sm._var._temp._lang) = $$(strip $$(call sm.fun.$(sm.this.name).get-compile-options,$(sm._var._temp._lang)))))
 
 sm.fun.$(sm.this.name).get-link-options = $(strip $(call sm.fun.$(sm.this.name).get-link-options.any))
 sm.fun.$(sm.this.name).get-link-libs = $(strip $(call sm.fun.$(sm.this.name).get-link-libs.any))
@@ -201,10 +203,11 @@ endef #sm.fun.make-module-rule
 
 ##################################################
 
-# TODO: sm.fun.make-rules should apply to all registered suffixes
-$(call sm.fun.make-rules, c)
-$(call sm.fun.make-rules, c++)
-$(call sm.fun.make-rules, asm)
+# $(call sm.fun.make-rules, c)
+# $(call sm.fun.make-rules, c++)
+# $(call sm.fun.make-rules, asm)
+$(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
+  $(eval $$(call sm.fun.make-rules,$(sm._var._temp._lang))))
 $(call sm.fun.make-module-rule)
 
 ifeq ($(strip $(sm.this.sources.c)$(sm.this.sources.c++)$(sm.this.sources.asm)),)

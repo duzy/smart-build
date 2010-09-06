@@ -16,6 +16,7 @@ sm.tool.gcc.cmd.c++ := g++
 sm.tool.gcc.cmd.as := gas
 sm.tool.gcc.cmd.ld := ld
 
+## languages supported by this toolset
 sm.tool.gcc.langs := c c++ asm
 sm.tool.gcc.c.suffix :=
 sm.tool.gcc.c++.suffix :=
