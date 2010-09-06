@@ -1,3 +1,4 @@
+#
 
 $(call sm-check-not-empty,sm.top)
 $(call sm-check-not-empty,sm.this.toolset,smart: Must set 'sm.this.toolset')
@@ -7,6 +8,9 @@ ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)),)
 endif
 
 ##################################################
+
+# TODO: support sm.this.compile.options.infile
+# TODO: 
 
 sm.var.$(sm.this.name).compile.options. :=
 sm.var.$(sm.this.name).compile.options.c :=
@@ -175,6 +179,8 @@ $(eval $(call sm.code.make-rules,$(strip $1)))
 endef #sm.fun.make-rules
 
 
+# TODO: sm.fun.choose-linker, this should be decided by
+#       sm.tool.$(sm.this.toolset)
 ##
 ## Make a choice in sm.rule.link.c, sm.rule.link.c++, etc.
 ## Returns the lang-type suffix.
@@ -195,6 +201,7 @@ endef #sm.fun.make-module-rule
 
 ##################################################
 
+# TODO: sm.fun.make-rules should apply to all registered suffixes
 $(call sm.fun.make-rules, c)
 $(call sm.fun.make-rules, c++)
 $(call sm.fun.make-rules, asm)

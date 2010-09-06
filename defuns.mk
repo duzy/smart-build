@@ -29,6 +29,7 @@ define sm-register-sources
  $(if $(wildcard $(sm._toolset.mk)),\
       $(if $(sm.tool.$(strip $2)),,$(eval include $(sm._toolset.mk)))\
       $(if $(sm.tool.$(strip $2)),\
+           $(call sm-check-in-list,$(strip $1),sm.tool.$(strip $2).langs,smart: Toolset '$(strip $2)' donnot support '$(strip $1)')\
            $(call sm-check-origin,sm.tool.$(strip $2),file,smart: Toolset '$(strip $2)' unimplemented)\
            $(eval sm.tool.$(strip $2).$(strip $1).suffix += $(strip $3))\
            $(foreach s,$3,$(eval sm.toolset.for$s := $(strip $2)))\
@@ -247,8 +248,18 @@ $(if $(call equal,$(origin $(strip $1)),$(strip $2)),,\
 endef
 
 ## Check the flavor of a var (undefined, recursive, simple)
-## eg. (call sm-check-flavor, sm.top, simple, Bad sm.top var)
+## eg. $(call sm-check-flavor, sm.top, simple, Bad sm.top var)
 define sm-check-flavor
 $(if $(call equal,$(flavor $(strip $1)),$(strip $2)),,\
   $(error $(or $(strip $3),smart: '$(strip $1)' is not '$(strip $2)', but '$(flavor $(strip $1))')))
 endef
+
+## eg. $(call sm-check-in-list,item,list-name)
+define sm-check-in-list
+$(if $(strip $1),\
+    $(if $(strip $2),\
+        $(if $(filter $1,$($(strip $2))),,\
+          $(error $(or $(strip $3),smart: '$(strip $1)' not in '$(strip $2)'))),\
+      $(error $(or $(strip $3),smart: list name is empty))),\
+  $(error $(or $(strip $3),smart: item is empty)))
+endef #sm-check-in-list
