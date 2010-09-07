@@ -184,7 +184,7 @@ endef #sm.fun.make-rules
 ## Make a choice in sm.rule.link.c, sm.rule.link.c++, etc.
 ## Returns the lang-type suffix.
 define sm.fun.choose-linker
-c
+$(info TODO: choose linker by the toolset)c
 endef #sm.fun.choose-linker
 
 ##
