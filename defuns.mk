@@ -22,18 +22,22 @@ endef
 #  eg. $(call sm-register-sources, asm, gcc, .s .S)
 #
 define sm-register-sources
- $(if $1,,$(error smart: Must provide lang-type as arg \#1))\
- $(if $2,,$(error smart: Must provide toolset as arg \#2))\
- $(if $3,,$(error smart: Must provide source extensions as arg \#3))\
+ $(if $1,,$(error smart: must provide lang-type as arg \#1))\
+ $(if $2,,$(error smart: must provide toolset as arg \#2))\
+ $(if $3,,$(error smart: must provide source extensions as arg \#3))\
  $(eval sm._toolset.mk := $(sm.dir.buildsys)/tools/$(strip $2).mk)\
  $(if $(wildcard $(sm._toolset.mk)),\
-      $(if $(sm.tool.$(strip $2)),,$(eval include $(sm._toolset.mk)))\
+      $(if $(sm.tool.$(strip $2)),,\
+        $(eval include $(sm._toolset.mk))\
+        $(if $(sm.tool.$(strip $2)),$(info smart: '$(strip $2)' toolset included),\
+           $(error '$(strip $2)' toolset not well defined in '$(sm._toolset.mk)'))\
+        $(foreach sm._var._temp._lang,$(sm.tool.$(strip $2).langs),\
+             $(call sm-check-undefined,sm.rule.compile.$(strip $1),smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
+             $(call sm-check-undefined,sm.rule.link.$(strip $1),smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')))\
       $(if $(sm.tool.$(strip $2)),\
-           $(call sm-check-in-list,$(strip $1),sm.tool.$(strip $2).langs,smart: Toolset '$(strip $2)' donnot support '$(strip $1)')\
-           $(call sm-check-origin,sm.tool.$(strip $2),file,smart: Toolset '$(strip $2)' unimplemented)\
+           $(call sm-check-in-list,$(strip $1),sm.tool.$(strip $2).langs,smart: toolset '$(strip $2)' donnot support '$(strip $1)')\
+           $(call sm-check-origin,sm.tool.$(strip $2),file,smart: toolset '$(strip $2)' unimplemented)\
            $(foreach sm._var._temp._lang,$(sm.tool.$(strip $2).langs),\
-               $(call sm-check-undefined,sm.rule.compile.$(sm._var._temp._lang),smart: '$(sm.toolset.for.$(strip $1))' has registered for '$(strip $1)')\
-               $(call sm-check-undefined,sm.rule.link.$(sm._var._temp._lang),smart: '$(sm.toolset.for.$(strip $1))' has registered for '$(strip $1)')\
                $(eval sm.rule.compile.$(sm._var._temp._lang) = $$(call sm.rule,compile,$(sm._var._temp._lang),$$1,$$2,$$3))\
                $(eval sm.rule.link.$(sm._var._temp._lang) = $$(call sm.rule,link,$(sm._var._temp._lang),$$1,$$2,$$3,$$4)))\
            $(eval sm.tool.$(strip $2).$(strip $1).suffix += $(strip $3))\
@@ -247,6 +251,12 @@ $(if $(call equal,$(strip $1),$(strip $2)),,\
   $(error $(or $(strip $3),smart: '$(strip $1)' != '$(strip $2)')))
 endef #sm-check-equal
 
+## Not-Equals of two vars, eg. $(call sm-check-not-equal, foo, foo)
+define sm-check-not-equal
+$(if $(call equal,$(strip $1),$(strip $2)),\
+  $(error $(or $(strip $3),smart: '$(strip $1)' == '$(strip $2)')))
+endef #sm-check-equal
+
 ## eg. $(call sm-check-origin, sm.top, file)
 define sm-check-origin
 $(if $(call equal,$(origin $(strip $1)),$(strip $2)),,\
@@ -257,6 +267,12 @@ endef #sm-check-origin
 define sm-check-defined
 $(if $(call equal,$(origin $(strip $1)),undefined),\
   $(error $(or $(strip $2),smart: '$(strip $1)' is undefined)))
+endef #sm-check-defined
+
+## eg. $(call sm-check-undefined, sm.top)
+define sm-check-undefined
+$(if $(call equal,$(origin $(strip $1)),undefined),,\
+  $(error $(or $(strip $2),smart: '$(strip $1)' must no be defined)))
 endef #sm-check-defined
 
 ## Check the flavor of a var (undefined, recursive, simple)

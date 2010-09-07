@@ -65,11 +65,13 @@ endif
 
 #$(info PHONY: $(sm.rules.phony.*))
 #$(info rules: $(sm.rules.*))
-.PHONY: build-goals $(sm.rules.phony.*)
+.PHONY: build-goals clean $(sm.rules.phony.*)
 ifneq ($(sm.global.goals),)
   build-goals: $(sm.global.goals)
+  clean: $(sm.global.goals:goal-%=clean-%)
 else
-  build-goals:; $(info smart: No goals.) @true
+  build-goals:; $(info smart: no goals) @true
+  clean:; $(info smart: it\'s clear) @true
 endif
 
 _sm_mods :=

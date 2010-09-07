@@ -6,7 +6,6 @@
 ##  sm.tool.gcc
 ##
 
-$(info smart: gcc toolset included)
 $(call sm-check-origin, sm.tool.gcc, undefined)
 
 sm.tool.gcc := true
