@@ -149,7 +149,7 @@ define sm.fun.make-object-rule
  $(if $1,,$(error smart: arg \#1 must be the lang type))\
  $(if $2,,$(error smart: arg \#2 must be the source file))\
  $(eval sm._var._temp._object := $(call sm.fun.calculate-object.$(strip $3),$2))\
- $(eval sm.this.objects += $(sm._var._temp._object))\
+ $(eval sm.var.$(sm.this.name).objects += $(sm._var._temp._object))\
  $(call sm.rule.compile.$(strip $1),$(sm._var._temp._object),\
     $(call sm.fun.calculate-source.$(strip $3),$2),\
     sm.fun.$(sm.this.name).get-compile-options.$(strip $1))
@@ -184,21 +184,26 @@ endef #sm.fun.make-rules
 ## Make a choice in sm.rule.link.c, sm.rule.link.c++, etc.
 ## Returns the lang-type suffix.
 define sm.fun.choose-linker
-.c
+c
 endef #sm.fun.choose-linker
 
 ##
 ## Make module build rule
 define sm.fun.make-module-rule
-$(if $(sm.this.objects),\
-    $(call sm.rule.link$(call sm.fun.choose-linker),\
-       $(call sm.fun.calculate-module.bin) $(call sm.fun.calculate-module.lib),\
-       $(sm.this.objects), sm.fun.$(sm.this.name).get-link-options,\
+$(if $(sm.var.$(sm.this.name).objects),\
+    $(eval sm.var.$(sm.this.name).targets := $(call sm.fun.calculate-module.bin) $(call sm.fun.calculate-module.lib))\
+    $(call sm.rule.link.$(call sm.fun.choose-linker),\
+       $$(sm.var.$(sm.this.name).targets),\
+       $$(sm.var.$(sm.this.name).objects),\
+       sm.fun.$(sm.this.name).get-link-options,\
        sm.fun.$(sm.this.name).get-link-libs),\
   $(error smart: No objects for building '$(sm.this.name)'))
 endef #sm.fun.make-module-rule
 
 ##################################################
+
+sm.var.$(sm.this.name).targets :=
+sm.var.$(sm.this.name).objects :=
 
 $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
   $(eval $$(call sm.fun.make-rules,$(sm._var._temp._lang))))
@@ -209,9 +214,16 @@ ifeq ($(strip $(sm.this.sources.c)$(sm.this.sources.c++)$(sm.this.sources.asm)),
   $(error smart: internal error: sources mis-calculated)
 endif
 
-ifeq ($(strip $(sm.this.objects)),)
+ifeq ($(strip $(sm.var.$(sm.this.name).targets)),)
+  $(error smart: internal error: targets mis-calculated)
+endif
+
+ifeq ($(strip $(sm.var.$(sm.this.name).objects)),)
   $(error smart: internal error: objects mis-calculated)
 endif
+
+sm.this.targets = $(sm.var.$(sm.this.name).targets)
+sm.this.objects = $(sm.var.$(sm.this.name).objects)
 
 ##################################################
 
@@ -232,12 +244,12 @@ clean-$(sm.this.name): \
 clean-$(sm.this.name)-target:; $(info smart: do you mean $@s?) @true
 
 clean-$(sm.this.name)-targets:
-	$(call sm.tool.common.rm,$(sm.this.targets))
+	$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).targets))
 
 clean-$(sm.this.name)-objects:
-	$(call sm.tool.common.rm,$(sm.this.objects))
+	$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).objects))
 
 ##################################################
-# $(info objects: $(sm.this.objects))
+# $(info objects: $(sm.var.$(sm.this.name).objects))
 # $(info c: $(sm.this.sources.c))
 # $(info c++: $(sm.this.sources.c++))
