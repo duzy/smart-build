@@ -6,7 +6,7 @@
 ## other files to be included.
 
 # Load default build parameters.
-include $(sm.dir.buildsys)/defparams.mk
+include $(sm.dir.buildsys)/old/defparams.mk
 
 d := $(sm.dir.out)
 ifeq ($d,)

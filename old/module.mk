@@ -99,7 +99,7 @@ _sm_has_sources.c++ :=
 _sm_has_sources.h :=
 
 ifneq ($(strip $(sm.this.sources) $(sm.this.sources.external)),)
-  include $(sm.dir.buildsys)/objrules.mk
+  include $(sm.dir.buildsys)/old/objrules.mk
 else
   ifeq ($(strip $(sm.this.objects)),)
     $(error No sources or objects for $(sm.this.name))
@@ -107,9 +107,9 @@ else
 endif
 
 ifeq ($(sm.this.type),static)
-  include $(sm.dir.buildsys)/archive.mk
+  include $(sm.dir.buildsys)/old/archive.mk
 else
-  include $(sm.dir.buildsys)/binary.mk
+  include $(sm.dir.buildsys)/old/binary.mk
 endif
 
 s :=

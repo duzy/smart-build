@@ -117,7 +117,7 @@ endef
 define sm-load-module
 $(if $1,\
   $(if $(wildcard $1),,$(error Module build script '$1' missed!))\
-  $(eval $$(info smart: Load '$1'..)
+  $(eval $$(info smart: load '$1'..)
     include $(sm.dir.buildsys)/preload.mk
     include $1
     -include $(sm.dir.buildsys)/postload.mk
@@ -135,7 +135,8 @@ define sm-generate-objects
  $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
     $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.dir.out)/$(sm.log.filename),true))\
     $(info smart: objects for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
-    $(eval include $(sm.dir.buildsys)/objrules.mk),\
+    $(warning TODO: refactor this)\
+    $(eval include $(sm.dir.buildsys)/old/objrules.mk),\
     $(error smart: No sources defined))
 endef
 
@@ -178,6 +179,7 @@ define sm-load-subdirs
 $(eval include $(sm.dir.buildsys)/subdirs.mk)
 endef
 
+# DEPRECATED
 ## Define variable prefixed by 'sm.var.temp.'.
 ## NOTE: Donot use it in multi-level 'include's
 ##   usage 1: $(call sm-var-temp, :=, value list)
@@ -190,6 +192,7 @@ define sm-var-temp
    $(warning Defining local variable must provide a name.))
 endef
 
+# DEPRECATED
 ## Unset variables prefixed by 'sm.var.temp.'
 define sm-var-temp-clean
  $(foreach v,$(sm.var.temp.*),$(eval sm.var.temp.$v:=))\

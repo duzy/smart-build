@@ -40,7 +40,7 @@ ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
   goal-$(sm.this.name) : $(sm.this.depends) $(sm.this.depends.copyfiles) $(sm.var.temp._g)
 
   ifeq ($(strip $(sm.this.toolset)),)
-    include $(sm.dir.buildsys)/old_style_module.mk
+    include $(sm.dir.buildsys)/old/module.mk
     clean-$(sm.this.name): ; @echo "TODO: clean $(@:clean-%=%)..."
   else
     include $(sm.dir.buildsys)/module.mk
