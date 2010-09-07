@@ -71,7 +71,7 @@ ifneq ($(sm.global.goals),)
   clean: $(sm.global.goals:goal-%=clean-%)
 else
   build-goals:; $(info smart: no goals) @true
-  clean:; $(info smart: it\'s clear) @true
+  clean:; $(info smart: nothing dirty) @true
 endif
 
 _sm_mods :=
