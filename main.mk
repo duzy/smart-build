@@ -44,13 +44,13 @@ endif
 
 ##################################################
 
-_sm_mods := $(wildcard $(sm.dir.top)/smart.mk)
+sm.global.smartfiles.toplevel := $(wildcard $(sm.dir.top)/smart.mk)
 #_sm_mods += $(call sm-find-sub-modules, $(sm.dir.top))
 
-ifneq ($(_sm_mods),)
+ifneq ($(strip $(sm.global.smartfiles.toplevel)),)
   sm.global.goals :=
   sm.global.modules :=
-  $(foreach v,$(_sm_mods),$(eval $$(call sm-load-module,$v)))
+  $(foreach v,$(sm.global.smartfiles.toplevel),$(eval $$(call sm-load-module,$v)))
   $(foreach v,$(sm.global.modules),$(info smart: module '$v' by $(sm.global.modules.$v)))
 else
   $(info smart: ************************************************************)
@@ -74,4 +74,4 @@ else
   clean:; $(info smart: nothing dirty) @true
 endif
 
-_sm_mods :=
+
