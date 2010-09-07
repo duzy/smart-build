@@ -215,8 +215,8 @@ endif
 
 ##################################################
 
-$(call sm.check-not-empty, sm.tool.common.rm)
-$(call sm.check-not-empty, sm.tool.common.rmdir)
+$(call sm-check-not-empty, sm.tool.common.rm)
+$(call sm-check-not-empty, sm.tool.common.rmdir)
 
 sm.rules.phony.* += \
   clean-$(sm.this.name) \
@@ -227,14 +227,15 @@ sm.rules.phony.* += \
 clean-$(sm.this.name): \
   clean-$(sm.this.name)-targets \
   clean-$(sm.this.name)-objects
+	@echo "'$(sm.this.name)' is cleaned."
 
 clean-$(sm.this.name)-target:; $(info smart: do you mean $@s?) @true
 
 clean-$(sm.this.name)-targets:
-	@$(call sm.tool.common.rm,$(sm.this.targets))
+	$(call sm.tool.common.rm,$(sm.this.targets))
 
 clean-$(sm.this.name)-objects:
-	@$(call sm.tool.common.rm,$(sm.this.objects))
+	$(call sm.tool.common.rm,$(sm.this.objects))
 
 ##################################################
 # $(info objects: $(sm.this.objects))

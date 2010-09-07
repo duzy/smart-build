@@ -59,6 +59,7 @@ sm.toolset := gcc
 ifneq ($(origin sm-register-sources),file)
  $(error smart: 'sm-register-sources' unsafe: '$(sm-register-sources)')
 else
+ include $(sm.dir.buildsys)/tools/common.mk
  $(call sm-register-sources, c++, gcc, .cpp .c++ .cc .CC .C)
  $(call sm-register-sources, asm, gcc, .s .S)
  $(call sm-register-sources, c,   gcc, .c)

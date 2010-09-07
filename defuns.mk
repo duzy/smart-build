@@ -23,7 +23,8 @@ endef
 #
 define sm-register-sources
  $(if $1,,$(error smart: must provide lang-type as arg \#1))\
- $(if $2,,$(error smart: must provide toolset as arg \#2))\
+ $(if $2,$(call sm-check-not-equal,$(strip $2),common,smart: cannot register toolset of name 'common'),\
+   $(error smart: must provide toolset as arg \#2))\
  $(if $3,,$(error smart: must provide source extensions as arg \#3))\
  $(eval sm._toolset.mk := $(sm.dir.buildsys)/tools/$(strip $2).mk)\
  $(if $(wildcard $(sm._toolset.mk)),\
