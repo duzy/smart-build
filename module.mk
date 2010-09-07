@@ -218,16 +218,22 @@ endif
 $(call sm.check-not-empty, sm.tool.common.rm)
 $(call sm.check-not-empty, sm.tool.common.rmdir)
 
+sm.rules.phony.* += \
+  clean-$(sm.this.name) \
+  clean-$(sm.this.name)-target \
+  clean-$(sm.this.name)-targets \
+  clean-$(sm.this.name)-objects
+
 clean-$(sm.this.name): \
-  clean-$(sm.this.name).targets \
-  clean-$(sm.this.name).objects
+  clean-$(sm.this.name)-targets \
+  clean-$(sm.this.name)-objects
 
-clean-$(sm.this.name).target:; $(info smart: do you mean $@s?) @true
+clean-$(sm.this.name)-target:; $(info smart: do you mean $@s?) @true
 
-clean-$(sm.this.name).targets:
+clean-$(sm.this.name)-targets:
 	@$(call sm.tool.common.rm,$(sm.this.targets))
 
-clean-$(sm.this.name).objects:
+clean-$(sm.this.name)-objects:
 	@$(call sm.tool.common.rm,$(sm.this.objects))
 
 ##################################################
