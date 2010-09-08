@@ -13,6 +13,14 @@ endef
 # $(info equal: $(call equal,foobar,foo))
 # $(info equal: $(call equal,foo,foobar))
 
+define is-true
+$(or $(call equal,$1,true),$(call equal,$1,yes))
+endef
+
+define is-false
+$(if $(call is-true),,true)
+endef
+
 #####
 # Toolset support
 #####

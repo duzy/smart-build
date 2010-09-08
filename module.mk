@@ -9,6 +9,20 @@ endif
 
 ##################################################
 
+define sm.code.check-infile
+ifeq ($$(call is-true,$$(sm.this.$1.flags.infile)),true)
+  ifeq ($$(sm.this.$1.options.infile),)
+    sm.this.$1.options.infile := true
+  else
+    $$(error smart: 'sm.this.$1.options.infile' and 'sm.this.$1.flags.infile' mismatched)
+  endif
+endif
+endef #sm.code.check-infile
+
+$(foreach a,compile link,$(eval $(call sm.code.check-infile,$a)))
+
+##################################################
+
 # TODO: support sm.this.compile.options.infile
 # TODO: 
 
@@ -26,6 +40,15 @@ define sm.code.calculate-includes
 endef #sm.code.calculate-includes
 
 ##
+define sm.code.switch-options-into-file
+$(if $(call is-true,$(sm.this.$1.options.infile)),\
+     $$(call sm-util-mkdir,$(sm.dir.out.tmp)/$(sm.this.name))\
+     $$(eval sm.var.$(sm.this.name).$1.options$2 := $$(subst \",\\\",$$(sm.var.$(sm.this.name).$1.options$2)))\
+     $$(shell echo $$(sm.var.$(sm.this.name).$1.options$2) > $(sm.dir.out.tmp)/$(sm.this.name)/$1.options$2)\
+     $$(eval sm.var.$(sm.this.name).$1.options$2 := @$(sm.dir.out.tmp)/$(sm.this.name)/$1.options$2))
+endef #sm.code.switch-options-into-file
+
+##
 define sm.code.calculate-compile-options
  sm.var.$(sm.this.name).compile.options.$1 := \
   $(strip $(sm.global.compile.flags) $(sm.global.compile.options)) \
@@ -34,6 +57,7 @@ define sm.code.calculate-compile-options
   $(strip $(sm.this.compile.flags.$1) $(sm.this.compile.options.$1))
  $$(call sm.code.calculate-includes,$1,sm.global.includes)
  $$(call sm.code.calculate-includes,$1,sm.this.includes)
+ $(call sm.code.switch-options-into-file,compile,.$1)
 endef #sm.code.calculate-compile-options
 
 ##
@@ -41,6 +65,7 @@ define sm.code.calculate-link-options
  sm.var.$(sm.this.name).link.options := \
   $(strip $(sm.global.link.flags) $(sm.global.link.options)) \
   $(strip $(sm.this.link.flags) $(sm.this.link.options))
+ $(call sm.code.switch-options-into-file,link)
 endef #sm.code.calculate-link-options
 
 ##
@@ -184,7 +209,7 @@ endef #sm.fun.make-rules
 ## Make a choice in sm.rule.link.c, sm.rule.link.c++, etc.
 ## Returns the lang-type suffix.
 define sm.fun.choose-linker
-$(info TODO: choose linker by the toolset)c
+$(warning TODO: choose linker by the toolset)c
 endef #sm.fun.choose-linker
 
 ##
@@ -244,10 +269,10 @@ clean-$(sm.this.name): \
 clean-$(sm.this.name)-target:; $(info smart: do you mean $@s?) @true
 
 clean-$(sm.this.name)-targets:
-	$(if $(call equal,$(sm.this.verbose),true),,$(info remove: $(sm.var.$(sm.this.name).targets))@)$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).targets))
+	$(if $(call is-true,$(sm.this.verbose)),,$(info remove: $(sm.var.$(sm.this.name).targets))@)$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).targets))
 
 clean-$(sm.this.name)-objects:
-	$(if $(call equal,$(sm.this.verbose),true),,$(info remove:$(sm.var.$(sm.this.name).objects))@)$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).objects))
+	$(if $(call is-true,$(sm.this.verbose)),,$(info remove:$(sm.var.$(sm.this.name).objects))@)$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).objects))
 
 ##################################################
 # $(info objects: $(sm.var.$(sm.this.name).objects))
