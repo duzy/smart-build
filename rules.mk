@@ -10,7 +10,10 @@ $(call sm-check-flavor,sm.tool.$(sm.this.toolset).$1.$2,recursive,\
    Broken toolset '$(sm.this.toolset)': 'sm.tool.$(sm.this.toolset).$1.$2' not recursive)
  $3 : $4
 	$$(call sm-util-mkdir,$$(@D))
-	$$(call sm.tool.$(sm.this.toolset).$1.$2,$$@,$$^,$5,$6)
+	$(if $(sm.this.verbose),,$(if $(call equal,$1,compile),\
+                                      $$(info $2: $(sm.this.name) += $(4:$(sm.top)/%=%)),\
+                                      $$(info $2: $(sm.this.name) -> $3)\
+             )@)$$(call sm.tool.$(sm.this.toolset).$1.$2,$$@,$$^,$5,$6)
 endef #sm.rule.template
 
 ## eg. $(call sm.rule, ACTION, LANG, TARGET, PREREQUISITES, callback-FLAGS [,callack-LIBS])
