@@ -222,7 +222,7 @@ endef #sm.fun.choose-linker
 define sm.fun.make-module-rule
 $(if $(sm.var.$(sm.this.name).objects),\
     $(eval sm.var.$(sm.this.name).targets := $(call sm.fun.calculate-module.bin) $(call sm.fun.calculate-module.lib))\
-    $(call sm.rule.link.$(call sm.fun.choose-linker),\
+    $(call sm.rule.$(if $(call equal,$(sm.this.type),static),archive,link).$(call sm.fun.choose-linker),\
        $$(sm.var.$(sm.this.name).targets),\
        $$(sm.var.$(sm.this.name).objects),\
        sm.fun.$(sm.this.name).get-link-options,\

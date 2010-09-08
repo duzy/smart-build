@@ -45,6 +45,10 @@ $(if $5,$(call sm-check-defined,$(strip $5),smart: '$(strip $5)' must be defined
 $(call sm.rule,link,$(strip $1),$(strip $2),$(strip $3),$(strip $4),$(strip $5))
 endef #sm.rule.link
 
+define sm.rule.archive
+$(error TODO: archive rule)
+endef #sm.rule.archive
+
 # ## FIXME: at this time $(sm.this.toolset) is empty, ...
 # $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
 #   $(eval sm.rule.compile.$(sm._var._temp._lang) = $$(call sm.rule,compile,$(sm._var._temp._lang),$$1,$$2,$$3))\
