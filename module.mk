@@ -87,6 +87,11 @@ define sm.code.calculate-link-libs
  $$(call sm.code.calculate-libdirs,sm.this.libdirs)
  $$(call sm.code.calculate-libs,sm.global.libs)
  $$(call sm.code.calculate-libs,sm.this.libs)
+ $(if $(call is-true,$(sm.this.link.options.infile)),\
+     $$(call sm-util-mkdir,$(sm.dir.out.tmp)/$(sm.this.name))\
+     $$(eval sm.var.$(sm.this.name).link.libs := $$(subst \",\\\",$$(sm.var.$(sm.this.name).link.libs)))\
+     $$(shell echo $$(sm.var.$(sm.this.name).link.libs) > $(sm.dir.out.tmp)/$(sm.this.name)/link.libs)\
+     $$(eval sm.var.$(sm.this.name).link.libs := @$(sm.dir.out.tmp)/$(sm.this.name)/link.libs))
 endef #sm.code.calculate-link-libs
 
 # $(info -----)
