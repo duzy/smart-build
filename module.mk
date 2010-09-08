@@ -244,10 +244,10 @@ clean-$(sm.this.name): \
 clean-$(sm.this.name)-target:; $(info smart: do you mean $@s?) @true
 
 clean-$(sm.this.name)-targets:
-	$(if $(sm.this.verbose),,$(info remove: $(sm.var.$(sm.this.name).targets))@)$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).targets))
+	$(if $(call equal,$(sm.this.verbose),true),,$(info remove: $(sm.var.$(sm.this.name).targets))@)$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).targets))
 
 clean-$(sm.this.name)-objects:
-	$(if $(sm.this.verbose),,$(info remove:$(sm.var.$(sm.this.name).objects))@)$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).objects))
+	$(if $(call equal,$(sm.this.verbose),true),,$(info remove:$(sm.var.$(sm.this.name).objects))@)$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).objects))
 
 ##################################################
 # $(info objects: $(sm.var.$(sm.this.name).objects))
