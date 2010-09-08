@@ -160,15 +160,17 @@ endef #sm.fun.calculate-source.external
 
 ##
 ## binary module to be built
-define sm.fun.calculate-module.bin
+define sm.fun.calculate-exe-module-targets
 $(call sm-to-relative-path,$(sm.dir.out.bin))/$(sm.this.name)$(sm.this.suffix)
-endef #sm.fun.calculate-module.bin
+endef #sm.fun.calculate-exe-module-targets
 
-##
-## library module to be built
-#define sm.fun.calculate-module.lib
-#$(call sm-to-relative-path,$(sm.dir.out.lib))/$(sm.this.name)$(sm.this.suffix)
-#endef #sm.fun.calculate-module.lib
+define sm.fun.calculate-shared-module-targets
+$(call sm-to-relative-path,$(sm.dir.out.bin))/$(sm.this.name)$(sm.this.suffix)
+endef #sm.fun.calculate-shared-module-targets
+
+define sm.fun.calculate-static-module-targets
+$(call sm-to-relative-path,$(sm.dir.out.lib))/lib$(sm.this.name:lib%=%)$(sm.this.suffix)
+endef #sm.fun.calculate-static-module-targets
 
 ##################################################
 
@@ -213,16 +215,23 @@ endef #sm.fun.make-rules
 ##
 ## Make a choice in sm.rule.link.c, sm.rule.link.c++, etc.
 ## Returns the lang-type suffix.
-define sm.fun.choose-linker
+define sm.fun.get-linker
 $(warning TODO: choose linker by the toolset)c
-endef #sm.fun.choose-linker
+endef #sm.fun.get-linker
+
+sm.var.rule-action.static := archive
+sm.var.rule-action.shared := link
+sm.var.rule-action.exe := link
 
 ##
 ## Make module build rule
 define sm.fun.make-module-rule
 $(if $(sm.var.$(sm.this.name).objects),\
-    $(eval sm.var.$(sm.this.name).targets := $(call sm.fun.calculate-module.bin) $(call sm.fun.calculate-module.lib))\
-    $(call sm.rule.$(if $(call equal,$(sm.this.type),static),archive,link).$(call sm.fun.choose-linker),\
+    $(eval sm.var.$(sm.this.name).targets := $(strip $(call sm.fun.calculate-$(sm.this.type)-module-targets)))\
+    $(call sm-check-defined,sm.var.rule-action.$(sm.this.type))\
+    $(call sm-check-defined,sm.fun.get-linker)\
+    $(call sm-check-defined,sm.rule.$(sm.var.rule-action.$(sm.this.type)).$(sm.fun.get-linker))\
+    $(call sm.rule.$(sm.var.rule-action.$(sm.this.type)).$(sm.fun.get-linker),\
        $$(sm.var.$(sm.this.name).targets),\
        $$(sm.var.$(sm.this.name).objects),\
        sm.fun.$(sm.this.name).get-link-options,\

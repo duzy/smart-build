@@ -14,6 +14,7 @@ sm.tool.gcc.cmd.cc := gcc
 sm.tool.gcc.cmd.c++ := g++
 sm.tool.gcc.cmd.as := gas
 sm.tool.gcc.cmd.ld := ld
+sm.tool.gcc.cmd.ar := ar crs
 
 ## languages supported by this toolset
 sm.tool.gcc.langs := c c++ asm
@@ -92,3 +93,10 @@ define sm.tool.gcc.link
 $(sm.tool.gcc.cmd.ld) $($(strip $3)) -o $(strip $1) $(strip $2) $($(strip $4))
 endef
 
+define sm.tool.gcc.archive
+$(sm.tool.gcc.cmd.ar) $(strip $1) $(strip $2)
+endef
+
+sm.tool.gcc.archive.c   = $(call sm.tool.gcc.archive,$1,$2,$3,$4)
+sm.tool.gcc.archive.c++ = $(call sm.tool.gcc.archive,$1,$2,$3,$4)
+sm.tool.gcc.archive.asm = $(call sm.tool.gcc.archive,$1,$2,$3,$4)

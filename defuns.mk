@@ -13,6 +13,10 @@ endef
 # $(info equal: $(call equal,foobar,foo))
 # $(info equal: $(call equal,foo,foobar))
 
+define not-equal
+$(if $(findstring x$1x,x$2x),,true)
+endef
+
 define is-true
 $(or $(call equal,$1,true),$(call equal,$1,yes))
 endef
@@ -24,6 +28,10 @@ endef
 #####
 # Toolset support
 #####
+
+sm.var.rule-action.static := archive
+sm.var.rule-action.shared := link
+sm.var.rule-action.exe := link
 
 #
 #  eg. $(call sm-register-sources, c++, gcc, .cpp .c++ .cc .CC .C)
@@ -48,6 +56,7 @@ define sm-register-sources
            $(call sm-check-origin,sm.tool.$(strip $2),file,smart: toolset '$(strip $2)' unimplemented)\
            $(foreach sm._var._temp._lang,$(sm.tool.$(strip $2).langs),\
                $(eval sm.rule.compile.$(sm._var._temp._lang) = $$(call sm.rule,compile,$(sm._var._temp._lang),$$1,$$2,$$3))\
+               $(eval sm.rule.archive.$(sm._var._temp._lang) = $$(call sm.rule,archive,$(sm._var._temp._lang),$$1,$$2,$$3,$$4))\
                $(eval sm.rule.link.$(sm._var._temp._lang) = $$(call sm.rule,link,$(sm._var._temp._lang),$$1,$$2,$$3,$$4)))\
            $(eval sm.tool.$(strip $2).$(strip $1).suffix += $(strip $3))\
            $(eval sm.toolset.for.$(strip $1) := $(strip $2))\
@@ -81,14 +90,14 @@ endef
 
 define sm-module-type-name
   $(if $(call equal,$1,dynamic),shared,\
-      $(if $(call equal,$1,executable),exe,\
-          $(if $(call equal,$1,tests),t,$1)))
+     $(if $(call equal,$1,executable),exe,\
+        $(if $(call equal,$1,tests),t,$1)))
 endef
 
 # $(findstring $1,$(sm.global.modules))
 define sm-new-module
 $(if $1,$(if $(filter $1,$(sm.global.modules)),\
-          $(error Module of name '$1' already exists))\
+             $(error Module of name '$1' already exists))\
   $(eval sm.this.name:=$(basename $(strip $1))
          $$(if $$(sm.this.name),,$$(error The module name is empty))
          sm.this.suffix:=$(suffix $(strip $1))

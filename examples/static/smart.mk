@@ -3,7 +3,7 @@
 $(call sm-new-module, foo, static)
 
 ## Turn on verbose to make command lines visible
-sm.this.verbose := false
+sm.this.verbose ?= true
 
 ## Choose a toolset (doing this will enable tools/$(sm.this.toolset).mk),
 ## if not doing this, the old style of build system will be used (which only

@@ -45,8 +45,14 @@ $(if $5,$(call sm-check-defined,$(strip $5),smart: '$(strip $5)' must be defined
 $(call sm.rule,link,$(strip $1),$(strip $2),$(strip $3),$(strip $4),$(strip $5))
 endef #sm.rule.link
 
+## eg. $(call sm.rule.archive, LANG, TARGET, PREREQUISITES, callback-FLAGS, [,callack-LIBS])
 define sm.rule.archive
-$(error TODO: archive rule)
+$(if $1,,$(error smart: arg \#1 must be the source language))\
+$(if $2,,$(error smart: arg \#2 must be the output target))\
+$(if $3,,$(error smart: arg \#3 must be the source file))\
+$(if $4,$(call sm-check-defined,$(strip $4),smart: '$(strip $4)' must be defined as a callback for link flags))\
+$(if $5,$(call sm-check-defined,$(strip $5),smart: '$(strip $5)' must be defined as a callback for libs to be linked))\
+$(call sm.rule,archive,$(strip $1),$(strip $2),$(strip $3),$(strip $4),$(strip $5))
 endef #sm.rule.archive
 
 # ## FIXME: at this time $(sm.this.toolset) is empty, ...
