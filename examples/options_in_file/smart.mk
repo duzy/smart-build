@@ -3,15 +3,21 @@
 $(call sm-new-module, foo, exe)
 
 ## Turn on verbose to make command lines visible
-sm.this.verbose := false
+sm.this.verbose := true
 
 ## Choose a toolset (doing this will enable tools/$(sm.this.toolset).mk),
 ## if not doing this, the old style of build system will be used (which only
 ## supports gcc toolset).
 sm.this.toolset := gcc
 
+## Switch options in a temporary file
+#sm.this.compile.options.infile := d
+sm.this.compile.flags.infile := yes
+sm.this.link.options.infile := true
+
 ## The flags to be used by the compiler
 sm.this.compile.flags := -DTEST=\"$(sm.this.name)\"
+#sm.this.compile.flags := -DTEST=\\\"$(sm.this.name)\\\"
 
 ## The include search path (for compiler's -I switch), each item of this will
 ## be translated into a -I switch for the compiler by the toolset.
