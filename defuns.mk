@@ -152,7 +152,7 @@ define sm-generate-objects
  $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
     $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.dir.out)/$(sm.log.filename),true))\
     $(info smart: objects for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
-    $(warning TODO: refactor this)\
+    $(warning TODO: refactor this for multiple-toolset)\
     $(eval include $(sm.dir.buildsys)/old/objrules.mk),\
     $(error smart: No sources defined))
 endef
@@ -161,7 +161,7 @@ endef
 ##	usage 1: $(call sm-copy-files, $(headers))
 ##	usage 2: $(call sm-copy-files, $(headers), subdir)
 define sm-copy-files
- $(if $(strip $1),\
+ $(if $1,\
     $(eval sm.var.__copyfiles := $(strip $1)
            sm.var.__copyfiles.to := $(strip $2)
            include $(sm.dir.buildsys)/copyfiles.mk

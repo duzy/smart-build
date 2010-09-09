@@ -1,6 +1,6 @@
 #
 
-$(call sm-new-module, foo, static)
+$(call sm-new-module, foo, shared)
 
 ## Turn on verbose to make command lines visible
 sm.this.verbose ?= true
@@ -18,13 +18,19 @@ sm.this.compile.flags := -DTEST=\"$(sm.this.name)\"
 sm.this.includes := $(sm.this.dir)/../include
 sm.this.sources := foobar.c
 
-# TODO: should use sm.this.archive.flags for this
+## The flags to be used by the linker
+## NOTE: no needs to '-Wl,' or '-Wlinker' to pass linker arguments
 sm.this.link.flags := --subsystem=console
 
-# TODO: ignore this and make a warning for static module
+## The libraries search path (for linker's -L switch), each item of this will
+## be translated into a -L switch similar to 'sm.this.includes'.
 sm.this.libdirs := $(sm.this.dir)/../libs
 
-# TODO: ignore this for static module
+## The libraries to be linked with this module, each item of which will be
+## translated into a -l switch in this way:
+##	libNAME	-> -lNAME
+##	NAME	-> -lNAME
+##	-lNAME	-> -lNAME
 sm.this.libs := 
 
 $(sm-build-this)

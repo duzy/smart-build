@@ -23,13 +23,21 @@ $(foreach a,compile link,$(eval $(call sm.code.check-infile,$a)))
 
 ##################################################
 
-# TODO: support sm.this.compile.options.infile
-# TODO: 
+sm.var.build-action.static := archive
+sm.var.build-action.shared := link
+sm.var.build-action.exe := link
+
+##########
 
 sm.var.$(sm.this.name).compile.options. :=
+
+## TODO: get rid of these '.c', '.c++', '.asm' variant
 sm.var.$(sm.this.name).compile.options.c :=
 sm.var.$(sm.this.name).compile.options.c++ :=
 sm.var.$(sm.this.name).compile.options.asm :=
+
+sm.var.$(sm.this.name).archive.options :=
+
 sm.var.$(sm.this.name).link.options :=
 sm.var.$(sm.this.name).link.libs :=
 
@@ -67,6 +75,13 @@ define sm.code.calculate-link-options
   $(strip $(sm.this.link.flags) $(sm.this.link.options))
  $(call sm.code.switch-options-into-file,link)
 endef #sm.code.calculate-link-options
+
+define sm.code.calculate-archive-options
+ sm.var.$(sm.this.name).archive.options := \
+  $(strip $(sm.global.archive.flags) $(sm.global.archive.options)) \
+  $(strip $(sm.this.archive.flags) $(sm.this.archive.options))
+ $(call sm.code.switch-options-into-file,link)
+endef #sm.code.calculate-archive-options
 
 ##
 define sm.code.calculate-libdirs
@@ -110,6 +125,12 @@ define sm.fun.$(sm.this.name).get-compile-options
  $(sm.var.$(sm.this.name).compile.options.$1)
 endef #sm.fun.$(sm.this.name).get-compile-options
 
+define sm.fun.$(sm.this.name).get-archive-options.any
+ $(if $(sm.var.$(sm.this.name).archive.options),,\
+   $(eval $(call sm.code.calculate-archive-options)))\
+ $(sm.var.$(sm.this.name).archive.options)
+endef #sm.fun.$(sm.this.name).get-archive-options.any
+
 define sm.fun.$(sm.this.name).get-link-options.any
  $(if $(sm.var.$(sm.this.name).link.options),,\
    $(eval $(call sm.code.calculate-link-options)))\
@@ -124,6 +145,10 @@ endef #sm.fun.$(sm.this.name).get-link-libs.any
 
 $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
   $(eval sm.fun.$(sm.this.name).get-compile-options.$(sm._var._temp._lang) = $$(strip $$(call sm.fun.$(sm.this.name).get-compile-options,$(sm._var._temp._lang)))))
+
+## TODO: refactor this, thinking about no '.any' variant
+sm.fun.$(sm.this.name).get-archive-options = $(strip $(call sm.fun.$(sm.this.name).get-archive-options.any))
+sm.fun.$(sm.this.name).get-archive-libs = $(strip $(call sm.fun.$(sm.this.name).get-archive-libs.any))
 
 sm.fun.$(sm.this.name).get-link-options = $(strip $(call sm.fun.$(sm.this.name).get-link-options.any))
 sm.fun.$(sm.this.name).get-link-libs = $(strip $(call sm.fun.$(sm.this.name).get-link-libs.any))
@@ -219,23 +244,19 @@ define sm.fun.get-linker
 $(warning TODO: choose linker by the toolset)c
 endef #sm.fun.get-linker
 
-sm.var.rule-action.static := archive
-sm.var.rule-action.shared := link
-sm.var.rule-action.exe := link
-
 ##
 ## Make module build rule
 define sm.fun.make-module-rule
 $(if $(sm.var.$(sm.this.name).objects),\
     $(eval sm.var.$(sm.this.name).targets := $(strip $(call sm.fun.calculate-$(sm.this.type)-module-targets)))\
-    $(call sm-check-defined,sm.var.rule-action.$(sm.this.type))\
+    $(call sm-check-defined,sm.var.build-action.$(sm.this.type))\
     $(call sm-check-defined,sm.fun.get-linker)\
-    $(call sm-check-defined,sm.rule.$(sm.var.rule-action.$(sm.this.type)).$(sm.fun.get-linker))\
-    $(call sm.rule.$(sm.var.rule-action.$(sm.this.type)).$(sm.fun.get-linker),\
+    $(call sm-check-defined,sm.rule.$(sm.var.build-action.$(sm.this.type)).$(sm.fun.get-linker))\
+    $(call sm.rule.$(sm.var.build-action.$(sm.this.type)).$(sm.fun.get-linker),\
        $$(sm.var.$(sm.this.name).targets),\
        $$(sm.var.$(sm.this.name).objects),\
-       sm.fun.$(sm.this.name).get-link-options,\
-       sm.fun.$(sm.this.name).get-link-libs),\
+       sm.fun.$(sm.this.name).get-$(sm.var.build-action.$(sm.this.type))-options,\
+       sm.fun.$(sm.this.name).get-$(sm.var.build-action.$(sm.this.type))-libs),\
   $(error smart: No objects for building '$(sm.this.name)'))
 endef #sm.fun.make-module-rule
 
