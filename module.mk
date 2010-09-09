@@ -125,33 +125,26 @@ define sm.fun.$(sm.this.name).get-compile-options
  $(sm.var.$(sm.this.name).compile.options.$1)
 endef #sm.fun.$(sm.this.name).get-compile-options
 
-define sm.fun.$(sm.this.name).get-archive-options.any
+define sm.fun.$(sm.this.name).get-archive-options
  $(if $(sm.var.$(sm.this.name).archive.options),,\
    $(eval $(call sm.code.calculate-archive-options)))\
  $(sm.var.$(sm.this.name).archive.options)
-endef #sm.fun.$(sm.this.name).get-archive-options.any
+endef #sm.fun.$(sm.this.name).get-archive-options
 
-define sm.fun.$(sm.this.name).get-link-options.any
+define sm.fun.$(sm.this.name).get-link-options
  $(if $(sm.var.$(sm.this.name).link.options),,\
    $(eval $(call sm.code.calculate-link-options)))\
  $(sm.var.$(sm.this.name).link.options)
-endef #sm.fun.$(sm.this.name).get-link-options.any
+endef #sm.fun.$(sm.this.name).get-link-options
 
-define sm.fun.$(sm.this.name).get-link-libs.any
+define sm.fun.$(sm.this.name).get-link-libs
  $(if $(sm.var.$(sm.this.name).link.libs),,\
    $(eval $(call sm.code.calculate-link-libs)))\
  $(sm.var.$(sm.this.name).link.libs)
-endef #sm.fun.$(sm.this.name).get-link-libs.any
+endef #sm.fun.$(sm.this.name).get-link-libs
 
 $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
   $(eval sm.fun.$(sm.this.name).get-compile-options.$(sm._var._temp._lang) = $$(strip $$(call sm.fun.$(sm.this.name).get-compile-options,$(sm._var._temp._lang)))))
-
-## TODO: refactor this, thinking about no '.any' variant
-sm.fun.$(sm.this.name).get-archive-options = $(strip $(call sm.fun.$(sm.this.name).get-archive-options.any))
-sm.fun.$(sm.this.name).get-archive-libs = $(strip $(call sm.fun.$(sm.this.name).get-archive-libs.any))
-
-sm.fun.$(sm.this.name).get-link-options = $(strip $(call sm.fun.$(sm.this.name).get-link-options.any))
-sm.fun.$(sm.this.name).get-link-libs = $(strip $(call sm.fun.$(sm.this.name).get-link-libs.any))
 
 #$(info c: x$(sm.fun.$(sm.this.name).get-compile-options.c)x)
 
