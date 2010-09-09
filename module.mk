@@ -9,7 +9,6 @@ endif
 
 ##################################################
 
-## TODO: unit test module
 ifeq ($(sm.this.type),t)
  $(if $(sm.this.lang),,$(error smart: 'sm.this.lang' must be defined for tests module))
 endif
@@ -59,7 +58,7 @@ endef #sm.code.switch-options-into-file
 
 ##
 define sm.code.calculate-compile-options
- sm.var.$(sm.this.name).compile.options.$1 := \
+ sm.var.$(sm.this.name).compile.options.$1 := $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
   $(strip $(sm.global.compile.flags) $(sm.global.compile.options)) \
   $(strip $(sm.global.compile.flags.$1) $(sm.global.compile.options.$1)) \
   $(strip $(sm.this.compile.flags) $(sm.this.compile.options)) \
@@ -183,6 +182,10 @@ define sm.fun.calculate-exe-module-targets
 $(call sm-to-relative-path,$(sm.dir.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.calculate-exe-module-targets
 
+define sm.fun.calculate-t-module-targets
+$(call sm-to-relative-path,$(sm.dir.out.bin))/$(sm.this.name)$(sm.this.suffix)
+endef #sm.fun.calculate-t-module-targets
+
 define sm.fun.calculate-shared-module-targets
 $(call sm-to-relative-path,$(sm.dir.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.calculate-shared-module-targets
@@ -210,7 +213,7 @@ endef #sm.fun.make-object-rule
 ## Produce code for make object rules
 define sm.code.make-rules
 $(if $1,,$(error smart: arg \#1 must be lang-type))\
-$(if $(sm.tool.$(sm.this.toolset).$1.suffix),,$(error smart: No registered suffixes for $(sm.this.toolset)/$1))\
+$(if $(sm.tool.$(sm.this.toolset).$1.suffix),,$(error smart: no registered suffixes for $(sm.this.toolset)/$1))\
  sm._var._temp._suffix.$1 := $$(sm.tool.$(sm.this.toolset).$1.suffix:%=\%%)
  sm.this.sources.$1 := $$(filter $$(sm._var._temp._suffix.$1),$$(sm.this.sources))
  sm.this.sources.external.$1 := $$(filter $$(sm._var._temp._suffix.$1),$$(sm.this.sources.external))
@@ -222,16 +225,12 @@ $(if $(sm.tool.$(sm.this.toolset).$1.suffix),,$(error smart: No registered suffi
  endif
 endef #sm.code.make-rules
 
-# $(info $(call sm.code.make-rules,c))
 ##
 ## Make object rules, eg. $(call sm.fun.make-rules,c++)
 define sm.fun.make-rules
 $(eval $(call sm.code.make-rules,$(strip $1)))
 endef #sm.fun.make-rules
 
-
-# TODO: sm.fun.choose-linker, this should be decided by
-#       sm.tool.$(sm.this.toolset)
 ##
 ## Make a choice in sm.rule.link.c, sm.rule.link.c++, etc.
 ## Returns the lang-type suffix.
@@ -243,6 +242,7 @@ endef #sm.fun.get-linker
 ## Make module build rule
 define sm.fun.make-module-rule
 $(if $(sm.var.$(sm.this.name).objects),\
+    $(call sm-check-defined,sm.fun.calculate-$(sm.this.type)-module-targets)\
     $(eval sm.var.$(sm.this.name).targets := $(strip $(call sm.fun.calculate-$(sm.this.type)-module-targets)))\
     $(call sm-check-defined,sm.var.build_action.$(sm.this.type))\
     $(call sm-check-defined,sm.fun.get-linker)\
@@ -260,14 +260,26 @@ endef #sm.fun.make-module-rule
 sm.var.$(sm.this.name).targets :=
 sm.var.$(sm.this.name).objects :=
 
+ifeq ($(sm.this.type),t)
+  #$(call sm.fun.make-rules,$(sm.this.lang))
+  sm.this.sources.$(sm.this.lang).t := $(filter %.t,$(sm.this.sources))
+  sm.this.sources.external.$(sm.this.lang).t := $(filter %.t,$(sm.this.sources.external))
+  sm.this.sources.has.$(sm.this.lang).t := $(if $(sm.this.sources.$(sm.this.lang).t)$(sm.this.sources.external.$(sm.this.lang).t),true)
+  ifeq ($(or $(sm.this.sources.has.$(sm.this.lang)),$(sm.this.sources.has.$(sm.this.lang).t)),true)
+    $(call sm-check-flavor, sm.fun.make-object-rule, recursive)
+    $(foreach t,$(sm.this.sources.$(sm.this.lang).t),$(call sm.fun.make-object-rule,$(sm.this.lang),$t))
+    $(foreach t,$(sm.this.sources.external.$(sm.this.lang).t),$(call sm.fun.make-object-rule,$(sm.this.lang),$t,external))
+  endif
+endif
+
 $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
-  $(eval $$(call sm.fun.make-rules,$(sm._var._temp._lang))))
+  $(call sm.fun.make-rules,$(sm._var._temp._lang)))
 
 $(call sm.fun.make-module-rule)
 
-ifeq ($(strip $(sm.this.sources.c)$(sm.this.sources.c++)$(sm.this.sources.asm)),)
-  $(error smart: internal error: sources mis-calculated)
-endif
+# ifeq ($(strip $(sm.this.sources.c)$(sm.this.sources.c++)$(sm.this.sources.asm)),)
+#   $(error smart: internal error: sources mis-calculated)
+# endif
 
 ifeq ($(strip $(sm.var.$(sm.this.name).targets)),)
   $(error smart: internal error: targets mis-calculated)
