@@ -1,6 +1,16 @@
 #
 
 $(call sm-new-module, foo, shared)
+$(call sm-check-not-empty,sm.this.dir)
+$(call sm-check-not-empty,sm.this.name)
+$(call sm-check-not-empty,sm.this.suffix)
+$(call sm-check-not-empty,sm.this.makefile)
+$(call sm-check-not-empty,sm.this.out_implib)
+$(call sm-check-in-list,foo,sm.global.modules)
+$(call sm-check-equal,$(sm.this.name),foo)
+$(call sm-check-equal,$(sm.this.type),shared)
+$(call sm-check-equal,$(sm.this.suffix),.so)
+$(call sm-check-equal,$(sm.this.out_implib),foo)
 
 ## Turn on verbose to make command lines visible
 sm.this.verbose ?= true

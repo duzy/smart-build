@@ -4,10 +4,15 @@ $(call sm-check-not-empty,sm.top)
 $(call sm-check-not-empty,sm.this.toolset,smart: Must set 'sm.this.toolset')
 
 ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)),)
-  $(error smart: No sources for module '$(sm.this.name)')
+  $(error smart: no sources for module '$(sm.this.name)')
 endif
 
 ##################################################
+
+## TODO: unit test module
+ifeq ($(sm.this.type),t)
+ $(if $(sm.this.lang),,$(error smart: 'sm.this.lang' must be defined for tests module))
+endif
 
 define sm.code.check-infile
 ifeq ($$(call is-true,$$(sm.this.$1.flags.infile)),true)
@@ -19,25 +24,21 @@ ifeq ($$(call is-true,$$(sm.this.$1.flags.infile)),true)
 endif
 endef #sm.code.check-infile
 
-$(foreach a,compile link,$(eval $(call sm.code.check-infile,$a)))
+$(foreach a,compile archive link,$(eval $(call sm.code.check-infile,$a)))
 
 ##################################################
 
-sm.var.build-action.static := archive
-sm.var.build-action.shared := link
-sm.var.build-action.exe := link
+sm.var.build_action.static := archive
+sm.var.build_action.shared := link
+sm.var.build_action.exe := link
+sm.var.build_action.t := link
 
 ##########
 
-sm.var.$(sm.this.name).compile.options. :=
-
-## TODO: get rid of these '.c', '.c++', '.asm' variant
-sm.var.$(sm.this.name).compile.options.c :=
-sm.var.$(sm.this.name).compile.options.c++ :=
-sm.var.$(sm.this.name).compile.options.asm :=
+$(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
+  $(eval sm.var.$(sm.this.name).compile.options.$(sm._var._temp._lang) := ))
 
 sm.var.$(sm.this.name).archive.options :=
-
 sm.var.$(sm.this.name).link.options :=
 sm.var.$(sm.this.name).link.libs :=
 
@@ -208,7 +209,8 @@ endef #sm.fun.make-object-rule
 ##
 ## Produce code for make object rules
 define sm.code.make-rules
- $(if $(sm.tool.$(sm.this.toolset).$1.suffix),,$(error smart: No registered suffixes for $(sm.this.toolset)/$1))
+$(if $1,,$(error smart: arg \#1 must be lang-type))\
+$(if $(sm.tool.$(sm.this.toolset).$1.suffix),,$(error smart: No registered suffixes for $(sm.this.toolset)/$1))\
  sm._var._temp._suffix.$1 := $$(sm.tool.$(sm.this.toolset).$1.suffix:%=\%%)
  sm.this.sources.$1 := $$(filter $$(sm._var._temp._suffix.$1),$$(sm.this.sources))
  sm.this.sources.external.$1 := $$(filter $$(sm._var._temp._suffix.$1),$$(sm.this.sources.external))
@@ -242,14 +244,14 @@ endef #sm.fun.get-linker
 define sm.fun.make-module-rule
 $(if $(sm.var.$(sm.this.name).objects),\
     $(eval sm.var.$(sm.this.name).targets := $(strip $(call sm.fun.calculate-$(sm.this.type)-module-targets)))\
-    $(call sm-check-defined,sm.var.build-action.$(sm.this.type))\
+    $(call sm-check-defined,sm.var.build_action.$(sm.this.type))\
     $(call sm-check-defined,sm.fun.get-linker)\
-    $(call sm-check-defined,sm.rule.$(sm.var.build-action.$(sm.this.type)).$(sm.fun.get-linker))\
-    $(call sm.rule.$(sm.var.build-action.$(sm.this.type)).$(sm.fun.get-linker),\
+    $(call sm-check-defined,sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.fun.get-linker))\
+    $(call sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.fun.get-linker),\
        $$(sm.var.$(sm.this.name).targets),\
        $$(sm.var.$(sm.this.name).objects),\
-       sm.fun.$(sm.this.name).get-$(sm.var.build-action.$(sm.this.type))-options,\
-       sm.fun.$(sm.this.name).get-$(sm.var.build-action.$(sm.this.type))-libs),\
+       sm.fun.$(sm.this.name).get-$(sm.var.build_action.$(sm.this.type))-options,\
+       sm.fun.$(sm.this.name).get-$(sm.var.build_action.$(sm.this.type))-libs),\
   $(error smart: No objects for building '$(sm.this.name)'))
 endef #sm.fun.make-module-rule
 

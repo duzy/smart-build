@@ -94,6 +94,15 @@ define sm-module-type-name
         $(if $(call equal,$1,tests),t,$1)))
 endef
 
+sm.var.target_suffix_for_win32_static := .a
+sm.var.target_suffix_for_win32_shared := .so
+sm.var.target_suffix_for_win32_exe := .exe
+sm.var.target_suffix_for_win32_t := .test.exe
+sm.var.target_suffix_for_linux_static := .a
+sm.var.target_suffix_for_linux_shared := .so
+sm.var.target_suffix_for_linux_exe :=
+sm.var.target_suffix_for_linux_t := .test
+
 # $(findstring $1,$(sm.global.modules))
 define sm-new-module
 $(if $1,$(if $(filter $1,$(sm.global.modules)),\
@@ -106,26 +115,15 @@ $(if $1,$(if $(filter $1,$(sm.global.modules)),\
          sm.global.modules+=$(strip $1)
          sm.global.modules.$(strip $1):=$$(sm.this.makefile))\
   ,$(error Invalid usage of 'sm-new-module', module name required))\
-$(if $2,$(eval sm.this.type:=$(call sm-module-type-name,$(strip $2))
-  ifeq ($$(filter $$(sm.this.type),$(sm.global.module_types)),)
-    $$(error Unsuported module type '$(strip $2)', only supports '$(sm.global.module_types)')
-  endif
+$(if $2,$(eval \
+  sm.this.type := $(call sm-module-type-name,$(strip $2))
+  $$(call sm-check-in-list,$$(sm.this.type),sm.global.module_types,only supports module of type '$(sm.global.module_types)')
   ifeq ($$(sm.this.suffix),)
-    ifeq ($$(sm.this.type),static)
-      sm.this.suffix := .a
-    endif
-    ifeq ($$(sm.this.type),shared)
-      sm.this.suffix := .so
-      sm.this.out_implib:=$(sm.this.name)
-    else
-     ifeq ($$(sm.this.type),exe)
-       sm.this.suffix := $(if $(sm.os.name.win32),.exe)
-     else
-      ifeq ($$(sm.this.type),t)
-       sm.this.suffix := $(if $(sm.os.name.win32),.test.exe,.test)
-      endif
-     endif
-    endif
+    $$(call sm-check-defined,sm.var.target_suffix_for_$(sm.os.name)_$$(sm.this.type))
+    sm.this.suffix := $$(sm.var.target_suffix_for_$(sm.os.name)_$$(sm.this.type))
+  endif
+  ifeq ($$(sm.this.type),shared)
+    sm.this.out_implib := $(sm.this.name)
   endif
   ),)
 endef
