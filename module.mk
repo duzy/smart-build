@@ -41,11 +41,11 @@ sm.var.$(sm.this.name).archive.options :=
 sm.var.$(sm.this.name).link.options :=
 sm.var.$(sm.this.name).link.libs :=
 
-##
-define sm.code.calculate-includes
- $(foreach sm._var._temp._include,$($(strip $2)),\
-   $(eval sm.var.$(sm.this.name).compile.options.$(strip $1) += -I$$(sm._var._temp._include:-I%=%)))
-endef #sm.code.calculate-includes
+## eg. $(call sm.code.append-list,RESULT_VAR_NAME,LIST_NAME,PREFIX,SUFFIX)
+define sm.code.append-list
+ $(foreach sm._var._temp._item,$($(strip $2)),\
+     $(eval $1 += $(strip $3)$$(sm._var._temp._item:$(strip $3)%$(strip $4)=%)$(strip $4)))
+endef #sm.code.append-list
 
 ##
 define sm.code.switch-options-into-file
@@ -63,8 +63,8 @@ define sm.code.calculate-compile-options
   $(strip $(sm.global.compile.flags.$1) $(sm.global.compile.options.$1)) \
   $(strip $(sm.this.compile.flags) $(sm.this.compile.options)) \
   $(strip $(sm.this.compile.flags.$1) $(sm.this.compile.options.$1))
- $$(call sm.code.calculate-includes,$1,sm.global.includes)
- $$(call sm.code.calculate-includes,$1,sm.this.includes)
+ $$(call sm.code.append-list, sm.var.$(sm.this.name).compile.options.$1, sm.global.includes, -I)
+ $$(call sm.code.append-list, sm.var.$(sm.this.name).compile.options.$1, sm.this.includes, -I)
  $(call sm.code.switch-options-into-file,compile,.$1)
 endef #sm.code.calculate-compile-options
 
@@ -76,32 +76,21 @@ define sm.code.calculate-link-options
  $(call sm.code.switch-options-into-file,link)
 endef #sm.code.calculate-link-options
 
+## TODO: archive options infile support
 define sm.code.calculate-archive-options
  sm.var.$(sm.this.name).archive.options := \
   $(strip $(sm.global.archive.flags) $(sm.global.archive.options)) \
   $(strip $(sm.this.archive.flags) $(sm.this.archive.options))
- $(call sm.code.switch-options-into-file,link)
+ $(call sm.code.switch-options-into-file,archive)
 endef #sm.code.calculate-archive-options
-
-##
-define sm.code.calculate-libdirs
- $(foreach sm._var._temp._libdir,$($(strip $1)),\
-   $(eval sm.var.$(sm.this.name).link.libs += -L$$(sm._var._temp._libdir:-L%=%)))
-endef #sm.code.calculate-libdirs
-
-##
-define sm.code.calculate-libs
- $(foreach sm._var._temp._lib,$($(strip $1)),\
-   $(eval sm.var.$(sm.this.name).link.libs += -l$$(sm._var._temp._lib:-l%=%)))
-endef #sm.code.calculate-libs
 
 ##
 define sm.code.calculate-link-libs
  sm.var.$(sm.this.name).link.libs :=
- $$(call sm.code.calculate-libdirs,sm.global.libdirs)
- $$(call sm.code.calculate-libdirs,sm.this.libdirs)
- $$(call sm.code.calculate-libs,sm.global.libs)
- $$(call sm.code.calculate-libs,sm.this.libs)
+ $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, sm.global.libdirs, -L)
+ $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, sm.this.libdirs, -L)
+ $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, sm.global.libs, -l)
+ $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, sm.this.libs, -l)
  $(if $(call is-true,$(sm.this.link.options.infile)),\
      $$(call sm-util-mkdir,$(sm.dir.out.tmp)/$(sm.this.name))\
      $$(eval sm.var.$(sm.this.name).link.libs := $$(subst \",\\\",$$(sm.var.$(sm.this.name).link.libs)))\
@@ -308,7 +297,7 @@ clean-$(sm.this.name): \
   clean-$(sm.this.name)-objects
 	@echo "'$(sm.this.name)' is cleaned."
 
-clean-$(sm.this.name)-target:; $(info smart: do you mean $@s?) @true
+clean-$(sm.this.name)-target:; $(info smart: do you mean $@s?) @false
 
 clean-$(sm.this.name)-targets:
 	$(if $(call is-true,$(sm.this.verbose)),,$(info remove: $(sm.var.$(sm.this.name).targets))@)$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).targets))
@@ -317,6 +306,3 @@ clean-$(sm.this.name)-objects:
 	$(if $(call is-true,$(sm.this.verbose)),,$(info remove:$(sm.var.$(sm.this.name).objects))@)$(call sm.tool.common.rm,$(sm.var.$(sm.this.name).objects))
 
 ##################################################
-# $(info objects: $(sm.var.$(sm.this.name).objects))
-# $(info c: $(sm.this.sources.c))
-# $(info c++: $(sm.this.sources.c++))
