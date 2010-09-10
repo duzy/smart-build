@@ -1,10 +1,6 @@
 #
 
-$(call sm-new-module, foobar, shared)
-
-sm.this.verbose := true
-sm.this.includes := foo bar
-sm.this.sources := foobar.cpp
-
-$(sm-build-this)
-$(sm-load-subdirs)
+this_dir := $(sm-this-dir)
+sm.this.dir := $(this_dir)
+$(call sm-load-subdirs)
+$(call sm-load-module, $(this_dir)/foobar.mk)

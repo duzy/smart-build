@@ -4,5 +4,4 @@
 void bar()
 {
   std::cout<<"bar";
-  return 0;
 }

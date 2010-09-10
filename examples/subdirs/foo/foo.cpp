@@ -1,8 +1,7 @@
 #include <iostream>
-#include <foo.hpp>
+#include "foo.hpp"
 
 void foo()
 {
   std::cout<<"foo";
-  return 0;
 }

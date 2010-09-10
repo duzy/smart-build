@@ -1,7 +1,7 @@
 # -*- mode: Makefile:gnu -*-
 
 ifeq ($(sm.this.type),subdirs)
-  $(error Using sm-load-sub-modules instead of 'subdirs' module type)
+  $(error using sm-load-sub-modules instead of 'subdirs' module type)
 endif
 
 ifeq ($(wildcard $(sm.this.dir)),)

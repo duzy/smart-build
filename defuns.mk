@@ -129,7 +129,7 @@ endef
 ## Load the build script for the specified module.
 define sm-load-module
 $(if $1,\
-  $(if $(wildcard $1),,$(error Module build script '$1' missed!))\
+  $(if $(wildcard $1),,$(error module build script '$1' missed!))\
   $(eval $$(info smart: load '$1'..)
     include $(sm.dir.buildsys)/preload.mk
     include $1
@@ -176,16 +176,15 @@ endef
 ## Build the current module
 define sm-build-this
  $(if $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects),,\
-   $(error No source or objects defined for '$(sm.this.name)'))\
- $(if $(sm.this.name),\
-    $(eval sm.global.goals += goal-$(sm.this.name)
-           include $(sm.dir.buildsys)/buildmod.mk),\
-   $(error sm.this.name must be specified.))
-endef
+   $(error no source or objects defined for '$(sm.this.name)'))\
+ $(if $(sm.this.name),,$(error sm.this.name must be specified))\
+ $(eval sm.global.goals += goal-$(sm.this.name)
+        include $(sm.dir.buildsys)/buildmod.mk)
+endef #sm-build-this
 
 ## Load all smart.mk in sub directories.
 define sm-load-sub-modules
-$(error Use sm-load-subdirs instead)
+$(error use sm-load-subdirs instead)
 endef
 
 define sm-load-subdirs

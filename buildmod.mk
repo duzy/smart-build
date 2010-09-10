@@ -14,11 +14,11 @@ ifneq ($(origin sm-check-origin),file)
   $(error smart: Please load 'build/main.mk' first)
 endif
 
-$(call sm-check-origin,sm-check-directory,file,Broken smart build system)
-$(call sm-check-directory,$(sm.dir.buildsys),Broken smart build system)
+$(call sm-check-origin,sm-check-directory,file,broken smart build system)
+$(call sm-check-directory,$(sm.dir.buildsys),broken smart build system)
 
 ifeq ($(sm.this.type),subdirs)
-  $(error smart: Please try calling 'sm-load-subdirs' instead)
+  $(error smart: please try calling 'sm-load-subdirs' instead)
 endif
 
 ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
