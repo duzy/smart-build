@@ -1,5 +1,7 @@
 #
 
-$(call sm-new-module, bar, shared)
+$(call sm-new-module, bar, exe)
+
+sm.this.sources := bar.cpp
 
 $(sm-build-this)
