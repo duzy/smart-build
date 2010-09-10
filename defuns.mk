@@ -73,14 +73,12 @@ define sm-deprecated
 $(error smart: $(strip $1) is deprecated, use $(strip $2) instead)
 endef
 
-define sm-this-dir
-$(eval _sm_this_dir:=$$(lastword $$(MAKEFILE_LIST)))\
-$(patsubst %/,%,$(dir $(_sm_this_dir)))
+define sm-this-makefile
+$(lastword $(MAKEFILE_LIST))
 endef
 
-define sm-this-makefile
-$(eval _sm_this_makefile:=$$(lastword $$(MAKEFILE_LIST)))\
-$(_sm_this_makefile)
+define sm-this-dir
+$(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 endef
 
 define sm-module-dir

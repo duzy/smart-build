@@ -98,6 +98,9 @@ define sm.code.calculate-link-libs
      $$(eval sm.var.$(sm.this.name).link.libs := @$(sm.dir.out.tmp)/$(sm.this.name)/link.libs))
 endef #sm.code.calculate-link-libs
 
+## TODO: something like switch-objects-into-file for linking and archiving
+## FIXME: multiple smart.mk files conflicts with each other, eg. via $(sm-load-subdirs)
+
 # $(info -----)
 # $(info $(call sm.code.calculate-compile-options,c))
 # $(info -----)
