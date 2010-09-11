@@ -6,7 +6,9 @@
 ## other files to be included.
 
 # Load default build parameters.
-include $(sm.dir.buildsys)/old/defparams.mk
+ifeq ($(strip $(sm.this.toolset)),)
+  include $(sm.dir.buildsys)/old/defparams.mk
+endif
 
 d := $(sm.out)
 ifeq ($d,)
@@ -18,9 +20,8 @@ ifeq ($d,)
 endif
 
 # Detect custome config file and apply it.
-CUSTOM_CONFIG := $(wildcard $(sm.top)/custom-config)
-ifneq ($(CUSTOM_CONFIG),)
-  $(info smart: Custom config file '$(CUSTOM_CONFIG)' found, applying..)
-  $(eval -include $(CUSTOM_CONFIG))
+ifneq ($(wildcard $(sm.top)/custom-config),)
+  $(info smart: custom config...)
+  $(eval -include $(sm.top)/custom-config)
 endif
 

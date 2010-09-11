@@ -71,7 +71,7 @@ define sm.code.calculate-compile-options
   $(strip $(sm.this.compile.flags.$1) $(sm.this.compile.options.$1))
  $$(call sm.code.append-list, sm.var.$(sm.this.name).compile.options.$1, $(sm.global.includes), -I)
  $$(call sm.code.append-list, sm.var.$(sm.this.name).compile.options.$1, $(sm.this.includes), -I)
- $$(call sm.code.switch-options-into-file,compile,.$1)
+ $(call sm.code.switch-options-into-file,compile,.$1)
 endef #sm.code.calculate-compile-options
 
 ##
@@ -83,7 +83,7 @@ define sm.code.calculate-link-options
  $(if $(call equal,$(sm.this.type),shared),\
      $$(if $$(filter -shared,$$(sm.var.$(sm.this.name).link.options)),,\
         $$(eval sm.var.$(sm.this.name).link.options += -shared)))
- $$(call sm.code.switch-options-into-file,link)
+ $(call sm.code.switch-options-into-file,link)
 endef #sm.code.calculate-link-options
 
 ## TODO: archive options infile support
@@ -92,7 +92,7 @@ define sm.code.calculate-archive-options
  sm.var.$(sm.this.name).archive.options := \
   $(strip $(sm.global.archive.flags) $(sm.global.archive.options)) \
   $(strip $(sm.this.archive.flags) $(sm.this.archive.options))
- $$(call sm.code.switch-options-into-file,archive)
+ $(call sm.code.switch-options-into-file,archive)
 endef #sm.code.calculate-archive-options
 
 ##
@@ -111,7 +111,6 @@ define sm.code.calculate-link-libs
 endef #sm.code.calculate-link-libs
 
 ## TODO: something like switch-objects-into-file for linking and archiving
-## FIXME: multiple smart.mk files conflicts with each other, eg. via $(sm-load-subdirs)
 
 $(call sm-check-defined,sm.code.calculate-compile-options,\
        smart: 'sm.code.calculate-compile-options' not defined)
@@ -210,7 +209,8 @@ define sm.fun.make-object-rule
  $(eval sm._var._temp._object := $(call sm.fun.calculate-object.$(strip $3),$2))\
  $(eval sm.var.$(sm.this.name).objects += $(sm._var._temp._object))\
  $(call sm.fun.$(sm.this.name).calculate-compile-options,$(strip $1))\
- $(call sm.rule.compile.$(strip $1),$(sm._var._temp._object),\
+ $(call sm.rule.compile.$(strip $1),\
+    $(sm._var._temp._object),\
     $(call sm.fun.calculate-source.$(strip $3),$2),\
     sm.var.$(sm.this.name).compile.options.$(strip $1))
 endef #sm.fun.make-object-rule
