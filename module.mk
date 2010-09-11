@@ -162,13 +162,13 @@ endef #sm.fun.calculate-object.external
 ##
 ## source file of relative location
 define sm.fun.calculate-source.
-$(sm.this.dir)/$(strip $1)
+$(call sm-to-relative-path,$(sm.this.dir)/$(strip $1))
 endef #sm.fun.calculate-source.
 
 ##
 ## source file of fixed location
 define sm.fun.calculate-source.external
-$(strip $1)
+$(call sm-to-relative-path,$(strip $1))
 endef #sm.fun.calculate-source.external
 
 ##
@@ -191,8 +191,6 @@ endef #sm.fun.calculate-static-module-targets
 
 ##################################################
 
-## TODO: make source dependency files(*.d)
-
 ## Make rule for building object
 ##   eg. $(call sm.fun.make-object-rule, c++, foobar.cpp)
 ##   eg. $(call sm.fun.make-object-rule, c++, ~/sources/foobar.cpp, external)
@@ -207,10 +205,10 @@ define sm.fun.make-object-rule
  $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-compile-options,\
      smart: no callback for getting compile options of lang '$(strip $1)')\
  $(eval sm._var._temp._object := $(call sm.fun.calculate-object.$(strip $3),$2))\
- $(eval sm._var._temp._depend := $(sm._var._temp._object:%.o=%.d))\
  $(eval sm.var.$(sm.this.name).objects += $(sm._var._temp._object))\
- $(eval sm.var.$(sm.this.name).depends += $(sm._var._temp._depend))\
  $(if $(call is-true,$(sm.this.gen_deps)),\
+      $(eval sm._var._temp._depend := $(sm._var._temp._object:%.o=%.d))\
+      $(eval sm.var.$(sm.this.name).depends += $(sm._var._temp._depend))\
       $(eval include $(sm._var._temp._depend))\
       $(call sm.rule.dependency.$(strip $1),\
          $(sm._var._temp._depend),$(sm._var._temp._object),\

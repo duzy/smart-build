@@ -80,12 +80,12 @@ $(if $1,,$(error smart: arg \#1 must be the source language))\
 $(if $2,,$(error smart: arg \#2 must be the output target))\
 $(if $3,,$(error smart: arg \#3 must be the source file))\
 $(if $4,,$(error smart: arg \#4 must be a callback for compile flags))\
-$(call sm.tool.gcc.dependency.$(strip $1).unchecked,$2,$3,$(strip $4))
+$(call sm.tool.gcc.dependency.$(strip $1).unchecked,$2,$3,$(strip $4),$(strip $5))
 endef #sm.tool.gcc.dependency
 
-sm.tool.gcc.dependency.c = $(call sm.tool.gcc.dependency,c,$1,$2,$3)
-sm.tool.gcc.dependency.c++ = $(call sm.tool.gcc.dependency,c++,$1,$2,$3)
-sm.tool.gcc.dependency.asm = $(call sm.tool.gcc.dependency,asm,$1,$2,$3)
+sm.tool.gcc.dependency.c = $(call sm.tool.gcc.dependency,c,$1,$2,$3,$4)
+sm.tool.gcc.dependency.c++ = $(call sm.tool.gcc.dependency,c++,$1,$2,$3,$4)
+sm.tool.gcc.dependency.asm = $(call sm.tool.gcc.dependency,asm,$1,$2,$3,$4)
 
 ##################################################
 # Links

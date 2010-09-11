@@ -56,7 +56,7 @@ define sm-register-sources
            $(call sm-check-origin,sm.tool.$(strip $2),file,smart: toolset '$(strip $2)' unimplemented)\
            $(foreach sm._var._temp._lang,$(sm.tool.$(strip $2).langs),\
                $(eval sm.rule.compile.$(sm._var._temp._lang) = $$(call sm.rule,compile,$(sm._var._temp._lang),$$1,$$2,$$3))\
-               $(eval sm.rule.dependency.$(sm._var._temp._lang) = $$(call sm.rule,dependency,$(sm._var._temp._lang),$$1,$$2,$$3))\
+               $(eval sm.rule.dependency.$(sm._var._temp._lang) = $$(call sm.rule.dependency,$(sm._var._temp._lang),$$1,$$2,$$3,$$4))\
                $(eval sm.rule.archive.$(sm._var._temp._lang) = $$(call sm.rule,archive,$(sm._var._temp._lang),$$1,$$2,$$3,$$4))\
                $(eval sm.rule.link.$(sm._var._temp._lang) = $$(call sm.rule,link,$(sm._var._temp._lang),$$1,$$2,$$3,$$4)))\
            $(eval sm.tool.$(strip $2).$(strip $1).suffix += $(strip $3))\
