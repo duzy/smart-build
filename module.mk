@@ -335,11 +335,11 @@ clean-$(sm.this.name)-target:; $(info smart: do you mean $@s?) @false
 
 define sm.code.make-clean-rules
   clean-$(sm.this.name)-targets:
-	$(if $(call is-true,$(sm.this.verbose)),,$(info remove: $(sm.var.$(sm.this.name).targets))@)$$(call sm.tool.common.rm,$$(sm.var.$(sm.this.name).targets))
+	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$(sm.var.$(sm.this.name).targets))@)$$(call sm.tool.common.rm,$$(sm.var.$(sm.this.name).targets))
   clean-$(sm.this.name)-objects:
-	$(if $(call is-true,$(sm.this.verbose)),,$(info remove:$(sm.var.$(sm.this.name).objects))@)$$(call sm.tool.common.rm,$$(sm.var.$(sm.this.name).objects))
+	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$(sm.var.$(sm.this.name).objects))@)$$(call sm.tool.common.rm,$$(sm.var.$(sm.this.name).objects))
   clean-$(sm.this.name)-depends:
-	$(if $(call is-true,$(sm.this.verbose)),,$(info remove:$(sm.var.$(sm.this.name).depends))@)$$(call sm.tool.common.rm,$$(sm.var.$(sm.this.name).depends))
+	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$(sm.var.$(sm.this.name).depends))@)$$(call sm.tool.common.rm,$$(sm.var.$(sm.this.name).depends))
 endef #sm.code.make-clean-rules
 
 $(eval $(sm.code.make-clean-rules))
