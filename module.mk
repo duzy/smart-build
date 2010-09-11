@@ -318,22 +318,19 @@ sm.this.depends = $(sm.var.$(sm.this.name).depends)
 $(call sm-check-not-empty, sm.tool.common.rm)
 $(call sm-check-not-empty, sm.tool.common.rmdir)
 
-sm.rules.phony.* += \
-  clean-$(sm.this.name) \
-  clean-$(sm.this.name)-target \
-  clean-$(sm.this.name)-targets \
-  clean-$(sm.this.name)-objects \
-  clean-$(sm.this.name)-depends
-
 clean-$(sm.this.name): \
   clean-$(sm.this.name)-targets \
   clean-$(sm.this.name)-objects \
   clean-$(sm.this.name)-depends
 	@echo "'$(@:clean-%=%)' is cleaned."
 
-clean-$(sm.this.name)-target:; $(info smart: do you mean $@s?) @false
-
 define sm.code.make-clean-rules
+  sm.rules.phony.* += \
+    clean-$(sm.this.name) \
+    clean-$(sm.this.name)-targets \
+    clean-$(sm.this.name)-objects \
+    clean-$(sm.this.name)-depends
+
   clean-$(sm.this.name)-targets:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$(sm.var.$(sm.this.name).targets))@)$$(call sm.tool.common.rm,$$(sm.var.$(sm.this.name).targets))
   clean-$(sm.this.name)-objects:
