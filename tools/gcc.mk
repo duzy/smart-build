@@ -67,13 +67,14 @@ sm.tool.gcc.compile.asm = $(call sm.tool.gcc.compile,asm,$1,$2,$3)
 # Denpendencies
 
 define sm.tool.gcc.dependency.c.unchecked
-$(sm.tool.gcc.cmd.cc) -MM -MT $(strip $(basename $2)).o -MF $(strip $1) $($(strip $3)) $(strip $2)
+$(sm.tool.gcc.cmd.cc) -MM -MT $(strip $2) -MF $(strip $1) $($(strip $4)) $(strip $3)
 endef #sm.tool.gcc.dependency.c.unchecked
 
 define sm.tool.gcc.dependency.c++.unchecked
-$(sm.tool.gcc.cmd.c++) -MM -MT $(strip $(basename $2)).o -MF $(strip $1) $($(strip $3)) $(strip $2)
+$(sm.tool.gcc.cmd.c++) -MM -MT $(strip $2) -MF $(strip $1) $($(strip $4)) $(strip $3)
 endef #sm.tool.gcc.dependency.c++.unchecked
 
+## eg. $(sm.tool.gcc.dependency, foo.d, foo.o, src/foo.cpp)
 define sm.tool.gcc.dependency
 $(if $1,,$(error smart: arg \#1 must be the source language))\
 $(if $2,,$(error smart: arg \#2 must be the output target))\

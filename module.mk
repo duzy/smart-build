@@ -209,10 +209,11 @@ define sm.fun.make-object-rule
  $(eval sm._var._temp._object := $(call sm.fun.calculate-object.$(strip $3),$2))\
  $(eval sm._var._temp._depend := $(sm._var._temp._object:%.o=%.d))\
  $(eval sm.var.$(sm.this.name).objects += $(sm._var._temp._object))\
+ $(eval sm.var.$(sm.this.name).depends += $(sm._var._temp._depend))\
  $(if $(call is-true,$(sm.this.gen_deps)),\
       $(eval include $(sm._var._temp._depend))\
       $(call sm.rule.dependency.$(strip $1),\
-         $(sm._var._temp._depend),\
+         $(sm._var._temp._depend),$(sm._var._temp._object),\
          $(call sm.fun.calculate-source.$(strip $3),$2),\
          sm.var.$(sm.this.name).compile.options.$(strip $1)))\
  $(call sm.fun.$(sm.this.name).calculate-compile-options,$(strip $1))\
@@ -272,6 +273,7 @@ endef #sm.fun.make-module-rule
 
 sm.var.$(sm.this.name).targets :=
 sm.var.$(sm.this.name).objects :=
+sm.var.$(sm.this.name).depends :=
 
 ## Make object rules for sources of different lang
 $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
@@ -311,6 +313,7 @@ endif
 
 sm.this.targets = $(sm.var.$(sm.this.name).targets)
 sm.this.objects = $(sm.var.$(sm.this.name).objects)
+sm.this.depends = $(sm.var.$(sm.this.name).depends)
 
 ##################################################
 
@@ -321,11 +324,13 @@ sm.rules.phony.* += \
   clean-$(sm.this.name) \
   clean-$(sm.this.name)-target \
   clean-$(sm.this.name)-targets \
-  clean-$(sm.this.name)-objects
+  clean-$(sm.this.name)-objects \
+  clean-$(sm.this.name)-depends
 
 clean-$(sm.this.name): \
   clean-$(sm.this.name)-targets \
-  clean-$(sm.this.name)-objects
+  clean-$(sm.this.name)-objects \
+  clean-$(sm.this.name)-depends
 	@echo "'$(@:clean-%=%)' is cleaned."
 
 clean-$(sm.this.name)-target:; $(info smart: do you mean $@s?) @false
@@ -335,6 +340,8 @@ define sm.code.make-clean-rules
 	$(if $(call is-true,$(sm.this.verbose)),,$(info remove: $(sm.var.$(sm.this.name).targets))@)$$(call sm.tool.common.rm,$$(sm.var.$(sm.this.name).targets))
   clean-$(sm.this.name)-objects:
 	$(if $(call is-true,$(sm.this.verbose)),,$(info remove:$(sm.var.$(sm.this.name).objects))@)$$(call sm.tool.common.rm,$$(sm.var.$(sm.this.name).objects))
+  clean-$(sm.this.name)-depends:
+	$(if $(call is-true,$(sm.this.verbose)),,$(info remove:$(sm.var.$(sm.this.name).depends))@)$$(call sm.tool.common.rm,$$(sm.var.$(sm.this.name).depends))
 endef #sm.code.make-clean-rules
 
 $(eval $(sm.code.make-clean-rules))

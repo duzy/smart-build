@@ -35,13 +35,15 @@ $(if $4,$(call sm-check-defined,$(strip $4),smart: '$(strip $4)' must be defined
 $(call sm.rule,compile,$(strip $1),$(strip $2),$(strip $3),$(strip $4))
 endef #sm.rule.compile
 
+## TODO: think about using a different temp as sm.rule.template
 ## eg. $(call sm.rule.dependency, LANG, TARGET, PREREQUISITES, callback-FLAGS)
 define sm.rule.dependency
 $(if $1,,$(error smart: arg \#1 must be the source language))\
 $(if $2,,$(error smart: arg \#2 must be the output target))\
-$(if $3,,$(error smart: arg \#3 must be the source file))\
-$(if $4,$(call sm-check-defined,$(strip $4),smart: '$(strip $4)' must be defined as a callback for compile flags))\
-$(call sm.rule,dependency,$(strip $1),$(strip $2),$(strip $3),$(strip $4))
+$(if $3,,$(error smart: arg \#2 must be the depend target))\
+$(if $4,,$(error smart: arg \#3 must be the source file))\
+$(if $5,$(call sm-check-defined,$(strip $5),smart: '$(strip $5)' must be defined as a callback for compile flags))\
+$(call sm.rule,dependency,$(strip $1),$(strip $2),$(strip $3),$(strip $4),$(strip $5))
 endef #sm.rule.dependency
 
 ## eg. $(call sm.rule.link, LANG, TARGET, PREREQUISITES, callback-FLAGS, [,callack-LIBS])
