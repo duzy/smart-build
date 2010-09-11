@@ -207,7 +207,14 @@ define sm.fun.make-object-rule
  $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-compile-options,\
      smart: no callback for getting compile options of lang '$(strip $1)')\
  $(eval sm._var._temp._object := $(call sm.fun.calculate-object.$(strip $3),$2))\
+ $(eval sm._var._temp._depend := $(sm._var._temp._object:%.o=%.d))\
  $(eval sm.var.$(sm.this.name).objects += $(sm._var._temp._object))\
+ $(if $(call is-true,$(sm.this.gen_deps)),\
+      $(eval include $(sm._var._temp._depend))\
+      $(call sm.rule.dependency.$(strip $1),\
+         $(sm._var._temp._depend),\
+         $(call sm.fun.calculate-source.$(strip $3),$2),\
+         sm.var.$(sm.this.name).compile.options.$(strip $1)))\
  $(call sm.fun.$(sm.this.name).calculate-compile-options,$(strip $1))\
  $(call sm.rule.compile.$(strip $1),\
     $(sm._var._temp._object),\

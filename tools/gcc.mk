@@ -27,7 +27,7 @@ sm.tool.gcc.asm.suffix :=
 # Compiles
 
 ##
-##  Produce compile commands for 
+##  Produce compile commands for c language
 ##
 define sm.tool.gcc.compile.c.unchecked
 $(sm.tool.gcc.cmd.cc) $($(strip $3)) -c -o $(strip $1) $(strip $2)
@@ -62,6 +62,29 @@ sm.tool.gcc.compile.c = $(call sm.tool.gcc.compile,c,$1,$2,$3)
 sm.tool.gcc.compile.c++ = $(call sm.tool.gcc.compile,c++,$1,$2,$3)
 sm.tool.gcc.compile.asm = $(call sm.tool.gcc.compile,asm,$1,$2,$3)
 
+
+##################################################
+# Denpendencies
+
+define sm.tool.gcc.dependency.c.unchecked
+$(sm.tool.gcc.cmd.cc) -MM -MT $(strip $(basename $2)).o -MF $(strip $1) $($(strip $3)) $(strip $2)
+endef #sm.tool.gcc.dependency.c.unchecked
+
+define sm.tool.gcc.dependency.c++.unchecked
+$(sm.tool.gcc.cmd.c++) -MM -MT $(strip $(basename $2)).o -MF $(strip $1) $($(strip $3)) $(strip $2)
+endef #sm.tool.gcc.dependency.c++.unchecked
+
+define sm.tool.gcc.dependency
+$(if $1,,$(error smart: arg \#1 must be the source language))\
+$(if $2,,$(error smart: arg \#2 must be the output target))\
+$(if $3,,$(error smart: arg \#3 must be the source file))\
+$(if $4,,$(error smart: arg \#4 must be a callback for compile flags))\
+$(call sm.tool.gcc.dependency.$(strip $1).unchecked,$2,$3,$(strip $4))
+endef #sm.tool.gcc.dependency
+
+sm.tool.gcc.dependency.c = $(call sm.tool.gcc.dependency,c,$1,$2,$3)
+sm.tool.gcc.dependency.c++ = $(call sm.tool.gcc.dependency,c++,$1,$2,$3)
+sm.tool.gcc.dependency.asm = $(call sm.tool.gcc.dependency,asm,$1,$2,$3)
 
 ##################################################
 # Links

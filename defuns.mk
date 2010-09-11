@@ -56,6 +56,7 @@ define sm-register-sources
            $(call sm-check-origin,sm.tool.$(strip $2),file,smart: toolset '$(strip $2)' unimplemented)\
            $(foreach sm._var._temp._lang,$(sm.tool.$(strip $2).langs),\
                $(eval sm.rule.compile.$(sm._var._temp._lang) = $$(call sm.rule,compile,$(sm._var._temp._lang),$$1,$$2,$$3))\
+               $(eval sm.rule.dependency.$(sm._var._temp._lang) = $$(call sm.rule,dependency,$(sm._var._temp._lang),$$1,$$2,$$3))\
                $(eval sm.rule.archive.$(sm._var._temp._lang) = $$(call sm.rule,archive,$(sm._var._temp._lang),$$1,$$2,$$3,$$4))\
                $(eval sm.rule.link.$(sm._var._temp._lang) = $$(call sm.rule,link,$(sm._var._temp._lang),$$1,$$2,$$3,$$4)))\
            $(eval sm.tool.$(strip $2).$(strip $1).suffix += $(strip $3))\
@@ -105,13 +106,14 @@ sm.var.target_suffix_for_linux_t := .test
 define sm-new-module
 $(if $1,$(if $(filter $1,$(sm.global.modules)),\
              $(error Module of name '$1' already exists))\
-  $(eval sm.this.name:=$(basename $(strip $1))
+  $(eval sm.this.name := $(basename $(strip $1))
          $$(if $$(sm.this.name),,$$(error The module name is empty))
-         sm.this.suffix:=$(suffix $(strip $1))
-         sm.this.dir:=$$(call sm-module-dir)
-         sm.this.makefile:=$$(call sm-this-makefile)
-         sm.global.modules+=$(strip $1)
-         sm.global.modules.$(strip $1):=$$(sm.this.makefile))\
+         sm.this.suffix := $(suffix $(strip $1))
+         sm.this.dir := $$(call sm-module-dir)
+         sm.this.gen_deps := true
+         sm.this.makefile := $$(call sm-this-makefile)
+         sm.global.modules += $(strip $1)
+         sm.global.modules.$(strip $1) := $$(sm.this.makefile))\
   ,$(error Invalid usage of 'sm-new-module', module name required))\
 $(if $2,$(eval \
   sm.this.type := $(call sm-module-type-name,$(strip $2))
