@@ -89,15 +89,15 @@ $(call sm-var-temp, _compile.c, =)
 $(call sm-var-temp, _compile.t, =)
 $(call sm-var-temp, _compile.asm, =)
 ifeq ($(sm.var.temp._cflags_infile),true)
-  $(call sm-util-mkdir,$(sm.dir.out.tmp))
-  $(if $(_sm_has_sources.c++),$(shell echo -c $(sm.var.temp._compile_flags.c++) > $(sm.dir.out.tmp)/$(sm.this.name).c++.opts))
-  $(if $(_sm_has_sources.c),$(shell echo -c $(sm.var.temp._compile_flags.c) > $(sm.dir.out.tmp)/$(sm.this.name).c.opts))
-  $(if $(_sm_has_sources.t),$(shell echo -c $(sm.var.temp._compile_flags.t) > $(sm.dir.out.tmp)/$(sm.this.name).t.opts))
-  $(if $(_sm_has_sources.asm),$(shell echo $(sm.var.temp._compile_flags.asm) > $(sm.dir.out.tmp)/$(sm.this.name).asm.opts))
-  sm.var.temp._compile.c++ = $(CXX) @$(sm.dir.out.tmp)/$(sm.this.name).c++.opts -o $$@ $$<
-  sm.var.temp._compile.c = $(CC) @$(sm.dir.out.tmp)/$(sm.this.name).c.opts -o $$@ $$<
-  sm.var.temp._compile.t = $(CC) @$(sm.dir.out.tmp)/$(sm.this.name).t.opts -o $$@ $$<
-  sm.var.temp._compile.asm = $(AS) @$(sm.dir.out.tmp)/$(sm.this.name).asm.opts -o $$@ $$<
+  $(call sm-util-mkdir,$(sm.out.tmp))
+  $(if $(_sm_has_sources.c++),$(shell echo -c $(sm.var.temp._compile_flags.c++) > $(sm.out.tmp)/$(sm.this.name).c++.opts))
+  $(if $(_sm_has_sources.c),$(shell echo -c $(sm.var.temp._compile_flags.c) > $(sm.out.tmp)/$(sm.this.name).c.opts))
+  $(if $(_sm_has_sources.t),$(shell echo -c $(sm.var.temp._compile_flags.t) > $(sm.out.tmp)/$(sm.this.name).t.opts))
+  $(if $(_sm_has_sources.asm),$(shell echo $(sm.var.temp._compile_flags.asm) > $(sm.out.tmp)/$(sm.this.name).asm.opts))
+  sm.var.temp._compile.c++ = $(CXX) @$(sm.out.tmp)/$(sm.this.name).c++.opts -o $$@ $$<
+  sm.var.temp._compile.c = $(CC) @$(sm.out.tmp)/$(sm.this.name).c.opts -o $$@ $$<
+  sm.var.temp._compile.t = $(CC) @$(sm.out.tmp)/$(sm.this.name).t.opts -o $$@ $$<
+  sm.var.temp._compile.asm = $(AS) @$(sm.out.tmp)/$(sm.this.name).asm.opts -o $$@ $$<
 else
   sm.var.temp._compile.c++ = $(CXX) -c $(sm.var.temp._compile_flags.c++) -o $$@ $$<
   sm.var.temp._compile.c = $(CC) -c $(sm.var.temp._compile_flags.c) -o $$@ $$<
@@ -110,22 +110,22 @@ $(call sm-var-temp, _gen.c, =)
 $(call sm-var-temp, _gen.t, =)
 $(call sm-var-temp, _gen.asm, =)
 sm.var.temp._gen.c++ = \
-  ( echo "C++: $(sm.this.name) += $$(<:$(sm.dir.top)/%=%)" )\
+  ( echo "C++: $(sm.this.name) += $$(<:$(sm.top)/%=%)" )\
   && ( $(call _sm_log,$(sm.var.temp._compile.c++)) )\
   && ( $(sm.var.temp._compile.c++) || $(call _sm_log,"failed: $$<") )
 
 sm.var.temp._gen.c = \
-  ( echo "C: $(sm.this.name) += $$(<:$(sm.dir.top)/%=%)" )\
+  ( echo "C: $(sm.this.name) += $$(<:$(sm.top)/%=%)" )\
   && ( $(call _sm_log,$(sm.var.temp._compile.c)) )\
   && ( $(sm.var.temp._compile.c) || $(call _sm_log,"failed: $$<") )
 
 sm.var.temp._gen.t = \
-  ( echo "test: $(sm.this.name) += $$(<:$(sm.dir.top)/%=%)" )\
+  ( echo "test: $(sm.this.name) += $$(<:$(sm.top)/%=%)" )\
   && ( $(call _sm_log,$(sm.var.temp._compile.t)) )\
   && ( $(sm.var.temp._compile.t) || $(call _sm_log,"failed: $$<") )
 
 sm.var.temp._gen.asm = \
-  ( echo "ASM: $(sm.this.name) += $$(<:$(sm.dir.top)/%=%)" )\
+  ( echo "ASM: $(sm.this.name) += $$(<:$(sm.top)/%=%)" )\
   && ( $(call _sm_log,$(sm.var.temp._compile.asm)) )\
   && ( $(sm.var.temp._compile.asm) || $(call _sm_log,"failed: $$<") )
 
@@ -139,8 +139,8 @@ ifneq ($(sm.this.prebuilt_objects),)
   $(error sm.this.prebuilt_objects is deprecated, use sm.this.objects instead)
 endif
 
-$(call sm-var-temp, _out, :=,$(call sm-to-relative-path,$(sm.dir.out.obj)))
-$(call sm-var-temp, _prefix, :=,$(sm.var.temp._out)$(sm.this.dir:$(sm.dir.top)%=%))
+$(call sm-var-temp, _out, :=,$(call sm-to-relative-path,$(sm.out.obj)))
+$(call sm-var-temp, _prefix, :=,$(sm.var.temp._out)$(sm.this.dir:$(sm.top)%=%))
 sm.fun.cal-obj = $(sm.var.temp._prefix)/$(subst ..,_,$(basename $(call sm-to-relative-path,$1)).o)
 
 ## Compute objects

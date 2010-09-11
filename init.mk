@@ -19,19 +19,25 @@ ifeq ($(wildcard $(sm.top)),)
 endif
 
 ## alias
-sm.dir.top := $(sm.top)
+sm.dir.top = $(call sm-deprecated, sm.dir.top, sm.top)
 
 ## The output dirs for objects.
 ## These will always be converted into sm.top related path, this will restrict
 ## the command line arguments length.
-#sm.dir.out = $(sm.top)/out/$(sm.config.variant)
-sm.dir.out = out/$(sm.config.variant)
-sm.dir.out.bin = $(sm.dir.out)/bin
-sm.dir.out.lib = $(sm.dir.out)/lib
-sm.dir.out.inc = $(sm.dir.out)/include
-sm.dir.out.obj = $(sm.dir.out)/obj
-sm.dir.out.tmp = $(sm.dir.out)/temp
+#sm.out = $(sm.top)/out/$(sm.config.variant)
+sm.out = out/$(sm.config.variant)
+sm.out.bin = $(sm.out)/bin
+sm.out.lib = $(sm.out)/lib
+sm.out.inc = $(sm.out)/include
+sm.out.obj = $(sm.out)/obj
+sm.out.tmp = $(sm.out)/temp
 
+sm.dir.out = $(call sm-deprecated, sm.dir.out, sm.out)
+sm.dir.out.bin = $(call sm-deprecated, sm.dir.out.bin, sm.out.bin)
+sm.dir.out.lib = $(call sm-deprecated, sm.dir.out.lib, sm.out.lib)
+sm.dir.out.inc = $(call sm-deprecated, sm.dir.out.inc, sm.out.inc)
+sm.dir.out.obj = $(call sm-deprecated, sm.dir.out.obj, sm.out.obj)
+sm.dir.out.tmp = $(call sm-deprecated, sm.dir.out.tmp, sm.out.tmp)
 
 # The variant of this building.
 ifeq ($(strip $(sm.config.variant)),)

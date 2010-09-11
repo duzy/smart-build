@@ -28,8 +28,8 @@ _sm_link_flags := \
 
 _sm_link_flags := $(filter-out -shared,$(_sm_link_flags))
 
-$(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.dir.out.bin)))
-$(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
+$(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.out.bin)))
+$(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.out.lib)))
 
 _sm_implib :=
 _sm_ranlib := true
@@ -72,10 +72,10 @@ endif
 
 ## C++ link command
 ifeq ($(sm.var.temp._flags_infile),true)
-  $(call sm-util-mkdir,$(sm.dir.out.tmp))
-  $(shell echo $(_sm_link_flags) > $(sm.dir.out.tmp)/$(sm.this.name).opts)
-  _sm_link.c++ = $(CXX) @$(sm.dir.out.tmp)/$(sm.this.name).opts
-  _sm_link.c = $(CC) @$(sm.dir.out.tmp)/$(sm.this.name).opts
+  $(call sm-util-mkdir,$(sm.out.tmp))
+  $(shell echo $(_sm_link_flags) > $(sm.out.tmp)/$(sm.this.name).opts)
+  _sm_link.c++ = $(CXX) @$(sm.out.tmp)/$(sm.this.name).opts
+  _sm_link.c = $(CC) @$(sm.out.tmp)/$(sm.this.name).opts
 else
   _sm_link.c++ = $(CXX) $(_sm_link_flags)
   _sm_link.c = $(CC) $(_sm_link_flags)
@@ -90,9 +90,9 @@ _sm_suffix := $(strip $(_sm_suffix))
 $(if $(_sm_link$(_sm_suffix)),,$(error Undefined link command for $(_sm_suffix)))
 ifeq ($(sm.var.temp._flags_infile),true)
   #_sm_link = $(_sm_link$(_sm_suffix)) -o $$@ $$(wordlist 1,100,$$^)
-  $(call sm-util-mkdir,$(sm.dir.out.tmp))
-  $(shell echo $(sm.this.objects) > $(sm.dir.out.tmp)/$(sm.this.name).objs)
-  _sm_link = $(_sm_link$(_sm_suffix)) -o $$@ @$(sm.dir.out.tmp)/$(sm.this.name).objs
+  $(call sm-util-mkdir,$(sm.out.tmp))
+  $(shell echo $(sm.this.objects) > $(sm.out.tmp)/$(sm.this.name).objs)
+  _sm_link = $(_sm_link$(_sm_suffix)) -o $$@ @$(sm.out.tmp)/$(sm.this.name).objs
 else
   _sm_link = $(_sm_link$(_sm_suffix)) -o $$@ $$^
 endif
@@ -105,7 +105,7 @@ endif
 _sm_link += $(strip $(sm.var.temp._libs))
 
 ## Target Rule
-_sm_rel_name = $(if $(1:$(sm.dir.top)/%=%),$(1:$(sm.dir.top)/%=%),$1)
+_sm_rel_name = $(if $(1:$(sm.top)/%=%),$(1:$(sm.top)/%=%),$1)
 
 define sm.fun.gen-binary-rule
 $(sm.var.temp._out_bin)/$(sm.this.name)$(sm.this.suffix) $(_sm_implib): \

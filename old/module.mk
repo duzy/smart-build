@@ -46,10 +46,10 @@
 #	sm.global.libdirs	:
 #	sm.global.libs		:
 #
-#	sm.dir.out
-#	sm.dir.out.bin
-#	sm.dir.out.lib
-#	sm.dir.out.obj
+#	sm.out
+#	sm.out.bin
+#	sm.out.lib
+#	sm.out.obj
 #	
 
 $(if $(strip $(sm.this.dir)),,$(error 'sm.this.dir' must be set))
@@ -91,7 +91,7 @@ endif
 
 ## Compile log command.
 _sm_log = $(if $(sm.log.filename),\
-    echo $1 >> $(sm.dir.out)/$(sm.log.filename),true)
+    echo $1 >> $(sm.out)/$(sm.log.filename),true)
 
 _sm_has_sources.asm :=
 _sm_has_sources.c :=

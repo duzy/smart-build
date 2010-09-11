@@ -22,8 +22,8 @@ ifeq ($(sm.this.type),subdirs)
 endif
 
 ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
-  $(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.dir.out.bin)))
-  $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.dir.out.lib)))
+  $(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.out.bin)))
+  $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.out.lib)))
   $(call sm-var-temp, _g, :=,$(sm.this.name)$(sm.this.suffix))
 
   ifeq ($(sm.this.type),static)

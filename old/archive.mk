@@ -2,8 +2,8 @@
 #	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
 #
 
-$(call sm-var-temp, _out,          :=, $(call sm-to-relative-path,$(sm.dir.out)))
-$(call sm-var-temp, _out_lib,      :=, $(call sm-to-relative-path,$(sm.dir.out.lib)))
+$(call sm-var-temp, _out,          :=, $(call sm-to-relative-path,$(sm.out)))
+$(call sm-var-temp, _out_lib,      :=, $(call sm-to-relative-path,$(sm.out.lib)))
 $(call sm-var-temp, _archive_cmd,  :=, $(AR) cur)
 $(call sm-var-temp, _archive_name, :=, $(sm.this.name)$(sm.this.suffix))
 
@@ -45,9 +45,9 @@ ifeq ($(sm.var.temp._flags_infile),)
 endif
 
 ifeq ($(sm.var.temp._flags_infile),true)
-  $(call sm-util-mkdir,$(sm.dir.out.tmp))
-  $(shell echo $(sm.this.objects) > $(sm.dir.out.tmp)/$(sm.this.name).objs)
-   sm.var.temp._objs := @$(sm.dir.out.tmp)/$(sm.this.name).objs
+  $(call sm-util-mkdir,$(sm.out.tmp))
+  $(shell echo $(sm.this.objects) > $(sm.out.tmp)/$(sm.this.name).objs)
+   sm.var.temp._objs := @$(sm.out.tmp)/$(sm.this.name).objs
 else
    sm.var.temp._objs := $(sm.this.objects)
 endif

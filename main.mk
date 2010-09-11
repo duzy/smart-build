@@ -44,8 +44,8 @@ endif
 
 ##################################################
 
-sm.global.smartfiles.toplevel := $(wildcard $(sm.dir.top)/smart.mk)
-#_sm_mods += $(call sm-find-sub-modules, $(sm.dir.top))
+sm.global.smartfiles.toplevel := $(wildcard $(sm.top)/smart.mk)
+#_sm_mods += $(call sm-find-sub-modules, $(sm.top))
 
 ifneq ($(strip $(sm.global.smartfiles.toplevel)),)
   sm.global.goals :=

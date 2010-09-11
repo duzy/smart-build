@@ -55,10 +55,10 @@ endef #sm.code.append-list
 ##
 define sm.code.switch-options-into-file
 $(if $(call is-true,$(sm.this.$1.options.infile)),\
-     $$(call sm-util-mkdir,$(sm.dir.out.tmp)/$(sm.this.name))\
+     $$(call sm-util-mkdir,$(sm.out.tmp)/$(sm.this.name))\
      $$(eval sm.var.$(sm.this.name).$1.options$2 := $$(subst \",\\\",$$(sm.var.$(sm.this.name).$1.options$2)))\
-     $$(shell echo $$(sm.var.$(sm.this.name).$1.options$2) > $(sm.dir.out.tmp)/$(sm.this.name)/$1.options$2)\
-     $$(eval sm.var.$(sm.this.name).$1.options$2 := @$(sm.dir.out.tmp)/$(sm.this.name)/$1.options$2))
+     $$(shell echo $$(sm.var.$(sm.this.name).$1.options$2) > $(sm.out.tmp)/$(sm.this.name)/$1.options$2)\
+     $$(eval sm.var.$(sm.this.name).$1.options$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.options$2))
 endef #sm.code.switch-options-into-file
 
 ##
@@ -104,10 +104,10 @@ define sm.code.calculate-link-libs
  $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, $(sm.global.libs), -l)
  $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, $(sm.this.libs), -l)
  $(if $(call is-true,$(sm.this.link.options.infile)),\
-     $$(call sm-util-mkdir,$(sm.dir.out.tmp)/$(sm.this.name))\
+     $$(call sm-util-mkdir,$(sm.out.tmp)/$(sm.this.name))\
      $$(eval sm.var.$(sm.this.name).link.libs := $$(subst \",\\\",$$(sm.var.$(sm.this.name).link.libs)))\
-     $$(shell echo $$(sm.var.$(sm.this.name).link.libs) > $(sm.dir.out.tmp)/$(sm.this.name)/link.libs)\
-     $$(eval sm.var.$(sm.this.name).link.libs := @$(sm.dir.out.tmp)/$(sm.this.name)/link.libs))
+     $$(shell echo $$(sm.var.$(sm.this.name).link.libs) > $(sm.out.tmp)/$(sm.this.name)/link.libs)\
+     $$(eval sm.var.$(sm.this.name).link.libs := @$(sm.out.tmp)/$(sm.this.name)/link.libs))
 endef #sm.code.calculate-link-libs
 
 ## TODO: something like switch-objects-into-file for linking and archiving
@@ -148,7 +148,7 @@ $(call sm-check-not-empty,sm.this.dir)
 
 ## The output object file prefix
 sm._var._temp._object_prefix := \
-  $(call sm-to-relative-path,$(sm.dir.out.obj))$(sm.this.dir:$(sm.dir.top)%=%)
+  $(call sm-to-relative-path,$(sm.out.obj))$(sm.this.dir:$(sm.top)%=%)
 
 ##
 ##
@@ -175,19 +175,19 @@ endef #sm.fun.calculate-source.external
 ##
 ## binary module to be built
 define sm.fun.calculate-exe-module-targets
-$(call sm-to-relative-path,$(sm.dir.out.bin))/$(sm.this.name)$(sm.this.suffix)
+$(call sm-to-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.calculate-exe-module-targets
 
 define sm.fun.calculate-t-module-targets
-$(call sm-to-relative-path,$(sm.dir.out.bin))/$(sm.this.name)$(sm.this.suffix)
+$(call sm-to-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.calculate-t-module-targets
 
 define sm.fun.calculate-shared-module-targets
-$(call sm-to-relative-path,$(sm.dir.out.bin))/$(sm.this.name)$(sm.this.suffix)
+$(call sm-to-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.calculate-shared-module-targets
 
 define sm.fun.calculate-static-module-targets
-$(call sm-to-relative-path,$(sm.dir.out.lib))/lib$(sm.this.name:lib%=%)$(sm.this.suffix)
+$(call sm-to-relative-path,$(sm.out.lib))/lib$(sm.this.name:lib%=%)$(sm.this.suffix)
 endef #sm.fun.calculate-static-module-targets
 
 ##################################################
