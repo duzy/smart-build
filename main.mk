@@ -70,6 +70,16 @@ endif
 ifneq ($(sm.global.goals),)
   build-goals: $(sm.global.goals)
   clean: $(sm.global.goals:goal-%=clean-%)
+
+  ## rules for output dirs, TODO: replace sm-util-mkdir on these dirs with it
+  $(sm.out) \
+  $(sm.out.bin) \
+  $(sm.out.lib) \
+  $(sm.out.inc) \
+  $(sm.out.obj) \
+  $(sm.out.tmp) \
+  :; $(call sm-util-mkdir,$@) @true
+
 else
   build-goals:; $(info smart: no goals) @true
   clean:; $(info smart: nothing dirty) @true

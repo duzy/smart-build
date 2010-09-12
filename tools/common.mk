@@ -21,3 +21,7 @@ define sm.tool.common.mv
 $(if $(and $1,$2),mv $1 $2,\
   $(error smart: move command requires more than two args))
 endef #sm.tool.common.mv
+
+define sm.tool.common.ln
+$(if $(and $1,$2),ln -sf $1 $2)
+endef #sm.tool.common.ln
