@@ -217,7 +217,7 @@ endef
 
 ## Command for making out dir
 define sm-util-mkdir
-$(if $(wildcard $1),,$(info mkdir: $1)$(shell mkdir -p $1))
+$(if $(wildcard $1),,$(info mkdir: $1)$(shell [[ -d $1 ]] || mkdir -p $1))
 endef
 
 ## Convert path to relative path (to $(sm.top)).
