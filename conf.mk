@@ -21,7 +21,7 @@ endif
 
 # Detect custome config file and apply it.
 ifneq ($(wildcard $(sm.top)/custom-config),)
-  $(info smart: custom config...)
+  $(info smart: applying custom config...)
   $(eval -include $(sm.top)/custom-config)
 endif
 
