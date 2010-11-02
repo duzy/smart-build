@@ -41,7 +41,11 @@ sm.dir.out.tmp = $(call sm-deprecated, sm.dir.out.tmp, sm.out.tmp)
 
 # The variant of this building.
 ifeq ($(strip $(sm.config.variant)),)
-  sm.config.variant := debug
+  ifneq ($(strip $V),)
+    sm.config.variant := $V
+  else
+    sm.config.variant := debug
+  endif
 endif
 sm.config.uname := $(shell uname)
 sm.config.machine := $(shell uname -m)
@@ -98,4 +102,8 @@ sm.var.Q := @
 
 ifeq ($(strip $(sm.config.variant)),debug)
   sm.global.compile.options := -g -ggdb
+else
+ifeq ($(strip $(sm.config.variant)),release)
+  sm.global.compile.options := -O3
+endif
 endif
