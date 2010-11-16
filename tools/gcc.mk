@@ -1,5 +1,5 @@
 # -*- mode: Makefile:gnu -*-
-#	Copyright(c) 2009-2010, by Zhan Xin-ming, duzy@duzy.info
+#	Copyright(c) 2009-2010, by Zhan Xin-ming <code@duzy.info>
 #	
 
 ##
@@ -125,3 +125,13 @@ endef
 sm.tool.gcc.archive.c   = $(call sm.tool.gcc.archive,$1,$2,$3,$4)
 sm.tool.gcc.archive.c++ = $(call sm.tool.gcc.archive,$1,$2,$3,$4)
 sm.tool.gcc.archive.asm = $(call sm.tool.gcc.archive,$1,$2,$3,$4)
+
+ifeq ($(strip $(sm.config.variant)),debug)
+  sm.tool.gcc.compile.options := -g -ggdb
+  sm.tool.gcc.link.options :=
+else
+ifeq ($(strip $(sm.config.variant)),release)
+  sm.tool.gcc.compile.options := -O3
+  sm.tool.gcc.link.options :=
+endif
+endif

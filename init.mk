@@ -100,10 +100,3 @@ sm.global.module_types := static shared executable exe tests t
 
 sm.var.Q := @
 
-ifeq ($(strip $(sm.config.variant)),debug)
-  sm.global.compile.options := -g -ggdb
-else
-ifeq ($(strip $(sm.config.variant)),release)
-  sm.global.compile.options := -O3
-endif
-endif

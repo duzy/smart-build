@@ -70,6 +70,8 @@ endef #sm.code.switch-options-into-file
 define sm.code.calculate-compile-options
  sm.var.$(sm.this.name).compile.options.$1.defined := true
  sm.var.$(sm.this.name).compile.options.$1 := $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
+  $(strip $(sm.tool.$(sm.this.toolset).compile.flags) $(sm.tool.$(sm.this.toolset).compile.options)) \
+  $(strip $(sm.tool.$(sm.this.toolset).compile.flags.$1) $(sm.tool.$(sm.this.toolset).compile.options.$1)) \
   $(strip $(sm.global.compile.flags) $(sm.global.compile.options)) \
   $(strip $(sm.global.compile.flags.$1) $(sm.global.compile.options.$1)) \
   $(strip $(sm.this.compile.flags) $(sm.this.compile.options)) \
@@ -83,6 +85,8 @@ endef #sm.code.calculate-compile-options
 define sm.code.calculate-link-options
  sm.var.$(sm.this.name).link.options.defined := true
  sm.var.$(sm.this.name).link.options := \
+  $(strip $(sm.tool.$(sm.this.toolset).link.flags) $(sm.tool.$(sm.this.toolset).link.options)) \
+  $(strip $(sm.tool.$(sm.this.toolset).link.flags.$1) $(sm.tool.$(sm.this.toolset).link.options.$1)) \
   $(strip $(sm.global.link.flags) $(sm.global.link.options)) \
   $(strip $(sm.this.link.flags) $(sm.this.link.options))
  $(if $(call equal,$(sm.this.type),shared),\
