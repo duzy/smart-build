@@ -135,3 +135,5 @@ ifeq ($(strip $(sm.config.variant)),release)
   sm.tool.gcc.link.options :=
 endif
 endif
+
+sm.tool.gcc.link.options += -Wl,--no-undefined
