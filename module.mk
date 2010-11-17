@@ -43,6 +43,8 @@ sm.var.$(sm.this.name).archive.options :=
 sm.var.$(sm.this.name).archive.options.assigned :=
 sm.var.$(sm.this.name).archive.objects =
 sm.var.$(sm.this.name).archive.objects.assigned :=
+sm.var.$(sm.this.name).archive.libs :=
+sm.var.$(sm.this.name).archive.libs.assigned :=
 sm.var.$(sm.this.name).link.options :=
 sm.var.$(sm.this.name).link.options.assigned :=
 sm.var.$(sm.this.name).link.objects =
@@ -157,6 +159,11 @@ define sm.fun.$(sm.this.name).calculate-archive-objects
  $(if $(sm.var.$(sm.this.name).archive.objects.assigned),,\
    $(eval $(call sm.code.calculate-archive-objects)))
 endef #sm.fun.$(sm.this.name).calculate-archive-objects
+
+define sm.fun.$(sm.this.name).calculate-archive-libs
+ $(eval sm.var.$(sm.this.name).archive.libs.assigned := true)
+ $(eval sm.var.$(sm.this.name).archive.libs :=)
+endef #sm.fun.$(sm.this.name).calculate-archive-libs
 
 define sm.fun.$(sm.this.name).calculate-link-objects
  $(if $(sm.var.$(sm.this.name).link.objects.assigned),,\
@@ -274,32 +281,29 @@ endef #sm.fun.make-object-rules
 ##
 ## Make module build rule
 define sm.fun.make-target-rule
-$(if $(sm.var.$(sm.this.name).objects),\
-    $(call sm-check-defined,sm.fun.calculate-$(sm.this.type)-module-targets)\
-    $(eval sm.var.$(sm.this.name).targets := $(strip $(call sm.fun.calculate-$(sm.this.type)-module-targets)))\
-    $(call sm-check-defined,sm.var.build_action.$(sm.this.type))\
-    $(call sm-check-defined,sm.var.$(sm.this.name).lang)\
-    $(call sm-check-defined,sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.var.$(sm.this.name).lang))\
-    $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-options)\
-    $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-objects)\
-    $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-libs)\
-    $(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-options)\
-    $(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-objects)\
-    $(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).options)\
-    $(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects)\
-    $(if $(call equal,$(sm.this.type),static),,\
-      $(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-libs)\
-      $(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).libs))\
-    $(call sm-check-not-empty,sm.var.$(sm.this.name).lang)\
-    $(call sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.var.$(sm.this.name).lang),\
-       $$(sm.var.$(sm.this.name).targets),\
-       $$(sm.var.$(sm.this.name).objects),\
-       $(if $(call is-true,$(sm.this.$(sm.var.build_action.$(sm.this.type)).options.infile)),\
-         $(sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects)),\
-       sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).options,\
-       $(if $(call equal,$(sm.var.build_action.$(sm.this.type)),link),\
-         sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).libs)),\
-  $(error smart: No objects for building '$(sm.this.name)'))
+  $(if $(sm.var.$(sm.this.name).objects),,$(error smart: No objects for building '$(sm.this.name)'))\
+  $(call sm-check-defined,sm.fun.calculate-$(sm.this.type)-module-targets)\
+  $(eval sm.var.$(sm.this.name).targets := $(strip $(call sm.fun.calculate-$(sm.this.type)-module-targets)))\
+  $(call sm-check-defined,sm.var.build_action.$(sm.this.type))\
+  $(call sm-check-defined,sm.var.$(sm.this.name).lang)\
+  $(call sm-check-defined,sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.var.$(sm.this.name).lang))\
+  $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-options)\
+  $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-objects)\
+  $(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-libs)\
+  $(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-options)\
+  $(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-objects)\
+  $(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-libs)\
+  $(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).options)\
+  $(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects)\
+  $(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).libs)\
+  $(call sm-check-not-empty,sm.var.$(sm.this.name).lang)\
+  $(call sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.var.$(sm.this.name).lang),\
+     $$(sm.var.$(sm.this.name).targets),\
+     $$(sm.var.$(sm.this.name).objects),\
+     $(if $(call is-true,$(sm.this.$(sm.var.build_action.$(sm.this.type)).options.infile)),\
+       $(sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects)),\
+     sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).options,\
+     sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).libs)
 endef #sm.fun.make-target-rule
 
 #sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects
