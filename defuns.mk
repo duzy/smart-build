@@ -147,15 +147,18 @@ define sm-find-sub-modules
 $(wildcard $(strip $1)/*/smart.mk)
 endef
 
+    # $(warning TODO: refactor this for multiple-toolset)\
+    # $(eval include $(sm.dir.buildsys)/old/objrules.mk),\
 ## Generate compilation rules for sources
-## TODO: rename this to 'sm-compile-sources'
-define sm-generate-objects
+sm-generate-objects = $(call sm-deprecated, sm-generate-objects, sm-compile-sources)
+define sm-compile-sources
  $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
     $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.out)/$(sm.log.filename),true))\
     $(info smart: objects for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
-    $(warning TODO: refactor this for multiple-toolset)\
-    $(eval include $(sm.dir.buildsys)/old/objrules.mk),\
-    $(error smart: No sources defined))
+    $(eval sm.var.__module.objects_only := true
+           include $(sm.dir.buildsys)/module.mk
+           sm.var.__module.objects_only :=)\
+   ,$(error smart: No sources defined))
 endef
 
 ## Copy headers to $(sm.out.inc)

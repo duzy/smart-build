@@ -311,8 +311,11 @@ endef #sm.fun.make-target-rule
 ##################################################
 
 sm.var.$(sm.this.name).targets :=
+ifeq (true,false)
+## donot clear these vars for sm-compile-sources
 sm.var.$(sm.this.name).objects :=
 sm.var.$(sm.this.name).depends :=
+endif
 
 ## Make object rules for sources of different lang
 $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
@@ -337,6 +340,7 @@ endif
 
 #-----------------------------------------------
 ## Make rule for targets of the module
+ifneq ($(sm.var.__module.objects_only),true)
 #$(call sm.fun.make-target-rule)
 $(if $(sm.var.$(sm.this.name).objects),,$(error smart: No objects for building '$(sm.this.name)'))
 $(call sm-check-defined,sm.fun.calculate-$(sm.this.type)-module-targets)
@@ -361,15 +365,16 @@ $(call sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.var.$(sm.this.name).l
      $(sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects)),\
    sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).options,\
    sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).libs)
+
+  ifeq ($(strip $(sm.var.$(sm.this.name).targets)),)
+    $(error smart: internal error: targets mis-calculated)
+  endif
+endif # sm.var.__module.objects_only
 #-----------------------------------------------
 
 # ifeq ($(strip $(sm.this.sources.c)$(sm.this.sources.c++)$(sm.this.sources.asm)),)
 #   $(error smart: internal error: sources mis-calculated)
 # endif
-
-ifeq ($(strip $(sm.var.$(sm.this.name).targets)),)
-  $(error smart: internal error: targets mis-calculated)
-endif
 
 ifeq ($(strip $(sm.var.$(sm.this.name).objects)),)
   $(error smart: internal error: objects mis-calculated)
@@ -380,6 +385,7 @@ sm.this.objects = $(sm.var.$(sm.this.name).objects)
 sm.this.depends = $(sm.var.$(sm.this.name).depends)
 
 ##################################################
+ifneq ($(sm.var.__module.objects_only),true)
 
 $(call sm-check-not-empty, sm.tool.common.rm)
 $(call sm-check-not-empty, sm.tool.common.rmdir)
@@ -407,4 +413,5 @@ endef #sm.code.make-clean-rules
 
 $(eval $(sm.code.make-clean-rules))
 
+endif # sm.var.__module.objects_only
 ##################################################
