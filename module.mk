@@ -161,7 +161,7 @@ define sm.fun.$(sm.this.name).calculate-archive-objects
 endef #sm.fun.$(sm.this.name).calculate-archive-objects
 
 define sm.fun.$(sm.this.name).calculate-archive-libs
- $(eval sm.var.$(sm.this.name).archive.libs.assigned := true)
+ $(eval sm.var.$(sm.this.name).archive.libs.assigned := true)\
  $(eval sm.var.$(sm.this.name).archive.libs :=)
 endef #sm.fun.$(sm.this.name).calculate-archive-libs
 
@@ -335,8 +335,33 @@ ifeq ($(sm.this.type),t)
   endif
 endif
 
+#-----------------------------------------------
 ## Make rule for targets of the module
-$(call sm.fun.make-target-rule)
+#$(call sm.fun.make-target-rule)
+$(if $(sm.var.$(sm.this.name).objects),,$(error smart: No objects for building '$(sm.this.name)'))
+$(call sm-check-defined,sm.fun.calculate-$(sm.this.type)-module-targets)
+$(eval sm.var.$(sm.this.name).targets := $(strip $(call sm.fun.calculate-$(sm.this.type)-module-targets)))
+$(call sm-check-defined,sm.var.build_action.$(sm.this.type))
+$(call sm-check-defined,sm.var.$(sm.this.name).lang)
+$(call sm-check-defined,sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.var.$(sm.this.name).lang))
+$(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-options)
+$(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-objects)
+$(call sm-check-defined,sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-libs)
+$(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-options)
+$(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-objects)
+$(call sm.fun.$(sm.this.name).calculate-$(sm.var.build_action.$(sm.this.type))-libs)
+$(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).options)
+$(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects)
+$(call sm-check-defined,sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).libs)
+$(call sm-check-not-empty,sm.var.$(sm.this.name).lang)
+$(call sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.var.$(sm.this.name).lang),\
+   $$(sm.var.$(sm.this.name).targets),\
+   $$(sm.var.$(sm.this.name).objects),\
+   $(if $(call is-true,$(sm.this.$(sm.var.build_action.$(sm.this.type)).options.infile)),\
+     $(sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects)),\
+   sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).options,\
+   sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).libs)
+#-----------------------------------------------
 
 # ifeq ($(strip $(sm.this.sources.c)$(sm.this.sources.c++)$(sm.this.sources.asm)),)
 #   $(error smart: internal error: sources mis-calculated)
