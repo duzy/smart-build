@@ -148,6 +148,7 @@ $(wildcard $(strip $1)/*/smart.mk)
 endef
 
 ## Generate compilation rules for sources
+## TODO: rename this to 'sm-compile-sources'
 define sm-generate-objects
  $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
     $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.out)/$(sm.log.filename),true))\

@@ -1,7 +1,7 @@
 
 my.compile.flags := -O3
 
-my.link.flags := --subsystem=console
+my.link.flags := $(if $(sm.os.name.win32),--subsystem=console)
 
 foo.o : foobar.c
 	$(call sm.tool.gcc.compile.c, $@, $<, my.compile.flags)

@@ -37,24 +37,24 @@ sm.var.build_action.t := link
 ## Empty compile options for all langs
 $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
   $(eval sm.var.$(sm.this.name).compile.options.$(sm._var._temp._lang) := )\
-  $(eval sm.var.$(sm.this.name).compile.options.$(sm._var._temp._lang).defined := ))
+  $(eval sm.var.$(sm.this.name).compile.options.$(sm._var._temp._lang).assigned := ))
 
 sm.var.$(sm.this.name).archive.options :=
-sm.var.$(sm.this.name).archive.options.defined :=
+sm.var.$(sm.this.name).archive.options.assigned :=
 sm.var.$(sm.this.name).archive.objects =
-sm.var.$(sm.this.name).archive.objects.defined :=
+sm.var.$(sm.this.name).archive.objects.assigned :=
 sm.var.$(sm.this.name).link.options :=
-sm.var.$(sm.this.name).link.options.defined :=
+sm.var.$(sm.this.name).link.options.assigned :=
 sm.var.$(sm.this.name).link.objects =
-sm.var.$(sm.this.name).link.objects.defined :=
+sm.var.$(sm.this.name).link.objects.assigned :=
 sm.var.$(sm.this.name).link.libs :=
-sm.var.$(sm.this.name).link.libs.defined :=
+sm.var.$(sm.this.name).link.libs.assigned :=
 
-## eg. $(call sm.code.append-list,RESULT_VAR_NAME,LIST,PREFIX,SUFFIX)
-define sm.code.append-list
+## eg. $(call sm.code.add-to-list,RESULT_VAR_NAME,LIST,PREFIX,SUFFIX)
+define sm.code.add-to-list
  $(foreach sm._var._temp._item,$(strip $2),\
      $(eval $(strip $1) += $(strip $3)$(sm._var._temp._item:$(strip $3)%$(strip $4)=%)$(strip $4)))
-endef #sm.code.append-list
+endef #sm.code.add-to-list
 
 ##
 define sm.code.switch-options-into-file
@@ -68,7 +68,7 @@ endef #sm.code.switch-options-into-file
 
 ##
 define sm.code.calculate-compile-options
- sm.var.$(sm.this.name).compile.options.$1.defined := true
+ sm.var.$(sm.this.name).compile.options.$1.assigned := true
  sm.var.$(sm.this.name).compile.options.$1 := $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
   $(strip $(sm.tool.$(sm.this.toolset).compile.flags) $(sm.tool.$(sm.this.toolset).compile.options)) \
   $(strip $(sm.tool.$(sm.this.toolset).compile.flags.$1) $(sm.tool.$(sm.this.toolset).compile.options.$1)) \
@@ -76,14 +76,14 @@ define sm.code.calculate-compile-options
   $(strip $(sm.global.compile.flags.$1) $(sm.global.compile.options.$1)) \
   $(strip $(sm.this.compile.flags) $(sm.this.compile.options)) \
   $(strip $(sm.this.compile.flags.$1) $(sm.this.compile.options.$1))
- $$(call sm.code.append-list, sm.var.$(sm.this.name).compile.options.$1, $(sm.global.includes), -I)
- $$(call sm.code.append-list, sm.var.$(sm.this.name).compile.options.$1, $(sm.this.includes), -I)
+ $$(call sm.code.add-to-list, sm.var.$(sm.this.name).compile.options.$1, $(sm.global.includes), -I)
+ $$(call sm.code.add-to-list, sm.var.$(sm.this.name).compile.options.$1, $(sm.this.includes), -I)
  $(call sm.code.switch-options-into-file,compile,options.$1)
 endef #sm.code.calculate-compile-options
 
 ##
 define sm.code.calculate-link-options
- sm.var.$(sm.this.name).link.options.defined := true
+ sm.var.$(sm.this.name).link.options.assigned := true
  sm.var.$(sm.this.name).link.options := \
   $(strip $(sm.tool.$(sm.this.toolset).link.flags) $(sm.tool.$(sm.this.toolset).link.options)) \
   $(strip $(sm.tool.$(sm.this.toolset).link.flags.$1) $(sm.tool.$(sm.this.toolset).link.options.$1)) \
@@ -96,7 +96,7 @@ define sm.code.calculate-link-options
 endef #sm.code.calculate-link-options
 
 define sm.code.calculate-archive-options
- sm.var.$(sm.this.name).archive.options.defined := true
+ sm.var.$(sm.this.name).archive.options.assigned := true
  sm.var.$(sm.this.name).archive.options := \
   $(strip $(sm.global.archive.flags) $(sm.global.archive.options)) \
   $(strip $(sm.this.archive.flags) $(sm.this.archive.options))
@@ -104,25 +104,25 @@ define sm.code.calculate-archive-options
 endef #sm.code.calculate-archive-options
 
 define sm.code.calculate-link-objects
- sm.var.$(sm.this.name).link.objects.defined := true
+ sm.var.$(sm.this.name).link.objects.assigned := true
  sm.var.$(sm.this.name).link.objects := $(sm.var.$(sm.this.name).objects)
  $(call sm.code.switch-options-into-file,link,objects)
 endef #sm.code.calculate-link-objects
 
 define sm.code.calculate-archive-objects
- sm.var.$(sm.this.name).archive.objects.defined := true
+ sm.var.$(sm.this.name).archive.objects.assigned := true
  sm.var.$(sm.this.name).link.objects := $(sm.var.$(sm.this.name).objects)
  $(call sm.code.switch-options-into-file,archive,objects)
 endef #sm.code.calculate-archive-objects
 
 ##
 define sm.code.calculate-link-libs
- sm.var.$(sm.this.name).link.libs.defined := true
+ sm.var.$(sm.this.name).link.libs.assigned := true
  sm.var.$(sm.this.name).link.libs :=
- $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, $(sm.global.libdirs), -L)
- $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, $(sm.this.libdirs), -L)
- $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, $(sm.global.libs), -l)
- $$(call sm.code.append-list, sm.var.$(sm.this.name).link.libs, $(sm.this.libs), -l)
+ $$(call sm.code.add-to-list, sm.var.$(sm.this.name).link.libs, $(sm.global.libdirs), -L)
+ $$(call sm.code.add-to-list, sm.var.$(sm.this.name).link.libs, $(sm.this.libdirs), -L)
+ $$(call sm.code.add-to-list, sm.var.$(sm.this.name).link.libs, $(sm.global.libs), -l)
+ $$(call sm.code.add-to-list, sm.var.$(sm.this.name).link.libs, $(sm.this.libs), -l)
  $(call sm.code.switch-options-into-file,link,libs)
 endef #sm.code.calculate-link-libs
 #  $(if $(call is-true,$(sm.this.link.options.infile)),\
@@ -139,32 +139,32 @@ $(call sm-check-defined,sm.code.calculate-link-options,	   smart: 'sm.code.calcu
 $(call sm-check-defined,sm.code.calculate-link-libs,       smart: 'sm.code.calculate-link-libs' not defined)
 
 define sm.fun.$(sm.this.name).calculate-compile-options
-$(if $(sm.var.$(sm.this.name).compile.options.$1.defined),,\
+$(if $(sm.var.$(sm.this.name).compile.options.$1.assigned),,\
    $(eval $(call sm.code.calculate-compile-options,$1)))
 endef #sm.fun.$(sm.this.name).calculate-compile-options
 
 define sm.fun.$(sm.this.name).calculate-archive-options
- $(if $(sm.var.$(sm.this.name).archive.options.defined),,\
+ $(if $(sm.var.$(sm.this.name).archive.options.assigned),,\
    $(eval $(call sm.code.calculate-archive-options)))
 endef #sm.fun.$(sm.this.name).calculate-archive-options
 
 define sm.fun.$(sm.this.name).calculate-link-options
- $(if $(sm.var.$(sm.this.name).link.options.defined),,\
+ $(if $(sm.var.$(sm.this.name).link.options.assigned),,\
    $(eval $(call sm.code.calculate-link-options)))
 endef #sm.fun.$(sm.this.name).calculate-link-options
 
 define sm.fun.$(sm.this.name).calculate-archive-objects
- $(if $(sm.var.$(sm.this.name).archive.objects.defined),,\
+ $(if $(sm.var.$(sm.this.name).archive.objects.assigned),,\
    $(eval $(call sm.code.calculate-archive-objects)))
 endef #sm.fun.$(sm.this.name).calculate-archive-objects
 
 define sm.fun.$(sm.this.name).calculate-link-objects
- $(if $(sm.var.$(sm.this.name).link.objects.defined),,\
+ $(if $(sm.var.$(sm.this.name).link.objects.assigned),,\
    $(eval $(call sm.code.calculate-link-objects)))
 endef #sm.fun.$(sm.this.name).calculate-link-objects
 
 define sm.fun.$(sm.this.name).calculate-link-libs
- $(if $(sm.var.$(sm.this.name).link.libs.defined),,\
+ $(if $(sm.var.$(sm.this.name).link.libs.assigned),,\
    $(eval $(call sm.code.calculate-link-libs)))
 endef #sm.fun.$(sm.this.name).calculate-link-libs
 
@@ -218,7 +218,7 @@ endef #sm.fun.calculate-static-module-targets
 
 ##################################################
 
-# TODO: move $(call sm.fun.$(sm.this.name).calculate-compile-options,$(strip $1)) into sm.fun.make-rules
+# TODO: move $(call sm.fun.$(sm.this.name).calculate-compile-options,$(strip $1)) into sm.fun.make-object-rules
 ## Make rule for building object
 ##   eg. $(call sm.fun.make-object-rule, c++, foobar.cpp)
 ##   eg. $(call sm.fun.make-object-rule, c++, ~/sources/foobar.cpp, external)
@@ -266,14 +266,14 @@ $(if $(sm.tool.$(sm.this.toolset).$1.suffix),,$(error smart: no registered suffi
 endef #sm.code.make-rules
 
 ##
-## Make object rules, eg. $(call sm.fun.make-rules,c++)
-define sm.fun.make-rules
+## Make object rules, eg. $(call sm.fun.make-object-rules,c++)
+define sm.fun.make-object-rules
 $(eval $(call sm.code.make-rules,$(strip $1)))
-endef #sm.fun.make-rules
+endef #sm.fun.make-object-rules
 
 ##
 ## Make module build rule
-define sm.fun.make-module-rule
+define sm.fun.make-target-rule
 $(if $(sm.var.$(sm.this.name).objects),\
     $(call sm-check-defined,sm.fun.calculate-$(sm.this.type)-module-targets)\
     $(eval sm.var.$(sm.this.name).targets := $(strip $(call sm.fun.calculate-$(sm.this.type)-module-targets)))\
@@ -300,7 +300,7 @@ $(if $(sm.var.$(sm.this.name).objects),\
        $(if $(call equal,$(sm.var.build_action.$(sm.this.type)),link),\
          sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).libs)),\
   $(error smart: No objects for building '$(sm.this.name)'))
-endef #sm.fun.make-module-rule
+endef #sm.fun.make-target-rule
 
 #sm.var.$(sm.this.name).$(sm.var.build_action.$(sm.this.type)).objects
 
@@ -312,7 +312,7 @@ sm.var.$(sm.this.name).depends :=
 
 ## Make object rules for sources of different lang
 $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
-  $(call sm.fun.make-rules,$(sm._var._temp._lang))\
+  $(call sm.fun.make-object-rules,$(sm._var._temp._lang))\
   $(if $(sm.var.$(sm.this.name).lang),,\
     $(if $(sm.this.sources.has.$(sm._var._temp._lang)),\
          $(eval sm.var.$(sm.this.name).lang := $(sm._var._temp._lang)))))
@@ -332,7 +332,7 @@ ifeq ($(sm.this.type),t)
 endif
 
 ## Make rule for targets of the module
-$(call sm.fun.make-module-rule)
+$(call sm.fun.make-target-rule)
 
 # ifeq ($(strip $(sm.this.sources.c)$(sm.this.sources.c++)$(sm.this.sources.asm)),)
 #   $(error smart: internal error: sources mis-calculated)

@@ -27,7 +27,7 @@ sm.this.includes := $(sm.this.dir)/../include
 sm.this.sources := foobar.c
 
 # TODO: should use sm.this.archive.flags for this
-sm.this.link.flags := --subsystem=console
+sm.this.link.flags := $(if $(sm.os.name.win32),--subsystem=console)
 
 # TODO: ignore this and make a warning for static module
 sm.this.libdirs := $(sm.this.dir)/../libs

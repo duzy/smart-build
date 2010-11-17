@@ -26,7 +26,7 @@ sm.this.sources := foobar.c
 
 ## The flags to be used by the linker
 ## NOTE: no needs to '-Wl,' or '-Wlinker' to pass linker arguments
-sm.this.link.flags := --subsystem=console
+sm.this.link.flags := $(if $(sm.os.name.win32),--subsystem=console)
 
 ## The libraries search path (for linker's -L switch), each item of this will
 ## be translated into a -L switch similar to 'sm.this.includes'.

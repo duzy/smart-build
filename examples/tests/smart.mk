@@ -25,7 +25,7 @@ sm.this.compile.flags := -DTEST=\"$(sm.this.name)\"
 
 sm.this.includes := $(sm.this.dir)/../include
 
-sm.this.link.flags := --subsystem=console
+sm.this.link.flags := $(if $(sm.os.name.win32),--subsystem=console)
 
 sm.this.libdirs := $(sm.this.dir)/../libs
 
