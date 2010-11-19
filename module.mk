@@ -39,8 +39,8 @@ sm.var.build_action.t := link
 
 ## Clear compile options for all langs
 $(foreach sm._var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
-  $(eval sm.var.$(sm.this.name).compile.options.$(sm._var._temp._lang) := )\
-  $(eval sm.var.$(sm.this.name).compile.options.$(sm._var._temp._lang).assigned := ))
+  $(eval sm.var.$(sm.this.name).compile.$(sm.var.__module.compile_id).options.$(sm._var._temp._lang) := )\
+  $(eval sm.var.$(sm.this.name).compile.$(sm.var.__module.compile_id).options.$(sm._var._temp._lang).assigned := ))
 
 sm.var.$(sm.this.name).archive.options :=
 sm.var.$(sm.this.name).archive.options.assigned :=
@@ -73,17 +73,17 @@ endef #sm.code.shift-options-to-file
 
 ## eg. $(call sm.code.compute-compile-options,c++)
 define sm.code.compute-compile-options
- sm.var.$(sm.this.name).compile.options.$1.assigned := true
- sm.var.$(sm.this.name).compile.options.$1 := $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
+ sm.var.$(sm.this.name).compile.$(sm.var.__module.compile_id).options.$1.assigned := true
+ sm.var.$(sm.this.name).compile.$(sm.var.__module.compile_id).options.$1 := $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
   $(strip $(sm.tool.$(sm.this.toolset).compile.flags) $(sm.tool.$(sm.this.toolset).compile.options)) \
   $(strip $(sm.tool.$(sm.this.toolset).compile.flags.$1) $(sm.tool.$(sm.this.toolset).compile.options.$1)) \
   $(strip $(sm.global.compile.flags) $(sm.global.compile.options)) \
   $(strip $(sm.global.compile.flags.$1) $(sm.global.compile.options.$1)) \
   $(strip $(sm.this.compile.flags) $(sm.this.compile.options)) \
   $(strip $(sm.this.compile.flags.$1) $(sm.this.compile.options.$1))
- $$(call sm.code.add-items, sm.var.$(sm.this.name).compile.options.$1, $(sm.global.includes), -I)
- $$(call sm.code.add-items, sm.var.$(sm.this.name).compile.options.$1, $(sm.this.includes), -I)
- $(call sm.code.shift-options-to-file,compile,options.$1)
+ $$(call sm.code.add-items, sm.var.$(sm.this.name).compile.$(sm.var.__module.compile_id).options.$1, $(sm.global.includes), -I)
+ $$(call sm.code.add-items, sm.var.$(sm.this.name).compile.$(sm.var.__module.compile_id).options.$1, $(sm.this.includes), -I)
+ $(call sm.code.shift-options-to-file,compile,$(sm.var.__module.compile_id).options.$1)
 endef #sm.code.compute-compile-options
 
 ##
@@ -143,7 +143,7 @@ $(call sm-check-defined,sm.code.compute-link-options,	 smart: 'sm.code.compute-l
 $(call sm-check-defined,sm.code.compute-link-libs,       smart: 'sm.code.compute-link-libs' not defined)
 
 define sm.fun.$(sm.this.name).compute-compile-options
-$(if $(sm.var.$(sm.this.name).compile.options.$1.assigned),,\
+$(if $(sm.var.$(sm.this.name).compile.$(sm.var.__module.compile_id).options.$1.assigned),,\
    $(eval $(call sm.code.compute-compile-options,$1)))
 endef #sm.fun.$(sm.this.name).compute-compile-options
 
@@ -245,12 +245,12 @@ define sm.fun.make-object-rule
       $(call sm.rule.dependency.$(strip $1),\
          $(sm._var._temp._depend),$(sm._var._temp._object),\
          $(call sm.fun.compute-source.$(strip $3),$2),\
-         sm.var.$(sm.this.name).compile.options.$(strip $1)))\
+         sm.var.$(sm.this.name).compile.$(sm.var.__module.compile_id).options.$(strip $1)))\
  $(call sm.fun.$(sm.this.name).compute-compile-options,$(strip $1))\
  $(call sm.rule.compile.$(strip $1),\
     $(sm._var._temp._object),\
     $(call sm.fun.compute-source.$(strip $3),$2),\
-    sm.var.$(sm.this.name).compile.options.$(strip $1))
+    sm.var.$(sm.this.name).compile.$(sm.var.__module.compile_id).options.$(strip $1))
 endef #sm.fun.make-object-rule
 
 ##

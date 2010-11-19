@@ -144,8 +144,17 @@ define sm-find-sub-modules
 $(wildcard $(strip $1)/*/smart.mk)
 endef
 
-    # $(warning TODO: refactor this for multiple-toolset)\
-    # $(eval include $(sm.dir.buildsys)/old/objrules.mk),\
+define sm-compute-compile-id
+ $(eval \
+    ifeq ($(sm.var.__module.compile_count),)
+      sm.var.__module.compile_count := $(strip $1)
+    else
+      sm.var.__module.compile_count := \
+        $(shell expr $(sm.var.__module.compile_count) + $(strip $1))
+    endif
+  )$(sm.var.__module.compile_count)
+endef #sm-compute-compile-id
+
 ## Generate compilation rules for sources
 sm-generate-objects = $(call sm-deprecated, sm-generate-objects, sm-compile-sources)
 define sm-compile-sources
@@ -153,10 +162,13 @@ define sm-compile-sources
     $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.out)/$(sm.log.filename),true))\
     $(info smart: objects for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
     $(eval sm.var.__module.objects_only := true
+           sm.var.__module.compile_id := $(call sm-compute-compile-id,1)
            include $(sm.dir.buildsys)/module.mk
            sm.var.__module.objects_only :=)\
    ,$(error smart: No sources defined))
 endef
+# $(warning TODO: refactor this for multiple-toolset)\
+# $(eval include $(sm.dir.buildsys)/old/objrules.mk),\
 
 ## Copy headers to $(sm.out.inc)
 ##	usage 1: $(call sm-copy-files, $(headers))
@@ -184,6 +196,7 @@ define sm-build-this
    $(error no source or objects defined for '$(sm.this.name)'))\
  $(if $(sm.this.name),,$(error sm.this.name must be specified))\
  $(eval sm.global.goals += goal-$(sm.this.name)
+        sm.var.__module.compile_id := 0
         include $(sm.dir.buildsys)/buildmod.mk)
 endef #sm-build-this
 
