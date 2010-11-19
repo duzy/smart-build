@@ -183,6 +183,9 @@ endef #sm.fun.$(sm.this.name).compute-link-libs
 sm._var._temp._object_prefix := \
   $(call sm-to-relative-path,$(sm.out.obj))$(sm.this.dir:$(sm.top)%=%)
 
+## Fixes the prefix for 'out/debug/obj.' like value
+sm._var._temp._object_prefix := $(sm._var._temp._object_prefix:%.=%)
+
 # BUG: wrong if more than one sm-build-this occurs in a smart.mk
 #$(warning $(sm.this.name): $(sm._var._temp._object_prefix))
 
@@ -388,10 +391,12 @@ sm.this.depends = $(sm.var.$(sm.this.name).depends)
 ifneq ($(sm.var.__module.objects_only),true)
 
 ifeq ($(sm.this.type),t)
+  define sm.code.make-test-rules
   sm.global.tests += test-$(sm.this.name)
   test-$(sm.this.name): $(sm.var.$(sm.this.name).targets)
-	@echo test: $(sm.this.name) - $<
-	@$<
+	@echo test: $(sm.this.name) - $$< && $$<
+  endef #sm.code.make-test-rules
+  $(eval $(sm.code.make-test-rules))
 endif
 
 $(call sm-check-not-empty, sm.tool.common.rm)
