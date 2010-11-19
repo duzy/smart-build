@@ -71,6 +71,10 @@ ifneq ($(sm.global.goals),)
   build-goals: $(sm.global.goals)
   clean: $(sm.global.goals:goal-%=clean-%)
 
+  ifneq ($(sm.global.tests),)
+    test: $(sm.global.tests) ; @for test in $^ ; do $$test ; done
+  endif
+
   ## rules for output dirs, TODO: replace sm-util-mkdir on these dirs with it
   $(sm.out) \
   $(sm.out.bin) \
@@ -83,6 +87,7 @@ ifneq ($(sm.global.goals),)
 else
   build-goals:; $(info smart: no goals) @true
   clean:; $(info smart: nothing dirty) @true
+  test:; $(info smart: no tests) @true
 endif
 
 .DEFAULT_GOAL := build-goals

@@ -384,6 +384,10 @@ sm.this.depends = $(sm.var.$(sm.this.name).depends)
 ##################################################
 ifneq ($(sm.var.__module.objects_only),true)
 
+ifeq ($(sm.this.type),t)
+  sm.global.tests += $(sm.var.$(sm.this.name).targets)
+endif
+
 $(call sm-check-not-empty, sm.tool.common.rm)
 $(call sm-check-not-empty, sm.tool.common.rmdir)
 

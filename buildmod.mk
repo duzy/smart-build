@@ -43,7 +43,7 @@ ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
     include $(sm.dir.buildsys)/old/module.mk
     clean-$(sm.this.name): ; @echo "TODO: clean $(@:clean-%=%)..."
   else
-    # this duplicated in 'sm-build-this'
+    # this duplicats in 'sm-build-this'
     sm.var.__module.compile_id := 0
     include $(sm.dir.buildsys)/module.mk
   endif
