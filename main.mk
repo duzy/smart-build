@@ -72,7 +72,7 @@ ifneq ($(sm.global.goals),)
   clean: $(sm.global.goals:goal-%=clean-%)
 
   ifneq ($(sm.global.tests),)
-    test: $(sm.global.tests) ; @for test in $^ ; do $$test ; done
+    test: $(sm.global.tests)
   endif
 
   ## rules for output dirs, TODO: replace sm-util-mkdir on these dirs with it

@@ -385,7 +385,10 @@ sm.this.depends = $(sm.var.$(sm.this.name).depends)
 ifneq ($(sm.var.__module.objects_only),true)
 
 ifeq ($(sm.this.type),t)
-  sm.global.tests += $(sm.var.$(sm.this.name).targets)
+  sm.global.tests += test-$(sm.this.name)
+  test-$(sm.this.name): $(sm.var.$(sm.this.name).targets)
+	@echo test: $(sm.this.name) - $<
+	@$<
 endif
 
 $(call sm-check-not-empty, sm.tool.common.rm)
