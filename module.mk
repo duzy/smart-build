@@ -183,6 +183,9 @@ endef #sm.fun.$(sm.this.name).compute-link-libs
 sm._var._temp._object_prefix := \
   $(call sm-to-relative-path,$(sm.out.obj))$(sm.this.dir:$(sm.top)%=%)
 
+# BUG: wrong if more than one sm-build-this occurs in a smart.mk
+#$(warning $(sm.this.name): $(sm._var._temp._object_prefix))
+
 ##
 ##
 define sm.fun.compute-object.
