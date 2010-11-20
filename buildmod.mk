@@ -39,14 +39,21 @@ ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
 
   goal-$(sm.this.name) : $(sm.this.depends) $(sm.this.depends.copyfiles) $(sm.var.temp._g)
 
+  # ifeq ($(strip $(sm.this.toolset)),)
+  #   include $(sm.dir.buildsys)/old/module.mk
+  #   clean-$(sm.this.name): ; @echo "TODO: clean $(@:clean-%=%)..."
+  # else
+  #   # this duplicats in 'sm-build-this'
+  #   sm.var.__module.compile_id := 0
+  #   include $(sm.dir.buildsys)/module.mk
+  # endif
   ifeq ($(strip $(sm.this.toolset)),)
-    include $(sm.dir.buildsys)/old/module.mk
-    clean-$(sm.this.name): ; @echo "TODO: clean $(@:clean-%=%)..."
-  else
-    # this duplicats in 'sm-build-this'
-    sm.var.__module.compile_id := 0
-    include $(sm.dir.buildsys)/module.mk
+    sm.this.toolset := gcc
+    $(info smart: using default toolset 'gcc' for '$(sm.this.name)')
   endif
+  # this duplicats in 'sm-build-this'
+  sm.var.__module.compile_id := 0
+  include $(sm.dir.buildsys)/module.mk
 else
   $(warning smart: $(sm.this.name) will not be built)
 endif

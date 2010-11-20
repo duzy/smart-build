@@ -57,7 +57,7 @@ else
   $(info smart:  You have to provide the root build script 'smart.mk' at top)
   $(info smart:  level directory of the project.)
   $(info smart: ************************************************************)
-  $(error Can't find the root build script 'smart.mk') #'
+  $(error No root build script 'smart.mk')
 endif
 
 # .PRECIOUS: foo bar
@@ -67,6 +67,7 @@ endif
 # $(info rules: $(sm.rules.*))
 # $(info goals: $(sm.global.goals))
 .PHONY: build-goals clean $(sm.rules.phony.*)
+
 ifneq ($(sm.global.goals),)
   build-goals: $(sm.global.goals)
   clean: $(sm.global.goals:goal-%=clean-%)
@@ -90,6 +91,6 @@ else
   test:; $(info smart: no tests) @true
 endif
 
+## duplicats this in case some external mk changed it
 .DEFAULT_GOAL := build-goals
 
-#$(info smart: modules: $(sm.global.modules))

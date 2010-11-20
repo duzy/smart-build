@@ -4,9 +4,9 @@ $(call sm-check-not-empty,sm.top)
 $(call sm-check-not-empty,sm.this.dir)
 $(call sm-check-not-empty,sm.this.name)
 $(call sm-check-not-empty,sm.this.type)
-$(call sm-check-not-empty,sm.this.toolset,smart: 'sm.this.toolset' unknown)
+$(call sm-check-not-empty,sm.this.toolset,smart: 'sm.this.toolset' for $(sm.this.name) unknown)
 
-ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)),)
+ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects)),)
   $(error smart: no sources for module '$(sm.this.name)')
 endif
 
@@ -314,10 +314,17 @@ endef #sm.fun.make-target-rule
 ##################################################
 
 sm.var.$(sm.this.name).targets :=
-ifeq (true,false)
-## donot clear these vars for sm-compile-sources
+
+ifeq ($(sm.var.__module.compile_count),1)
+## clear these vars only once (see sm-compile-sources)
 sm.var.$(sm.this.name).objects :=
 sm.var.$(sm.this.name).depends :=
+else
+ifeq ($(sm.var.__module.compile_count),)
+## in case that only sm-build-this (no sm-compile-sources) is called
+sm.var.$(sm.this.name).objects :=
+sm.var.$(sm.this.name).depends :=
+endif
 endif
 
 ## Make object rules for sources of different lang
@@ -385,7 +392,6 @@ endif
 
 sm.this.targets = $(sm.var.$(sm.this.name).targets)
 sm.this.objects = $(sm.var.$(sm.this.name).objects)
-sm.this.depends = $(sm.var.$(sm.this.name).depends)
 
 ##################################################
 ifneq ($(sm.var.__module.objects_only),true)
