@@ -1,5 +1,5 @@
 # -*- mode: Makefile:gnu -*-
-#	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
+#	Copyright(c) 2009, by Zhan Xin-ming, code@duzy.info
 #
 
 # Build the current module according to these macros:
@@ -22,31 +22,13 @@ ifeq ($(sm.this.type),subdirs)
 endif
 
 ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
-  $(call sm-var-temp, _out_bin, :=,$(call sm-to-relative-path,$(sm.out.bin)))
-  $(call sm-var-temp, _out_lib, :=,$(call sm-to-relative-path,$(sm.out.lib)))
-  $(call sm-var-temp, _g, :=,$(sm.this.name)$(sm.this.suffix))
-
-  ifeq ($(sm.this.type),static)
-    ifeq ($(sm.this.suffix),.a)
-      ifneq ($(sm.var.temp._g:lib%=ok),ok)
-        sm.var.temp._g := lib$(sm.var.temp._g)
-      endif
-    endif
-    sm.var.temp._g := $(sm.var.temp._out_lib)/$(sm.var.temp._g)
-  else
-    sm.var.temp._g := $(sm.var.temp._out_bin)/$(sm.var.temp._g)
-  endif
-
-  goal-$(sm.this.name) : $(sm.this.depends) $(sm.this.depends.copyfiles) $(sm.var.temp._g)
-
   ifeq ($(strip $(sm.this.toolset)),)
-    include $(sm.dir.buildsys)/old/module.mk
-    clean-$(sm.this.name): ; @echo "TODO: clean $(@:clean-%=%)..."
-  else
-    # this duplicats in 'sm-build-this'
-    sm.var.__module.compile_id := 0
-    include $(sm.dir.buildsys)/module.mk
+    $(error smart: must specify 'sm.this.toolset')
   endif
+
+  # this duplicats in 'sm-build-this'
+  sm.var.__module.compile_id := 0
+  include $(sm.dir.buildsys)/module.mk
 else
   $(warning smart: $(sm.this.name) will not be built)
 endif
