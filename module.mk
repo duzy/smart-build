@@ -353,6 +353,7 @@ ifeq ($(strip $(sm.var.$(sm.this.name).objects)),)
 endif
 
 sm.var.$(sm.this.name).user_defined_targets := $(strip $(sm.this.targets))
+sm.var.$(sm.this.name).module_targets := $(sm.var.$(sm.this.name).targets)
 sm.var.$(sm.this.name).targets += $(sm.var.$(sm.this.name).user_defined_targets)
 sm.this.targets = $(sm.var.$(sm.this.name).targets)
 sm.this.objects = $(sm.var.$(sm.this.name).objects)
