@@ -21,9 +21,9 @@ sm.tool.gcc.cmd.ar := ar crs
 ## languages supported by this toolset, the order is important,
 ## the order defines the priority of linker
 sm.tool.gcc.langs := c++ c asm
-sm.tool.gcc.c.suffix :=
-sm.tool.gcc.c++.suffix :=
-sm.tool.gcc.asm.suffix :=
+sm.tool.gcc.c.suffix := .c
+sm.tool.gcc.c++.suffix := .cpp .c++ .cc .CC .C
+sm.tool.gcc.asm.suffix := .s .S
 
 ######################################################################
 # Compiles

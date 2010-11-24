@@ -40,6 +40,10 @@ else
   include $(sm.dir.buildsys)/conf.mk
 endif
 
+## Disable default suffixes
+SUFFIXES := 
+.SUFFIXES:
+
 .DEFAULT_GOAL := all
 
 ##################################################

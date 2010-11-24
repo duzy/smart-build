@@ -71,6 +71,7 @@ ifneq ($(origin sm-register-sources),file)
  $(error smart: 'sm-register-sources' unsafe: '$(sm-register-sources)')
 else
  include $(sm.dir.buildsys)/tools/common.mk
+ ifeq (true,false) # these jobs have been done in module.mk
  $(call sm-register-sources, c++, gcc, .cpp .c++ .cc .CC .C)
  $(call sm-register-sources, asm, gcc, .s .S)
  $(call sm-register-sources, c,   gcc, .c)
@@ -83,6 +84,7 @@ else
  $(call sm-check-value, sm.toolset.for.file.s,   gcc, smart: gcc toolset ignores .s)
  $(call sm-check-value, sm.toolset.for.file.S,   gcc, smart: gcc toolset ignores .S)
  $(call sm-check-value, sm.toolset.for.file.c,   gcc, smart: gcc toolset ignores .c)
+ endif
 endif
 
 sm.log.enabled :=
