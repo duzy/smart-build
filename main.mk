@@ -1,11 +1,11 @@
 # -*- mode: Makefile:gnu -*-
-#	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
+#	Copyright(c) 2009, by Zhan Xin-ming, code@duzy.info
 #	
 
 # Check make version
 sm.make.version.compatible := 3.80 3.81
 ifeq ($(filter $(MAKE_VERSION),$(sm.make.version.compatible)),)
-  $(error "smart: Bad GNU/Make version, expects one of: $(sm.make.version.compatible)")
+  $(error "smart: Unsupported GNU/Make version, expect for: $(sm.make.version.compatible)")
 endif
 
 ## Smart Build directory, internal use only, must always contain a '/' tail.
@@ -40,12 +40,11 @@ else
   include $(sm.dir.buildsys)/conf.mk
 endif
 
-.DEFAULT_GOAL := build-goals
+.DEFAULT_GOAL := all
 
 ##################################################
 
 sm.global.smartfiles.toplevel := $(wildcard $(sm.top)/smart.mk)
-#_sm_mods += $(call sm-find-sub-modules, $(sm.top))
 
 ifneq ($(strip $(sm.global.smartfiles.toplevel)),)
   sm.global.goals :=
@@ -63,17 +62,21 @@ endif
 # .PRECIOUS: foo bar
 # .DELETE_ON_ERROR: foo bar
 
-# $(info phony: $(sm.rules.phony.*))
-# $(info rules: $(sm.rules.*))
-# $(info goals: $(sm.global.goals))
-.PHONY: build-goals clean $(sm.rules.phony.*)
+.PHONY: all clean test $(sm.rules.phony.*)
 ifneq ($(sm.global.goals),)
-  build-goals: $(sm.global.goals)
+  all: $(sm.global.goals)
   clean: $(sm.global.goals:goal-%=clean-%)
 
   ifneq ($(sm.global.tests),)
     test: $(sm.global.tests)
   endif
+
+  $(call sm-check-not-empty, sm.out)
+  $(call sm-check-not-empty, sm.out.bin)
+  $(call sm-check-not-empty, sm.out.lib)
+  $(call sm-check-not-empty, sm.out.inc)
+  $(call sm-check-not-empty, sm.out.obj)
+  $(call sm-check-not-empty, sm.out.tmp)
 
   ## rules for output dirs, TODO: replace sm-util-mkdir on these dirs with it
   $(sm.out) \
@@ -85,11 +88,11 @@ ifneq ($(sm.global.goals),)
   :; $(call sm-util-mkdir,$@) @true
 
 else
-  build-goals:; $(info smart: no goals) @true
+  all:; $(info smart: no goals) @true
   clean:; $(info smart: nothing dirty) @true
   test:; $(info smart: no tests) @true
 endif
 
-.DEFAULT_GOAL := build-goals
+## This duplicated to prevent unexpected changes of it
+.DEFAULT_GOAL := all
 
-#$(info smart: modules: $(sm.global.modules))

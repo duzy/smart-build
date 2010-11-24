@@ -10,13 +10,12 @@ ifeq ($(strip $(sm.this.toolset)),)
   include $(sm.dir.buildsys)/old/defparams.mk
 endif
 
-d := $(sm.out)
-ifeq ($d,)
+ifeq ($(strip $(sm.out)),)
   $(info smart: ************************************************************)
   $(info smart:  The top level output directory is empty, maybe you changed)
   $(info smart:  the value of variable 'sm.out' by mistaken.)
   $(info smart: ************************************************************)
-  $(error "Top level output directory is empty.")
+  $(error "Top level output directory unassigned.")
 endif
 
 # Detect custome config file and apply it.

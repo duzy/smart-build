@@ -54,18 +54,18 @@ $(if $4,$(call sm-check-defined,$4,smart: 'sm.rule.compile': '$(strip $4)' must 
 $(call sm.rule,compile,$(strip $1),$(strip $2),$(strip $3),,$(strip $4))
 endef #sm.rule.compile
 
-## eg. $(call sm.rule.link, LANG, TARGET, PREREQUISITES, callback-FLAGS, [,callack-LIBS])
+## eg. $(call sm.rule.link, LANG, TARGET, PREREQUISITES, [@in-file-objects], callback-FLAGS, [,callack-LIBS])
 define sm.rule.link
 $(if $1,,$(error smart: 'sm.rule.link': arg 1 must be the source language))\
 $(if $2,,$(error smart: 'sm.rule.link': arg 2 must be the output target))\
-$(if $3,,$(error smart: 'sm.rule.link': arg 3 must be the source file))\
+$(if $3,,$(error smart: 'sm.rule.link': arg 3 must be the object files))\
 $(if $4,$(if $(call equal,$(4:@%=@),@),,$(error smart: 'sm.rule.link': arg 4 must be objects as '@file')))\
 $(if $5,$(call sm-check-defined,$5,smart: 'sm.rule.link': '$5' must be defined as a callback for link flags))\
 $(if $6,$(call sm-check-defined,$6,smart: 'sm.rule.link': '$6' must be defined as a callback for libs to be linked))\
 $(call sm.rule,link,$(strip $1),$(strip $2),$(strip $3),$(strip $4),$(strip $5),$(strip $6))
 endef #sm.rule.link
 
-## eg. $(call sm.rule.archive, LANG, TARGET, PREREQUISITES, callback-FLAGS, [,callack-LIBS])
+## eg. $(call sm.rule.archive, LANG, TARGET, PREREQUISITES, [@in-file-objects], callback-FLAGS, [,callack-LIBS])
 define sm.rule.archive
 $(if $1,,$(error smart: 'sm.rule.archive': arg 1 must be the source language))\
 $(if $2,,$(error smart: 'sm.rule.archive': arg 2 must be the output target))\

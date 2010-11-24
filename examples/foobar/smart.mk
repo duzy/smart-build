@@ -14,4 +14,4 @@ sm.this.toolset := gcc
 $(call sm.rule.compile.c, foo/bar/a.o, foobar.c, my.compile.flags)
 $(call sm.rule.link.c, foo/bar/a, foo/bar/a.o, , my.link.flags)
 
-# TODO: refactore sm.rule.compile.c and sm.rule.link.c for better usage
+# TODO: refactore sm.rule.link.c for better usage

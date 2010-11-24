@@ -1,5 +1,5 @@
 # -*- mode: Makefile:gnu -*-
-#	Copyright(c) 2009-2010, by Zhan Xin-ming, duzy@duzy.info
+#	Copyright(c) 2009-2010, by Zhan Xin-ming, code@duzy.info
 #	
 
 ## check origin of 'sm-check-origin' itself
@@ -61,6 +61,7 @@ endif
 ifneq ($(findstring MINGW32,$(sm.config.uname)),)
   sm.os.name := win32
   sm.os.name.win32 := true
+  sm.os.name.win32.mingw32 := true
 endif
 
 ## The default toolset is 'gcc'
