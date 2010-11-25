@@ -60,7 +60,7 @@ else
   $(info smart:  You have to provide the root build script 'smart.mk' at top)
   $(info smart:  level directory of the project.)
   $(info smart: ************************************************************)
-  $(error Can't find the root build script 'smart.mk') #'
+  $(error Cannot find the root build script 'smart.mk')
 endif
 
 # .PRECIOUS: foo bar
