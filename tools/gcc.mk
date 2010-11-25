@@ -14,8 +14,8 @@ sm.tool.gcc := true
 ## basic command names
 sm.tool.gcc.cmd.c := gcc
 sm.tool.gcc.cmd.c++ := g++
-sm.tool.gcc.cmd.asm := gas
-sm.tool.gcc.cmd.ld := ld
+sm.tool.gcc.cmd.asm := gcc
+sm.tool.gcc.cmd.ld := gcc
 sm.tool.gcc.cmd.ar := ar crs
 
 ## languages supported by this toolset, the order is important,

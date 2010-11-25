@@ -13,14 +13,15 @@ sm.tool.clang := true
 
 sm.tool.clang.cmd.c := clang
 sm.tool.clang.cmd.c++ := clang++
-sm.tool.clang.cmd.asm := gas
+sm.tool.clang.cmd.asm := clang
 sm.tool.clang.cmd.ll := llvmc
-sm.tool.clang.cmd.ld := ld
+sm.tool.clang.cmd.ld := clang
 sm.tool.clang.cmd.ar := ar crs
 
-sm.tool.clang.langs := c c++ ll
+sm.tool.clang.langs := c c++ asm ll
 sm.tool.clang.c.suffix := .c
 sm.tool.clang.c++.suffix := .cpp .c++ .cc .CC .C
+sm.tool.clang.asm.suffix := .s .S
 sm.tool.clang.ll.suffix := .ll
 
 ######################################################################
