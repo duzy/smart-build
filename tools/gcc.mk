@@ -12,7 +12,7 @@ $(call sm-check-origin, sm.tool.gcc, undefined)
 sm.tool.gcc := true
 
 ## basic command names
-sm.tool.gcc.cmd.cc := gcc
+sm.tool.gcc.cmd.c := gcc
 sm.tool.gcc.cmd.c++ := g++
 sm.tool.gcc.cmd.asm := gas
 sm.tool.gcc.cmd.ld := ld
@@ -32,7 +32,7 @@ sm.tool.gcc.asm.suffix := .s .S
 ##  Produce compile commands for c language
 ##
 define sm.tool.gcc.compile.c.private
-$(sm.tool.gcc.cmd.cc) $(strip $3) -c -o $(strip $1) $(strip $2)
+$(sm.tool.gcc.cmd.c) $(strip $3) -c -o $(strip $1) $(strip $2)
 endef #sm.tool.gcc.compile.c.private
 
 ##
@@ -69,7 +69,7 @@ sm.tool.gcc.compile.asm = $(call sm.tool.gcc.compile,asm,$1,$2,$3)
 # Denpendencies
 
 define sm.tool.gcc.dependency.c.private
-$(sm.tool.gcc.cmd.cc) -MM -MT $(strip $2) -MF $(strip $1) $(strip $4) $(strip $3)
+$(sm.tool.gcc.cmd.c) -MM -MT $(strip $2) -MF $(strip $1) $(strip $4) $(strip $3)
 endef #sm.tool.gcc.dependency.c.private
 
 define sm.tool.gcc.dependency.c++.private
@@ -97,7 +97,7 @@ sm.tool.gcc.dependency.asm = $(call sm.tool.gcc.dependency,asm,$1,$2,$3,$4)
 ##
 ##
 define sm.tool.gcc.link.c
-$(sm.tool.gcc.cmd.cc) $(strip $3) -o $(strip $1) $(strip $2) $(strip $4)
+$(sm.tool.gcc.cmd.c) $(strip $3) -o $(strip $1) $(strip $2) $(strip $4)
 endef #sm.tool.gcc.link.c
 
 ##

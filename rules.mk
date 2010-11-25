@@ -13,7 +13,7 @@ $(call sm-check-flavor,sm.tool.$(sm.this.toolset).$1.$2,recursive,\
 	$(if $(call equal,$(sm.this.verbose),true),,$(if $(call equal,$1,compile),\
                         $$(info $2: $(sm.this.name) += $(4:$(sm.top)/%=%)),\
                         $$(info $2: $(sm.this.name) -> $3)\
-             )@)echo $$(call sm.tool.$(sm.this.toolset).$1.$2,$$@,$(if $5,$5,$4),$$($6),$$($7))
+             ))$$(call sm.tool.$(sm.this.toolset).$1.$2,$$@,$(if $5,$5,$4),$$($6),$$($7))
 endef #sm.code.rule
 
 ## eg. $(call sm.rule, ACTION, LANG, TARGET, PREREQUISITES, callback-FLAGS [,callack-LIBS])
@@ -40,7 +40,7 @@ $(eval \
  $2 : $4
 	$$(call sm-util-mkdir,$$(@D))
 	$(if $(call equal,$(sm.this.verbose),true),,$$(info $(strip $1): $$@)\
-          @)$$(call sm.tool.$(sm.this.toolset).dependency.$(strip $1),$$@,$3,$4,$5)
+          @)$$(call sm.tool.$(sm.this.toolset).dependency.$(strip $1),$$@,$3,$4,$($(strip $5)))
  )
 endef #sm.rule.dependency
 

@@ -30,6 +30,6 @@ $(call sm-check-value, sm.toolset.for.file.c++, $(sm.this.toolset), smart: $(sm.
 $(call sm-check-value, sm.toolset.for.file.cc,  $(sm.this.toolset), smart: $(sm.this.toolset) toolset ignores .cc)
 $(call sm-check-value, sm.toolset.for.file.CC,  $(sm.this.toolset), smart: $(sm.this.toolset) toolset ignores .CC)
 $(call sm-check-value, sm.toolset.for.file.C,   $(sm.this.toolset), smart: $(sm.this.toolset) toolset ignores .C)
-$(call sm-check-value, sm.toolset.for.file.s,   $(sm.this.toolset), smart: $(sm.this.toolset) toolset ignores .s)
-$(call sm-check-value, sm.toolset.for.file.S,   $(sm.this.toolset), smart: $(sm.this.toolset) toolset ignores .S)
 $(call sm-check-value, sm.toolset.for.file.c,   $(sm.this.toolset), smart: $(sm.this.toolset) toolset ignores .c)
+# $(call sm-check-value, sm.toolset.for.file.s,   $(sm.this.toolset), smart: $(sm.this.toolset) toolset ignores .s)
+# $(call sm-check-value, sm.toolset.for.file.S,   $(sm.this.toolset), smart: $(sm.this.toolset) toolset ignores .S)
