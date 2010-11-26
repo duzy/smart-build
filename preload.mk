@@ -33,4 +33,5 @@ sm.this.sources.generated :=
 sm.this.suffix :=
 sm.this.type :=
 sm.this.toolset :=
+sm.this.targets :=
 sm.this.whole_archives :=

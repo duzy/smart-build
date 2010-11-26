@@ -38,21 +38,21 @@ sm.var.rule-action.exe := link
 #  eg. $(call sm-register-sources, asm, gcc, .s .S)
 # TODO: make this job automaticly according sm.this.toolset
 define sm-register-sources
- $(if $1,,$(error smart: must provide lang-type as arg \#1))\
+ $(if $1,,$(error smart: must provide lang-type as arg 1))\
  $(if $2,$(call sm-check-not-equal,$(strip $2),common,smart: cannot register toolset of name 'common'),\
-   $(error smart: must provide toolset as arg \#2))\
- $(if $3,,$(error smart: must provide source extensions as arg \#3))\
+   $(error smart: must provide toolset as arg 2))\
+ $(if $3,,$(error smart: must provide source extensions as arg 3))\
  $(eval sm._toolset.mk := $(sm.dir.buildsys)/tools/$(strip $2).mk)\
  $(if $(wildcard $(sm._toolset.mk)),,$(error smart: Toolset '$(strip $2)' unsupported.))\
  $(if $(sm.tool.$(strip $2)),,\
    $(eval include $(sm._toolset.mk))\
    $(if $(sm.tool.$(strip $2)),$(info smart: '$(strip $2)' toolset included),\
-      $(error '$(strip $2)' toolset not well defined in '$(sm._toolset.mk)'))\
+      $(error toolset '$(strip $2)' not well defined in '$(sm._toolset.mk)'))\
    $(foreach sm._var._temp._lang,$(sm.tool.$(strip $2).langs),\
-        $(call sm-check-undefined,sm.rule.compile.$(strip $1),smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
-        $(call sm-check-undefined,sm.rule.dependency.$(strip $1),smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
-        $(call sm-check-undefined,sm.rule.archive.$(strip $1),smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
-        $(call sm-check-undefined,sm.rule.link.$(strip $1),smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')))\
+        $(call sm-check-undefined,sm.rule.compile.$(strip $1),    smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
+        $(call sm-check-undefined,sm.rule.dependency.$(strip $1), smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
+        $(call sm-check-undefined,sm.rule.archive.$(strip $1),    smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
+        $(call sm-check-undefined,sm.rule.link.$(strip $1),       smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')))\
  $(if $(sm.tool.$(strip $2)),,$(error smart: Toolset '$(strip $2)' unimplemented))\
  $(call sm-check-in-list,$(strip $1),sm.tool.$(strip $2).langs,smart: toolset '$(strip $2)' donnot support '$(strip $1)')\
  $(call sm-check-origin,sm.tool.$(strip $2),file,smart: toolset '$(strip $2)' unimplemented)\

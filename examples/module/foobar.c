@@ -1,3 +1,3 @@
 #include <stdio.h>
 
-void main() { printf("smart::build::example::module: %s", TEST); }
+int main() { printf("smart::build::example::module: %s\n", TEST); return 0; }
