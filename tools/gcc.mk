@@ -9,6 +9,8 @@
 ## make sure that gcc.mk is included only once
 $(call sm-check-origin, sm.tool.gcc, undefined)
 
+NULL :=
+
 sm.tool.gcc := true
 
 ## basic command names
@@ -146,5 +148,16 @@ ifeq ($(strip $(sm.config.variant)),release)
   sm.tool.gcc.link.options :=
 endif
 endif
+
+ifeq ($(sm.os.name),linux)
+else
+ifeq ($(sm.os.name),win32)
+  sm.tool.gcc.compile.options += -mwindows
+  sm.tool.gcc.link.options += -mwindows \
+    -Wl,--enable-runtime-pseudo-reloc \
+    -Wl,--enable-auto-import \
+    $(NULL)
+endif#win32
+endif#linux
 
 sm.tool.gcc.link.options += -Wl,--no-undefined
