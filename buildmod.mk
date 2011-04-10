@@ -18,17 +18,22 @@ $(call sm-check-origin,sm-check-directory,file,broken smart build system)
 $(call sm-check-directory,$(sm.dir.buildsys),broken smart build system)
 
 ifeq ($(sm.this.type),subdirs)
-  $(error smart: please try calling 'sm-load-subdirs' instead)
+  $(error smart: please try calling 'sm-load-subdirs' instead for 'subdirs')
 endif
 
 ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
   ifeq ($(strip $(sm.this.toolset)),)
-    $(error smart: must specify 'sm.this.toolset')
+    $(error smart: 'sm.this.toolset' is empty)
   endif
 
-  # this duplicats in 'sm-build-this'
-  sm.var.__module.compile_id := 0
-  include $(sm.dir.buildsys)/module.mk
+  ifeq ($(strip $(sm.this.type)),depends)
+    goal-$(sm.this.name) : $(sm.this.depends) $(sm.this.depends.copyfiles)
+  else
+    # this duplicats in 'sm-build-this'
+    sm.var.__module.compile_id := 0
+
+    include $(sm.dir.buildsys)/module.mk
+  endif
 else
   $(warning smart: $(sm.this.name) will not be built)
 endif

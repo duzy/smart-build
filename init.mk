@@ -99,7 +99,7 @@ sm.global.archive.flags :=
 sm.global.archive.options :=
 sm.global.link.flags :=
 sm.global.link.options :=
-sm.global.module_types := static shared executable exe tests t
+sm.global.module_types := static shared executable exe tests t depends
 
 sm.var.Q := @
 

@@ -22,7 +22,7 @@ $(or $(call equal,$1,true),$(call equal,$1,yes))
 endef
 
 define is-false
-$(if $(call is-true),,true)
+$(if $(call is-true,$1),,true)
 endef
 
 #####
@@ -37,6 +37,7 @@ sm.var.rule-action.exe := link
 #  eg. $(call sm-register-sources, c++, gcc, .cpp .c++ .cc .CC .C)
 #  eg. $(call sm-register-sources, asm, gcc, .s .S)
 # TODO: make this job automaticly according sm.this.toolset
+# DEPRECATED
 define sm-register-sources
  $(if $1,,$(error smart: must provide lang-type as arg 1))\
  $(if $2,$(call sm-check-not-equal,$(strip $2),common,smart: cannot register toolset of name 'common'),\
@@ -96,10 +97,12 @@ sm.var.target_suffix_for_win32_static := .a
 sm.var.target_suffix_for_win32_shared := .so
 sm.var.target_suffix_for_win32_exe := .exe
 sm.var.target_suffix_for_win32_t := .test.exe
+sm.var.target_suffix_for_win32_depends :=
 sm.var.target_suffix_for_linux_static := .a
 sm.var.target_suffix_for_linux_shared := .so
 sm.var.target_suffix_for_linux_exe :=
 sm.var.target_suffix_for_linux_t := .test
+sm.var.target_suffix_for_linux_depends :=
 
 # $(findstring $1,$(sm.global.modules))
 define sm-new-module
@@ -187,14 +190,15 @@ endef
 ## Copy headers
 define sm-copy-headers
  $(call sm-check-not-empty, sm.out.inc)\
- $(call sm-copy-files,$1,$(sm.out.inc)/$(strip $2))
+p $(call sm-copy-files,$1,$(sm.out.inc)/$(strip $2))
 endef
 
 ## Build the current module
 define sm-build-this
  $(if $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects),,\
-   $(error no source or objects defined for '$(sm.this.name)'))\
- $(if $(sm.this.name),,$(error sm.this.name must be specified))\
+   $(if $(call not-equal,$(sm.this.type),depends),\
+     $(error no source or objects defined for '$(sm.this.name)')))\
+ $(if $(sm.this.name),,$(error sm.this.name is empty))\
  $(eval sm.global.goals += goal-$(sm.this.name)
         sm.var.__module.compile_id := 0
         include $(sm.dir.buildsys)/buildmod.mk)
