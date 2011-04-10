@@ -22,13 +22,13 @@ ifeq ($(sm.this.type),subdirs)
 endif
 
 ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
-  ifeq ($(strip $(sm.this.toolset)),)
-    $(error smart: 'sm.this.toolset' is empty)
-  endif
-
   ifeq ($(strip $(sm.this.type)),depends)
     goal-$(sm.this.name) : $(sm.this.depends) $(sm.this.depends.copyfiles)
   else
+    ifeq ($(strip $(sm.this.toolset)),)
+      $(error smart: 'sm.this.toolset' is empty)
+    endif
+
     # this duplicats in 'sm-build-this'
     sm.var.__module.compile_id := 0
 

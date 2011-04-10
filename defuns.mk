@@ -190,7 +190,7 @@ endef
 ## Copy headers
 define sm-copy-headers
  $(call sm-check-not-empty, sm.out.inc)\
-p $(call sm-copy-files,$1,$(sm.out.inc)/$(strip $2))
+ $(call sm-copy-files,$1,$(sm.out.inc)/$(strip $2))
 endef
 
 ## Build the current module
