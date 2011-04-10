@@ -199,6 +199,9 @@ define sm-build-this
    $(if $(call not-equal,$(sm.this.type),depends),\
      $(error no source or objects defined for '$(sm.this.name)')))\
  $(if $(sm.this.name),,$(error sm.this.name is empty))\
+ $(if $(sm.this.toolset),,$(error sm.this.toolset is empty))\
+ $(if $(filter $(strip $(sm.this.type)),t tests),\
+     $(if $(sm.this.lang),,$(error sm.this.lang must be defined for tests module)))\
  $(eval sm.global.goals += goal-$(sm.this.name)
         sm.var.__module.compile_id := 0
         include $(sm.dir.buildsys)/buildmod.mk)
