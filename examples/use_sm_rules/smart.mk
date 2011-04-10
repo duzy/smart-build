@@ -4,11 +4,14 @@ my.compile.flags := -O3
 my.link.flags := $(if $(sm.os.name.win32),--subsystem=console)
 
 foo.o : foobar.c
+	@echo using sm.tool.gcc.compile.c for $@ 
 	$(call sm.tool.gcc.compile.c, $@, $<, my.compile.flags)
 
 foo: foo.o
+	@echo using sm.tool.gcc.link.c for $@ 
 	$(call sm.tool.gcc.link.c, $@, $<, my.link.flags)
 
+# sm.rule.* require sm.this.toolset to be set
 sm.this.toolset := gcc
 
 $(call sm.rule.compile.c, foo/bar/a.o, foobar.c, my.compile.flags)
