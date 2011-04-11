@@ -226,8 +226,10 @@ define sm-build-depends-code
  $$(info $(or $(strip $7),smart): $(or $(strip $6),make): $$(sm.this.dir)/$(strip $3))
 
  sm.this.depends := $$(sm.this.dir)/$(strip $2)
- $$(sm.this.dir)/$(strip $2): $$(sm.this.dir)/$(strip $3) $(strip $4)
-	cd $$(sm.this.dir) && $(or $(strip $6),make) -f $(strip $3) $(strip $5) && touch $$@
+ $$(sm.this.dir)/$(strip $2): $$(sm.this.dir) \
+    $$(sm.this.dir)/$(strip $3) \
+    $$(sm.this.dir)/$(strip $4)
+	cd $$< && $(or $(strip $6),make) -f $(strip $3) $(strip $5) && touch $$@
 
  $$(call sm-build-this)
 endef #sm-build-depends-code
