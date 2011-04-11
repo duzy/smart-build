@@ -208,6 +208,37 @@ define sm-build-this
         include $(sm.dir.buildsys)/buildmod.mk)
 endef #sm-build-this
 
+## Makefile code for sm-build-depends
+## args: 1: module name (required, for sm-new-module)
+##	 2: module depends (required)
+##	 3: makefile name for build depends (required, for make command)
+##	 4: extra depends (optional, depends of depends)
+##	 5: extra make targets (optional, for make command)
+##	 6: make command name (optional, e.g: gmake, default to 'make')
+##	 7: log type (optional, default: 'smart')
+define sm-build-depends-code
+ $(if $1,,$(error module name is empty (arg 1)))\
+ $(if $2,,$(error module depends is empty (arg 2)))\
+ $(if $3,,$(error module makefile-name is empty (arg 3)))\
+
+ $$(call sm-new-module, $(strip $1), depends)
+
+ $$(info $(or $(strip $7),smart): $(or $(strip $6),make): $$(sm.this.dir)/$(strip $3))
+
+ sm.this.depends := $$(sm.this.dir)/$(strip $2)
+ $$(sm.this.dir)/$(strip $2): $$(sm.this.dir)/$(strip $3) $(strip $4)
+	cd $$(sm.this.dir) && $(or $(strip $6),make) -f $(strip $3) $(strip $5) && touch $$@
+
+ $$(call sm-build-this)
+endef #sm-build-depends-code
+
+## Build some dependencies by invoking a external Makefile
+## usage: $(call sm-build-depends, name, depends, makefile-name, [extra-depends], [extra-targets], [make-name], [log-type])
+define sm-build-depends
+$(eval $(sm-build-depends-code))
+endef #sm-build-depends
+
+
 # DEPRECATED
 define sm-load-sub-modules
 $(error use sm-load-subdirs instead)
