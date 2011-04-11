@@ -199,7 +199,8 @@ define sm-build-this
    $(if $(call not-equal,$(sm.this.type),depends),\
      $(error no source or objects defined for '$(sm.this.name)')))\
  $(if $(sm.this.name),,$(error sm.this.name is empty))\
- $(if $(sm.this.toolset),,$(error sm.this.toolset is empty))\
+ $(if $(call not-equal,$(sm.this.type),depends),\
+   $(if $(sm.this.toolset),,$(error sm.this.toolset is empty)))\
  $(if $(filter $(strip $(sm.this.type)),t tests),\
      $(if $(sm.this.lang),,$(error sm.this.lang must be defined for tests module)))\
  $(eval sm.global.goals += goal-$(sm.this.name)
@@ -207,11 +208,13 @@ define sm-build-this
         include $(sm.dir.buildsys)/buildmod.mk)
 endef #sm-build-this
 
-## Load all smart.mk in sub directories.
+# DEPRECATED
 define sm-load-sub-modules
 $(error use sm-load-subdirs instead)
 endef
 
+## Load all smart.mk in sub directories.
+## This will clear variables sm.this.dir and sm.this.dirs
 define sm-load-subdirs
 $(eval include $(sm.dir.buildsys)/subdirs.mk)
 endef

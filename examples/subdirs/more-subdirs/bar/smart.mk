@@ -1,6 +1,6 @@
 #
 
-$(call sm-new-module, bar, static)
+$(call sm-new-module, bar2, static)
 
 $(info $(sm.this.dir))
 

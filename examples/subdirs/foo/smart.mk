@@ -2,6 +2,8 @@
 
 $(call sm-new-module, foo, shared)
 
+$(info $(sm.this.dir))
+
 sm.this.verbose := true
 sm.this.toolset := gcc
 sm.this.sources := foo.cpp
