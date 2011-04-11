@@ -1,5 +1,6 @@
 #
 
+$(call sm-check-empty, sm.this.dir)
 $(call sm-new-module, bar2, static)
 
 $(info $(sm.this.dir))

@@ -1,5 +1,6 @@
 #
 
+$(call sm-check-empty, sm.this.dir)
 $(call sm-new-module, foo2, shared)
 
 $(info $(sm.this.dir))

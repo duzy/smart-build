@@ -215,7 +215,11 @@ endef
 
 ## Load all smart.mk in sub directories.
 ## This will clear variables sm.this.dir and sm.this.dirs
+## usage: $(call sm-load-subdirs)
+##        $(call sm-load-subdirs, apps tests)
 define sm-load-subdirs
+$(if $(sm.this.dir),,$(eval sm.this.dir := $(sm-this-dir)))\
+$(if $1,$(eval sm.this.dirs += $1))\
 $(eval include $(sm.dir.buildsys)/subdirs.mk)
 endef
 

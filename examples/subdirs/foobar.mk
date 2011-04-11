@@ -1,5 +1,6 @@
 #
 
+$(call sm-check-empty, sm.this.dir)
 $(call sm-new-module, foobar, exe)
 
 sm.this.verbose := true
