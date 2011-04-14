@@ -24,10 +24,13 @@ endif
 
 define sm.code.check-infile
 ifeq ($$(call is-true,$$(sm.this.$1.flags.infile)),true)
-  ifeq ($$(sm.this.$1.options.infile),)
-    sm.this.$1.options.infile := true
+  ifeq ($$(call is-false,$$(sm.this.$1.options.infile)),true)
+    $$(info smart: configuration conflicts:)
+    $$(info smart:   sm.this.$1.options.infile = $$(sm.this.$1.options.infile))
+    $$(info smart:   sm.this.$1.flags.infile = $$(sm.this.$1.flags.infile))
+    $$(error smart: misconfigured)
   else
-    $$(error smart: 'sm.this.$1.options.infile' and 'sm.this.$1.flags.infile' mismatched)
+    sm.this.$1.options.infile := true
   endif
 endif
 endef #sm.code.check-infile
