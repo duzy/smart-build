@@ -124,7 +124,7 @@ endef #sm.code.compute-link-objects
 
 define sm.code.compute-archive-objects
  sm.var.$(sm.this.name).archive.objects.assigned := true
- sm.var.$(sm.this.name).link.objects := $(sm.var.$(sm.this.name).objects)
+ sm.var.$(sm.this.name).archive.objects := $(sm.var.$(sm.this.name).objects)
  $(call sm.code.shift-options-to-file,archive,objects)
 endef #sm.code.compute-archive-objects
 
