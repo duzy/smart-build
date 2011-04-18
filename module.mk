@@ -34,7 +34,7 @@ ifneq ($$(sm.this.$1.options.infile),)
 endif
 endef #sm.code.check-variables
 
-$(foreach a,compile archive link,$(eval $(call sm.code.check-variables,$a)))
+$(foreach _,compile archive link,$(eval $(call sm.code.check-variables,$_)))
 
 ##################################################
 
@@ -286,8 +286,8 @@ $(if $(sm.tool.$(sm.this.toolset).$1.suffix),,$(error smart: no registered suffi
  sm.this.sources.has.$1 := $$(if $$(sm.this.sources.$1)$$(sm.this.sources.external.$1),true,)
  ifeq ($$(sm.this.sources.has.$1),true)
   $$(call sm-check-flavor, sm.fun.make-object-rule, recursive)
-  $$(foreach s,$$(sm.this.sources.$1),$$(call sm.fun.make-object-rule,$1,$$s))
-  $$(foreach s,$$(sm.this.sources.external.$1),$$(call sm.fun.make-object-rule,$1,$$s,external))
+  $$(foreach _,$$(sm.this.sources.$1),$$(call sm.fun.make-object-rule,$1,$$_))
+  $$(foreach _,$$(sm.this.sources.external.$1),$$(call sm.fun.make-object-rule,$1,$$_,external))
  endif
 endef #sm.code.make-rules
 
@@ -326,8 +326,8 @@ ifeq ($(sm.this.type),t)
   sm.this.sources.has.$(sm.this.lang).t := $(if $(sm.this.sources.$(sm.this.lang).t)$(sm.this.sources.external.$(sm.this.lang).t),true)
   ifeq ($(or $(sm.this.sources.has.$(sm.this.lang)),$(sm.this.sources.has.$(sm.this.lang).t)),true)
     $(call sm-check-flavor, sm.fun.make-object-rule, recursive)
-    $(foreach t,$(sm.this.sources.$(sm.this.lang).t),$(call sm.fun.make-object-rule,$(sm.this.lang),$t))
-    $(foreach t,$(sm.this.sources.external.$(sm.this.lang).t),$(call sm.fun.make-object-rule,$(sm.this.lang),$t,external))
+    $(foreach _,$(sm.this.sources.$(sm.this.lang).t),$(call sm.fun.make-object-rule,$(sm.this.lang),$_))
+    $(foreach _,$(sm.this.sources.external.$(sm.this.lang).t),$(call sm.fun.make-object-rule,$(sm.this.lang),$_,external))
     ifeq ($(sm.var.$(sm.this.name).lang),)
       sm.var.$(sm.this.name).lang := $(sm.this.lang)
     endif
@@ -385,7 +385,7 @@ sm.this.objects = $(sm.var.$(sm.this.name).objects)
 ifneq ($(sm.var.__module.objects_only),true)
 
 ifeq ($(MAKECMDGOALS),clean)
-  goal-$(sm.this.name) : ; @echo cleaning... && true
+  goal-$(sm.this.name) : ; @true
 else
   goal-$(sm.this.name) : \
     $(sm.this.depends) \
