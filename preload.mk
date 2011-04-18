@@ -5,10 +5,9 @@
 ## This file is expected to be included BEFORE including an 'smart.mk'(module).
 
 sm.log.filename :=
+sm.this.clean-steps :=
 sm.this.compile.flags :=
 sm.this.compile.flags.infile :=
-sm.this.compile.options :=
-sm.this.compile.options.infile :=
 sm.this.depends :=
 sm.this.depends.copyfiles :=
 sm.this.dir :=
@@ -20,8 +19,6 @@ sm.this.libdirs :=
 sm.this.libs :=
 sm.this.link.flags :=
 sm.this.link.flags.infile :=
-sm.this.link.options :=
-sm.this.link.options.infile :=
 sm.this.name :=
 sm.this.objects :=
 sm.this.objects.defined :=

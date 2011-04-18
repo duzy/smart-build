@@ -99,5 +99,3 @@ endif
 
 ## This duplicated to prevent unexpected changes of it
 .DEFAULT_GOAL := all
-
-
