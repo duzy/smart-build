@@ -27,6 +27,17 @@ sm.tool.gcc.c.suffix := .c
 sm.tool.gcc.c++.suffix := .cpp .c++ .cc .CC .C
 sm.tool.gcc.asm.suffix := .s .S
 
+sm.tool.gcc.target.suffix.win32.static := .a
+sm.tool.gcc.target.suffix.win32.shared := .so
+sm.tool.gcc.target.suffix.win32.exe := .exe
+sm.tool.gcc.target.suffix.win32.t := .test.exe
+sm.tool.gcc.target.suffix.win32.depends :=
+sm.tool.gcc.target.suffix.linux.static := .a
+sm.tool.gcc.target.suffix.linux.shared := .so
+sm.tool.gcc.target.suffix.linux.exe :=
+sm.tool.gcc.target.suffix.linux.t := .test
+sm.tool.gcc.target.suffix.linux.depends :=
+
 ######################################################################
 # Compiles
 

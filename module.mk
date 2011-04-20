@@ -10,6 +10,15 @@ ifeq ($(sm.tool.$(sm.this.toolset)),)
   include $(sm.dir.buildsys)/loadtool.mk
 endif
 
+ifeq ($(sm.tool.$(sm.this.toolset)),)
+  $(error smart: sm.tool.$(sm.this.toolset) is not defined)
+endif
+
+ifeq ($(sm.this.suffix),)
+  $(call sm-check-defined,sm.tool.$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+  sm.this.suffix := $(sm.tool.$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+endif
+
 $(call sm-check-value, sm.tool.$(sm.this.toolset), true, smart: toolset '$(sm.this.toolset)' is undefined)
 
 ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects)),)

@@ -69,7 +69,7 @@ define sm.rule.archive
 $(if $1,,$(error smart: 'sm.rule.archive': arg 1 must be the source language))\
 $(if $2,,$(error smart: 'sm.rule.archive': arg 2 must be the output target))\
 $(if $3,,$(error smart: 'sm.rule.archive': arg 3 must be the objects to be archive))\
-$(if $4,$(if $(call equal,$(4:@%=@),@),,$(error smart: 'sm.rule.archive': arg 4 must be objects as '@file')))\
+$(if $4,$(if $(call equal,$(4:@%=@),@),,$(error smart: 'sm.rule.archive': arg 4 must be objects as '@file': $4)))\
 $(if $5,$(call sm-check-defined,$5,smart: 'sm.rule.archive': '$5' must be defined as a callback for archive flags))\
 $(call sm.rule,archive,$(strip $1),$(strip $2),$(strip $3),$(strip $4),$(strip $5))
 endef #sm.rule.archive

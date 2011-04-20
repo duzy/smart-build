@@ -24,8 +24,8 @@ sm.dir.top = $(call sm-deprecated, sm.dir.top, sm.top)
 ## The output dirs for objects.
 ## These will always be converted into sm.top related path, this will restrict
 ## the command line arguments length.
-#sm.out = $(sm.top)/out/$(sm.config.variant)
-sm.out = out/$(sm.config.variant)
+sm.out = $(if $(sm.this.toolset),,$(error smart: sm.this.toolset not set)\
+  )out/$(sm.this.toolset)/$(sm.config.variant)
 sm.out.bin = $(sm.out)/bin
 sm.out.lib = $(sm.out)/lib
 sm.out.inc = $(sm.out)/include

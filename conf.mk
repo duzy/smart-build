@@ -5,18 +5,18 @@
 ## This file is expected to be included in build/main.mk, and before any
 ## other files to be included.
 
-# Load default build parameters.
-ifeq ($(strip $(sm.this.toolset)),)
-  include $(sm.dir.buildsys)/old/defparams.mk
-endif
+# # Load default build parameters.
+# ifeq ($(strip $(sm.this.toolset)),)
+#   include $(sm.dir.buildsys)/old/defparams.mk
+# endif
 
-ifeq ($(strip $(sm.out)),)
-  $(info smart: ************************************************************)
-  $(info smart:  The top level output directory is empty, maybe you changed)
-  $(info smart:  the value of variable 'sm.out' by mistaken.)
-  $(info smart: ************************************************************)
-  $(error "Top level output directory unassigned.")
-endif
+# ifeq ($(strip $(sm.out)),)
+#   $(info smart: ************************************************************)
+#   $(info smart:  The top level output directory is empty, maybe you changed)
+#   $(info smart:  the value of variable 'sm.out' by mistaken.)
+#   $(info smart: ************************************************************)
+#   $(error "Top level output directory unassigned.")
+# endif
 
 # Detect custome config file and apply it.
 ifneq ($(wildcard $(sm.top)/custom-config),)

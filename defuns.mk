@@ -93,18 +93,8 @@ define sm-module-type-name
         $(if $(call equal,$1,tests),t,$1)))
 endef
 
-sm.var.target_suffix_for_win32_static := .a
-sm.var.target_suffix_for_win32_shared := .so
-sm.var.target_suffix_for_win32_exe := .exe
-sm.var.target_suffix_for_win32_t := .test.exe
-sm.var.target_suffix_for_win32_depends :=
-sm.var.target_suffix_for_linux_static := .a
-sm.var.target_suffix_for_linux_shared := .so
-sm.var.target_suffix_for_linux_exe :=
-sm.var.target_suffix_for_linux_t := .test
-sm.var.target_suffix_for_linux_depends :=
-
-# $(findstring $1,$(sm.global.modules))
+# sm-new-module must be used before any 'include' commands, since
+# it invokes sm-module-dir and sm-this-makefile
 define sm-new-module
 $(if $1,$(if $(filter $1,$(sm.global.modules)),\
              $(error Module of name '$1' already exists))\
@@ -120,14 +110,29 @@ $(if $1,$(if $(filter $1,$(sm.global.modules)),\
 $(if $2,$(eval \
   sm.this.type := $(call sm-module-type-name,$(strip $2))
   $$(call sm-check-in-list,$$(sm.this.type),sm.global.module_types,only supports module of type '$(sm.global.module_types)')
-  ifeq ($$(sm.this.suffix),)
-    $$(call sm-check-defined,sm.var.target_suffix_for_$(sm.os.name)_$$(sm.this.type))
-    sm.this.suffix := $$(sm.var.target_suffix_for_$(sm.os.name)_$$(sm.this.type))
-  endif
   ifeq ($$(sm.this.type),shared)
     sm.this.out_implib := $(sm.this.name)
   endif
-  ),)
+  ),)\
+$(if $3,$(eval \
+  ifeq ($(origin toolset),command line)
+    sm.this.toolset := $(or $(toolset),$3)
+  else
+    sm.this.toolset := $3
+  endif
+  ifeq ($$(sm.tool.$$(sm.this.toolset)),)
+    include $(sm.dir.buildsys)/loadtool.mk
+  endif
+  ifeq ($$(sm.tool.$$(sm.this.toolset)),)
+    $$(error smart: sm.tool.$$(sm.this.toolset) is not defined)
+  endif
+  ifeq ($$(sm.this.suffix),)
+    $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+    sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+  endif
+  ))\
+$(if $(sm.this.toolset),,$(error \
+    smart: toolset is empty, $(sm.this.type)))
 endef
 
 ## Load the build script for the specified module.
@@ -170,8 +175,6 @@ define sm-compile-sources
            sm.var.__module.objects_only :=)\
    ,$(error smart: No sources defined))
 endef
-# $(warning TODO: refactor this for multiple-toolset)\
-# $(eval include $(sm.dir.buildsys)/old/objrules.mk),\
 
 ## Copy headers to $(sm.out.inc)
 ##	usage 1: $(call sm-copy-files, $(headers))
@@ -188,6 +191,7 @@ define sm-copy-files
 endef
 
 ## Copy headers
+# shortcuts for: $(call sm-copy-files, $1, $(sm.out.inc)/$2)
 define sm-copy-headers
  $(call sm-check-not-empty, sm.out.inc)\
  $(call sm-copy-files,$1,$(sm.out.inc)/$(strip $2))
@@ -203,9 +207,10 @@ define sm-build-this
    $(if $(sm.this.toolset),,$(error sm.this.toolset is empty)))\
  $(if $(filter $(strip $(sm.this.type)),t tests),\
      $(if $(sm.this.lang),,$(error sm.this.lang must be defined for tests module)))\
- $(eval sm.global.goals += goal-$(sm.this.name)
-        sm.var.__module.compile_id := 0
-        include $(sm.dir.buildsys)/buildmod.mk)
+ $(eval \
+    sm.global.goals += goal-$(sm.this.name)
+    sm.var.__module.compile_id := 0
+    include $(sm.dir.buildsys)/buildmod.mk)
 endef #sm-build-this
 
 ## Makefile code for sm-build-depends
