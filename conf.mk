@@ -5,10 +5,17 @@
 ## This file is expected to be included in build/main.mk, and before any
 ## other files to be included.
 
-# # Load default build parameters.
-# ifeq ($(strip $(sm.this.toolset)),)
-#   include $(sm.dir.buildsys)/old/defparams.mk
-# endif
+CXX = g++
+CC = gcc
+CP = cp
+PERL = perl
+GPERF = gperf
+ASM = as
+FLEX = flex
+#YACC = yacc
+YACC = bison
+AWK = gawk
+MKDIR = mkdir
 
 # ifeq ($(strip $(sm.out)),)
 #   $(info smart: ************************************************************)

@@ -33,12 +33,15 @@ endif
 
 define sm.code.check-variables
 ifneq ($$(sm.global.$1.options),)
+  $$(info smart: error in file $(sm.this.makefile))
   $$(error smart: sm.global.$1.options is deprecated, use sm.global.$1.flags)
 endif
 ifneq ($$(sm.this.$1.options),)
+  $$(info smart: error in file $(sm.this.makefile))
   $$(error smart: sm.this.$1.options is deprecated, use sm.this.$1.flags)
 endif
 ifneq ($$(sm.this.$1.options.infile),)
+  $$(info smart: error in file $(sm.this.makefile))
   $$(error smart: sm.this.$1.options.infile is deprecated, use sm.this.$1.flags.infile)
 endif
 endef #sm.code.check-variables
