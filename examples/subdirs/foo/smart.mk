@@ -1,12 +1,11 @@
 #
 
 $(call sm-check-empty, sm.this.dir)
-$(call sm-new-module, foo, shared)
+$(call sm-new-module, foo, shared, gcc)
 
 $(info $(sm.this.dir))
 
 sm.this.verbose := true
-sm.this.toolset := gcc
 sm.this.sources := foo.cpp
 ifeq ($(sm.os.name),win32)
   sm.this.link.options := -Wl,--out-implib,$(sm.out.lib)/libfoo.a

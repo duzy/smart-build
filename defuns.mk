@@ -115,6 +115,8 @@ $(if $2,$(eval \
   endif
   ),)\
 $(if $3,$(eval \
+  $(if $(wildcard $(sm.dir.buildsys)/tools/$(strip $3).mk),,\
+      $(error smart: toolset $3 not unknown))
   ifeq ($(origin toolset),command line)
     sm.this.toolset := $(or $(toolset),$3)
   else
@@ -202,6 +204,9 @@ define sm-build-this
  $(if $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects),,\
    $(if $(call not-equal,$(sm.this.type),depends),\
      $(error no source or objects defined for '$(sm.this.name)')))\
+ $(if $(sm.this.compile.options),$(error sm.this.compile.options))\
+ $(if $(sm.this.link.options),$(error sm.this.link.options))\
+ $(if $(sm.this.archive.options),$(error sm.this.archive.options))\
  $(if $(sm.this.name),,$(error sm.this.name is empty))\
  $(if $(call not-equal,$(sm.this.type),depends),\
    $(if $(sm.this.toolset),,$(error sm.this.toolset is empty)))\

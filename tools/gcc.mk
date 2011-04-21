@@ -66,16 +66,18 @@ endef #sm.tool.gcc.compile.asm.private
 ##
 ##
 define sm.tool.gcc.compile
-$(if $1,,$(error smart: arg 1 must be the source language))\
-$(if $2,,$(error smart: arg 2 must be the output target))\
-$(if $3,,$(error smart: arg 3 must be the source file))\
-$(if $4,,$(error smart: arg 4 must be compile flags))\
+$(if $1,,$(error smart:gcc: arg 1 must be the source language: $1))\
+$(if $2,,$(error smart:gcc: arg 2 must be the output target: $2))\
+$(if $3,,$(error smart:gcc: arg 3 must be the source file: $3))\
 $(call sm.tool.gcc.compile.$(strip $1).private,$2,$3,$(strip $4))
 endef #sm.tool.gcc.compile
 
 sm.tool.gcc.compile.c = $(call sm.tool.gcc.compile,c,$1,$2,$3)
 sm.tool.gcc.compile.c++ = $(call sm.tool.gcc.compile,c++,$1,$2,$3)
 sm.tool.gcc.compile.asm = $(call sm.tool.gcc.compile,asm,$1,$2,$3)
+# sm.tool.gcc.compile.c = $(call sm.tool.gcc.compile,c)
+# sm.tool.gcc.compile.c++ = $(call sm.tool.gcc.compile,c++)
+# sm.tool.gcc.compile.asm = $(call sm.tool.gcc.compile,asm)
 
 
 ##################################################
@@ -89,18 +91,20 @@ define sm.tool.gcc.dependency.c++.private
 $(sm.tool.gcc.cmd.c++) -MM -MT $(strip $2) -MF $(strip $1) $(strip $4) $(strip $3)
 endef #sm.tool.gcc.dependency.c++.private
 
-## eg. $(sm.tool.gcc.dependency, foo.d, foo.o, src/foo.cpp)
+## eg. $(sm.tool.gcc.dependency, c++, foo.d, src/foo.cpp, -DXXX)
 define sm.tool.gcc.dependency
-$(if $1,,$(error smart: arg 1 must be the source language))\
-$(if $2,,$(error smart: arg 2 must be the output target))\
-$(if $3,,$(error smart: arg 3 must be the source file))\
-$(if $4,,$(error smart: arg 4 must be compile flags))\
+$(if $1,,$(error smart:gcc: arg 1 must be the source language: $1))\
+$(if $2,,$(error smart:gcc: arg 2 must be the output target: $2))\
+$(if $3,,$(error smart:gcc: arg 3 must be the source file: $3))\
 $(call sm.tool.gcc.dependency.$(strip $1).private,$2,$3,$(strip $4),$(strip $5))
 endef #sm.tool.gcc.dependency
 
 sm.tool.gcc.dependency.c = $(call sm.tool.gcc.dependency,c,$1,$2,$3,$4)
 sm.tool.gcc.dependency.c++ = $(call sm.tool.gcc.dependency,c++,$1,$2,$3,$4)
 sm.tool.gcc.dependency.asm = $(call sm.tool.gcc.dependency,asm,$1,$2,$3,$4)
+# sm.tool.gcc.dependency.c = $(call sm.tool.gcc.dependency,c)
+# sm.tool.gcc.dependency.c++ = $(call sm.tool.gcc.dependency,c++)
+# sm.tool.gcc.dependency.asm = $(call sm.tool.gcc.dependency,asm)
 
 
 ##################################################
@@ -145,6 +149,9 @@ endef
 sm.tool.gcc.archive.c   = $(call sm.tool.gcc.archive,$1,$2,$3,$4)
 sm.tool.gcc.archive.c++ = $(call sm.tool.gcc.archive,$1,$2,$3,$4)
 sm.tool.gcc.archive.asm = $(call sm.tool.gcc.archive,$1,$2,$3,$4)
+# sm.tool.gcc.archive.c   = $(call sm.tool.gcc.archive)
+# sm.tool.gcc.archive.c++ = $(call sm.tool.gcc.archive)
+# sm.tool.gcc.archive.asm = $(call sm.tool.gcc.archive)
 
 
 ######################################################################

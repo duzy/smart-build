@@ -49,7 +49,7 @@ define sm.rule.compile
 $(if $1,,$(error smart: 'sm.rule.compile': arg 1 must be the source language))\
 $(if $2,,$(error smart: 'sm.rule.compile': arg 2 must be the output target))\
 $(if $3,,$(error smart: 'sm.rule.compile': arg 3 must be the source file))\
-$(if $4,$(call sm-check-defined,$4,smart: 'sm.rule.compile': '$(strip $4)' must be defined as a callback for compile flags))\
+$(if $4,$(call sm-check-defined,$4,smart: 'sm.rule.compile': '$(strip $4)' must be defined as a callback for compile flags: $4))\
 $(call sm.rule,compile,$(strip $1),$(strip $2),$(strip $3),,$(strip $4))
 endef #sm.rule.compile
 

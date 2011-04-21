@@ -240,25 +240,24 @@ endef #sm.fun.compute-source.external
 
 ##
 ## binary module to be built
-define sm.fun.compute-exe-module-targets
+define sm.fun.compute-module-targets-exe
 $(call sm-to-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.compute-exe-module-targets
 
-define sm.fun.compute-t-module-targets
+define sm.fun.compute-module-targets-t
 $(call sm-to-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.compute-t-module-targets
 
-define sm.fun.compute-shared-module-targets
+define sm.fun.compute-module-targets-shared
 $(call sm-to-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.compute-shared-module-targets
 
-define sm.fun.compute-static-module-targets
+define sm.fun.compute-module-targets-static
 $(call sm-to-relative-path,$(sm.out.lib))/lib$(sm.this.name:lib%=%)$(sm.this.suffix)
 endef #sm.fun.compute-static-module-targets
 
 ##################################################
 
-# TODO: move $(call sm.fun.$(sm.this.name).compute-compile-options,$(strip $1)) into sm.fun.make-object-rules
 ## Make rule for building object
 ##   eg. $(call sm.fun.make-object-rule, c++, foobar.cpp)
 ##   eg. $(call sm.fun.make-object-rule, c++, ~/sources/foobar.cpp, external)
@@ -350,8 +349,8 @@ endif
 ## Make rule for targets of the module
 ifneq ($(sm.var.__module.objects_only),true)
 $(if $(sm.var.$(sm.this.name).objects),,$(error smart: No objects for building '$(sm.this.name)'))
-$(call sm-check-defined,sm.fun.compute-$(sm.this.type)-module-targets)
-$(eval sm.var.$(sm.this.name).targets := $(strip $(call sm.fun.compute-$(sm.this.type)-module-targets)))
+$(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
+$(eval sm.var.$(sm.this.name).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type))))
 $(call sm-check-defined,sm.var.build_action.$(sm.this.type))
 $(call sm-check-defined,sm.var.$(sm.this.name).lang)
 $(call sm-check-defined,sm.rule.$(sm.var.build_action.$(sm.this.type)).$(sm.var.$(sm.this.name).lang))

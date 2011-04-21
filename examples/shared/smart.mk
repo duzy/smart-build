@@ -1,6 +1,6 @@
 #
 
-$(call sm-new-module, foo, shared)
+$(call sm-new-module, foo, shared, gcc)
 $(call sm-check-not-empty,sm.this.dir)
 $(call sm-check-not-empty,sm.this.name)
 $(call sm-check-not-empty,sm.this.suffix)

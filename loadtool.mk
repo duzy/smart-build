@@ -6,7 +6,7 @@ $(call sm-check-empty,sm.tool.$(sm.this.toolset),smart: toolset '$(sm.this.tools
 sm._toolset.mk := $(sm.dir.buildsys)/tools/$(strip $(sm.this.toolset)).mk
 
 ifeq ($(wildcard $(sm._toolset.mk)),)
-  $(error smart: toolset '$(strip $2)' unsupported.)
+  $(error smart: toolset '$(strip $3)' unsupported.)
 endif
 
 include $(sm._toolset.mk)

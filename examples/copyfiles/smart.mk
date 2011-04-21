@@ -1,6 +1,6 @@
 #
 
-$(call sm-new-module, foo, executable)
+$(call sm-new-module, foo, executable, gcc)
 $(call sm-check-not-empty,sm.this.dir)
 $(call sm-check-not-empty,sm.this.type)
 $(call sm-check-not-empty,sm.this.name)
@@ -13,11 +13,6 @@ $(call sm-check-equal,$(sm.this.suffix),$(if $(sm.os.name.win32),.exe))
 
 ## Turn on verbose to make command lines visible
 sm.this.verbose := false
-
-## Choose a toolset (doing this will enable tools/$(sm.this.toolset).mk),
-## if not doing this, the old style of build system will be used (which only
-## supports gcc toolset).
-sm.this.toolset := gcc
 
 ## The flags to be used by the compiler
 sm.this.compile.flags := -DTEST=\"$(sm.this.name)\"
