@@ -204,9 +204,12 @@ define sm-build-this
  $(if $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects),,\
    $(if $(call not-equal,$(sm.this.type),depends),\
      $(error no source or objects defined for '$(sm.this.name)')))\
- $(if $(sm.this.compile.options),$(error sm.this.compile.options))\
- $(if $(sm.this.link.options),$(error sm.this.link.options))\
- $(if $(sm.this.archive.options),$(error sm.this.archive.options))\
+ $(if $(sm.this.compile.options),$(error smart: deprecated: sm.this.compile.options))\
+ $(if $(sm.this.compile.options.infile),$(error smart: deprecated: sm.this.compile.options.infile))\
+ $(if $(sm.this.link.options),$(error smart: deprecated: sm.this.link.options))\
+ $(if $(sm.this.link.options.infile),$(error smart: deprecated: sm.this.link.options.infile))\
+ $(if $(sm.this.archive.options),$(error smart: deprecated: sm.this.archive.options))\
+ $(if $(sm.this.archive.options.infile),$(error smart: deprecated: sm.this.archive.options.infile))\
  $(if $(sm.this.name),,$(error sm.this.name is empty))\
  $(if $(call not-equal,$(sm.this.type),depends),\
    $(if $(sm.this.toolset),,$(error sm.this.toolset is empty)))\
