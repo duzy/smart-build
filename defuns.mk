@@ -97,7 +97,7 @@ endef
 # it invokes sm-module-dir and sm-this-makefile
 define sm-new-module
 $(if $1,$(if $(filter $1,$(sm.global.modules)),\
-             $(error Module of name '$1' already exists))\
+     $(error Module of name '$1' already defined in $(sm.global.modules.$(strip $1))))\
   $(eval sm.this.name := $(basename $(strip $1))
          $$(if $$(sm.this.name),,$$(error The module name is empty))
          sm.this.suffix := $(suffix $(strip $1))
@@ -114,9 +114,11 @@ $(if $2,$(eval \
     sm.this.out_implib := $(sm.this.name)
   endif
   ),)\
-$(if $3,$(eval \
-  $(if $(wildcard $(sm.dir.buildsys)/tools/$(strip $3).mk),,\
-      $(error smart: toolset $3 not unknown))
+$(if $3,\
+  $(if $(call equal,$(sm.this.type),depends),\
+      ,$(if $(wildcard $(sm.dir.buildsys)/tools/$(strip $3).mk),\
+           ,$(error smart: toolset $3 not unknown)))\
+  $(eval \
   ifeq ($(origin toolset),command line)
     sm.this.toolset := $(or $(toolset),$3)
   else
@@ -133,8 +135,9 @@ $(if $3,$(eval \
     sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
   endif
   ))\
-$(if $(sm.this.toolset),,$(error \
-    smart: toolset is empty, $(sm.this.type)))
+$(if $(call equal,$(sm.this.type),depends),\
+    ,$(if $(sm.this.toolset),\
+         ,$(error smart: toolset is empty, $(sm.this.type))))
 endef
 
 ## Load the build script for the specified module.
