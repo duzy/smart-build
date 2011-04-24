@@ -244,7 +244,7 @@ define sm-build-depends-code
  sm.this.depends := $$(sm.this.dir)/$(strip $2)
  $$(sm.this.dir)/$(strip $2): $$(sm.this.dir) \
     $$(sm.this.dir)/$(strip $3) \
-    $$(sm.this.dir)/$(strip $4)
+    $$(foreach s,$4,$$(sm.this.dir)/$$s)
 	cd $$< && $(or $(strip $6),make) -f $(strip $3) $(strip $5) && touch $$@
 
  $$(call sm-build-this)
