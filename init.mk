@@ -99,5 +99,9 @@ sm.global.archive.flags :=
 sm.global.link.flags :=
 sm.global.module_types := static shared executable exe tests t depends
 
+ifeq ($(sm.config.variant),debug)
+  sm.global.compile.flags += -g -ggdb
+endif
+
 sm.var.Q := @
 
