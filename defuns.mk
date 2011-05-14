@@ -247,6 +247,8 @@ define sm-build-depends-code
     $$(foreach s,$4,$$(sm.this.dir)/$$s)
 	@rm -vf $$@
 	cd $$< && $(or $(strip $6),make) -f $(strip $3) $(strip $5) && touch $$@
+ clean-$(strip $1): $$(sm.this.dir)
+	cd $$< && $(or $(strip $6),make) -f $(strip $3) clean
 
  $$(call sm-build-this)
 endef #sm-build-depends-code
