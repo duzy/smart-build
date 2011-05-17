@@ -65,8 +65,12 @@ ifneq ($(findstring MINGW32,$(sm.config.uname)),)
   sm.os.name.win32.mingw32 := true
 endif
 
-## The default toolset is 'gcc'
-sm.toolset := gcc
+# ## The default toolset is 'gcc'
+# ifeq ($(origin toolset),command line)
+#   sm.toolset := $(or $(toolset),gcc)
+# else
+#   sm.toolset := gcc
+# endif
 
 ifneq ($(origin sm-register-sources),file)
   $(error smart: 'sm-register-sources' unsafe: '$(sm-register-sources)')
