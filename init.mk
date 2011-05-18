@@ -106,6 +106,9 @@ sm.global.module_types := static shared executable exe tests t depends
 ifeq ($(sm.config.variant),debug)
   sm.global.compile.flags += -g -ggdb
 endif
+ifeq ($(sm.config.variant),release)
+  sm.global.compile.flags += -O2
+endif
 
 sm.var.Q := @
 

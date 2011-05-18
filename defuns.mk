@@ -181,6 +181,23 @@ define sm-compile-sources
    ,$(error smart: No sources defined))
 endef
 
+define sm-generate-implib-code-win32
+  sm.this.depends += $(sm.out.lib)
+  sm.this.targets += $(sm.out.lib)/lib$(sm.this.name).a
+  sm.this.link.flags += -Wl,-out-implib,$(sm.out.lib)/lib$(sm.this.name).a
+ $(sm.out.lib)/lib$(sm.this.name).a:$$(sm.var.$(sm.this.name).module_targets)
+endef #sm-generate-implib-code-win32
+define sm-generate-implib-code-linux
+  sm.this.depends += $(sm.out.lib)
+  sm.this.targets += $(sm.out.lib)/lib$(sm.this.name).so
+ $(sm.out.lib)/lib$(sm.this.name).so:$$(sm.var.$(sm.this.name).module_targets)
+	$$(call sm.tool.common.ln,$(sm.top)/$$<,$$@)
+endef #sm-generate-implib-code-linux
+define sm-generate-implib
+$(call sm-check-not-empty,sm.os.name)\
+$(eval $(sm-generate-implib-code-$(sm.os.name)))
+endef
+
 ## Copy headers to $(sm.out.inc)
 ##	usage 1: $(call sm-copy-files, $(headers))
 ##	usage 2: $(call sm-copy-files, $(headers), subdir)
