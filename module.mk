@@ -330,12 +330,12 @@ sm.var.$(sm.this.name).targets :=
 
 ifeq ($(sm.var.__module.compile_count),1)
 ## clear these vars only once (see sm-compile-sources)
-sm.var.$(sm.this.name).objects :=
+sm.var.$(sm.this.name).objects := $(sm.this.objects)
 sm.var.$(sm.this.name).depends :=
 else
 ifeq ($(sm.var.__module.compile_count),)
 ## in case that only sm-build-this (no sm-compile-sources) is called
-sm.var.$(sm.this.name).objects :=
+sm.var.$(sm.this.name).objects := $(sm.this.objects)
 sm.var.$(sm.this.name).depends :=
 endif
 endif

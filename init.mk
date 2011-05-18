@@ -111,4 +111,3 @@ ifeq ($(sm.config.variant),release)
 endif
 
 sm.var.Q := @
-
