@@ -10,10 +10,11 @@ $(call sm-check-flavor,sm.tool.$(sm.this.toolset).$1.$2,recursive,\
    broken toolset '$(sm.this.toolset)': 'sm.tool.$(sm.this.toolset).$1.$2' not recursive)
  $3 : $4
 	$$(call sm-util-mkdir,$$(@D))
-	$(if $(call equal,$(sm.this.verbose),true),,$(if $(call equal,$1,compile),\
-                        $$(info $2: $(sm.this.name) += $(4:$(sm.top)/%=%)),\
-                        $$(info $2: $(sm.this.name) -> $3)\
-             ))$$(call sm.tool.$(sm.this.toolset).$1.$2,$$@,$(if $5,$5,$4),$$($6),$$($7))
+	$(if $(call equal,$(sm.this.verbose),true),,\
+             $(if $(call equal,$1,compile),\
+                  $$(info $2: $(sm.this.name) += $(4:$(sm.top)/%=%)),\
+                  $$(info $2: $(sm.this.name) -> $3)\
+             )$(sm.var.Q))$$(call sm.tool.$(sm.this.toolset).$1.$2,$$@,$(if $5,$5,$4),$$($6),$$($7))
 endef #sm.code.rule
 
 ## eg. $(call sm.rule, ACTION, LANG, TARGET, PREREQUISITES, callback-FLAGS [,callack-LIBS])

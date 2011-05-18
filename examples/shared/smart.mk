@@ -18,7 +18,7 @@ sm.this.verbose ?= true
 ## Choose a toolset (doing this will enable tools/$(sm.this.toolset).mk),
 ## if not doing this, the old style of build system will be used (which only
 ## supports gcc toolset).
-sm.this.toolset := gcc
+#sm.this.toolset := gcc
 
 ## The flags to be used by the compiler
 sm.this.compile.flags := -DTEST=\"$(sm.this.name)\"
