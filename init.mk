@@ -104,4 +104,3 @@ ifeq ($(sm.config.variant),debug)
 endif
 
 sm.var.Q := @
-
