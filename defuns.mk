@@ -191,11 +191,12 @@ define sm-generate-implib-code-linux
   sm.this.depends += $(sm.out.lib)
   sm.this.targets += $(sm.out.lib)/lib$(sm.this.name).so
  $(sm.out.lib)/lib$(sm.this.name).so:$$(sm.var.$(sm.this.name).module_targets)
-	$$(call sm.tool.common.ln,$(sm.top)/$$<,$$@)
+	$$(call sm.tool.common.ln,$(sm.top)/$$(sm.var.$(sm.this.name).module_targets),$$@)
 endef #sm-generate-implib-code-linux
 define sm-generate-implib
 $(call sm-check-not-empty,sm.os.name)\
-$(eval $(sm-generate-implib-code-$(sm.os.name)))
+$(if $(call equal,$(sm.this.type),shared),\
+  $(eval $(sm-generate-implib-code-$(sm.os.name))))
 endef
 
 ## Copy headers to $(sm.out.inc)
