@@ -1,2 +1,71 @@
 GNU/Makefile library to ease software building, tested for Linux, MinGW.
 
+TODO: documentation for these:
+      * sm.log.enabled
+      * sm.log.filename
+      * sm.config.variant
+      * sm.config.uname
+      * sm.config.machine
+      * sm.os.name
+      * sm.os.arch
+      * sm.os.name.linux
+      * sm.os.name.win32
+      * sm.os.name.win32.mingw32
+      * sm.top
+      * sm.out
+      * sm.out.bin
+      * sm.out.lib
+      * sm.out.inc
+      * sm.out.obj
+      * sm.out.tmp
+      * sm.global.module_types
+      * sm.global.defines
+      * sm.global.defines.LANG
+      * sm.global.compile.flags
+      * sm.global.archive.flags
+      * sm.global.link.flags
+      * sm.global.libdirs
+      * sm.global.libs
+      * sm.global.tests
+      * sm.this.verbose
+      * sm.this.lang
+      * sm.this.name
+      * sm.this.type
+      * sm.this.toolset
+      * sm.this.dir
+      * sm.this.suffix
+      * sm.this.makefile
+      * sm.this.gen_deps
+      * sm.this.sources
+      * sm.this.sources.LANG
+      * sm.this.sources.external
+      * sm.this.sources.external.LANG
+      * sm.this.objects
+      * sm.this.depends
+      * sm.this.depends.copyfiles
+      * sm.this.targets
+      * sm.this.objects
+      * sm.this.defines
+      * sm.this.defines.LANG
+      * sm.this.compile.flags
+      * sm.this.compile.flags.LANG
+      * sm.this.archive.flags
+      * sm.this.link.flags
+      * sm.this.libdirs
+      * sm.this.libs
+      * sm.this.out_implib
+      * sm.this.clean-steps
+
+      * sm-new-module
+      * sm-build-this
+      * sm-build-depends
+      * sm-compile-sources
+      * sm-generate-implib
+      * sm-copy-files
+      * sm-copy-headers
+      * sm-load-subdirs
+      * sm-load-module
+      
+      * make V=debug
+      * make V=release
+      * make toolset=llvm
