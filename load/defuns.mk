@@ -293,26 +293,6 @@ $(if $1,$(eval sm.this.dirs += $1))\
 $(eval include $(sm.dir.buildsys)/subdirs.mk)
 endef
 
-# DEPRECATED
-## Define variable prefixed by 'sm.var.temp.'.
-## NOTE: Donot use it in multi-level 'include's
-##   usage 1: $(call sm-var-temp, :=, value list)
-##          : $(call sm-var-temp, ?=, value list)
-define sm-var-temp
- $(if $(strip $1),$(if $(filter $(strip $2),= := ?=),\
-        $(eval sm.var.temp.$(strip $1)$(strip $2)$(strip $3)
-           sm.var.temp.*:=$(strip $1) $(sm.var.temp.*)),
-       $(warning Invalid usage of fun 'sm-var-temp'.)),\
-   $(warning Defining local variable must provide a name.))
-endef
-
-# DEPRECATED
-## Unset variables prefixed by 'sm.var.temp.'
-define sm-var-temp-clean
- $(foreach v,$(sm.var.temp.*),$(eval sm.var.temp.$v:=))\
- $(eval sm.var.temp.*:=)
-endef
-
 ## Command for making out dir
 #$(if $(wildcard $1),,$(info mkdir: $1)$(shell [[ -d $1 ]] || mkdir -p $1))
 define sm-util-mkdir

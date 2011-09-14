@@ -37,5 +37,3 @@ ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
 else
   $(warning smart: $(sm.this.name) will not be built)
 endif
-
-$(sm-var-temp-clean)

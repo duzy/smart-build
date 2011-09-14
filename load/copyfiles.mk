@@ -5,7 +5,7 @@
 $(call sm-check-not-empty, sm.var.__copyfiles)
 $(call sm-check-not-empty, sm.var.__copyfiles.to)
 
-$(call sm-var-temp, _d, :=,$(call sm-to-relative-path,$(sm.var.__copyfiles.to)))
+sm.var.temp._d := $(call sm-to-relative-path,$(sm.var.__copyfiles.to))
 
 $(foreach v,$(sm.var.__copyfiles),\
    $(eval sm.this.depends.copyfiles += $(sm.var.temp._d)/$(notdir $v))\
@@ -14,5 +14,3 @@ $(foreach v,$(sm.var.__copyfiles),\
        @( echo file: $$@ )\
        && ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@))\
        && ($(CP) -u $$< $$@)))
-
-$(sm-var-temp-clean)
