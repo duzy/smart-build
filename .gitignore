@@ -1,4 +1,4 @@
 *~
 *.o
-load/examples/*/out
-load/examples/*/*.txt
+examples/*/out
+examples/*/*.txt

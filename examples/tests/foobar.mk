@@ -1,6 +1,6 @@
 #
 
-$(call sm-new-module, foobar, tests)
+$(call sm-new-module, foobar, tests, gcc)
 $(call sm-check-not-empty,sm.this.dir)
 $(call sm-check-not-empty,sm.this.type)
 $(call sm-check-not-empty,sm.this.name)
@@ -16,8 +16,6 @@ sm.this.verbose := true
 
 ## Test module must specify this
 sm.this.lang := c
-
-sm.this.toolset := gcc
 
 sm.this.sources := foobar.t
 
