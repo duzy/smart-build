@@ -1,6 +1,7 @@
 #
 
 $(call sm-new-module, foo, shared, gcc)
+
 $(call sm-check-not-empty,sm.this.dir)
 $(call sm-check-not-empty,sm.this.name)
 $(call sm-check-not-empty,sm.this.suffix)
@@ -12,16 +13,15 @@ $(call sm-check-equal,$(sm.this.type),shared)
 $(call sm-check-equal,$(sm.this.suffix),.so)
 $(call sm-check-equal,$(sm.this.out_implib),foo)
 
+ifeq ($(shell uname -m),x86_64)
+M64_FLAGS := -fPIC
+endif
+
 ## Turn on verbose to make command lines visible
 sm.this.verbose ?= true
 
-## Choose a toolset (doing this will enable tools/$(sm.this.toolset).mk),
-## if not doing this, the old style of build system will be used (which only
-## supports gcc toolset).
-#sm.this.toolset := gcc
-
 ## The flags to be used by the compiler
-sm.this.compile.flags := -DTEST=\"$(sm.this.name)\"
+sm.this.compile.flags := $(M64_FLAGS) -DTEST=\"$(sm.this.name)\"
 
 ## The include search path (for compiler's -I switch), each item of this will
 ## be translated into a -I switch for the compiler by the toolset.
@@ -30,7 +30,7 @@ sm.this.sources := foobar.c
 
 ## The flags to be used by the linker
 ## NOTE: no needs to '-Wl,' or '-Wlinker' to pass linker arguments
-sm.this.link.flags := $(if $(sm.os.name.win32),--subsystem=console)
+sm.this.link.flags := $(M64_FLAGS) $(if $(sm.os.name.win32),--subsystem=console)
 
 ## The libraries search path (for linker's -L switch), each item of this will
 ## be translated into a -L switch similar to 'sm.this.includes'.
