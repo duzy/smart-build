@@ -76,7 +76,7 @@ ifneq ($(origin sm-register-sources),file)
   $(error smart: 'sm-register-sources' unsafe: '$(sm-register-sources)')
 else
   include $(sm.dir.buildsys)/tools/common.mk
-  ifeq (true,false) # these jobs have been done in module.mk
+  ifeq (true,false) # these jobs have been done in build-rules.mk
   $(call sm-register-sources, c++, gcc, .cpp .c++ .cc .CC .C)
   $(call sm-register-sources, asm, gcc, .s .S)
   $(call sm-register-sources, c,   gcc, .c)

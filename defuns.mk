@@ -176,7 +176,7 @@ define sm-compile-sources
     $(info smart: objects for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
     $(eval sm.var.__module.objects_only := true
            sm.var.__module.compile_id := $(call sm-compute-compile-id,1)
-           include $(sm.dir.buildsys)/module.mk
+           include $(sm.dir.buildsys)/build-rules.mk
            sm.var.__module.objects_only :=)\
    ,$(error smart: No sources defined))
 endef
@@ -239,7 +239,7 @@ define sm-build-this
  $(eval \
     sm.global.goals += goal-$(sm.this.name)
     sm.var.__module.compile_id := 0
-    include $(sm.dir.buildsys)/buildmod.mk)
+    include $(sm.dir.buildsys)/build-this.mk)
 endef #sm-build-this
 
 ## Makefile code for sm-build-depends
