@@ -38,7 +38,7 @@ sm.var.rule-action.exe := link
 #  eg. $(call sm-register-sources, asm, gcc, .s .S)
 # TODO: make this job automaticly according sm.this.toolset
 # DEPRECATED
-define sm-register-sources
+define sm-register-sources_
  $(if $1,,$(error smart: must provide lang-type as arg 1))\
  $(if $2,$(call sm-check-not-equal,$(strip $2),common,smart: cannot register toolset of name 'common'),\
    $(error smart: must provide toolset as arg 2))\
@@ -65,10 +65,11 @@ define sm-register-sources
  $(eval sm.tool.$(strip $2).$(strip $1).suffix += $(strip $3))\
  $(eval sm.toolset.for.$(strip $1) := $(strip $2))\
  $(foreach s,$3,$(eval sm.toolset.for.file$s := $(strip $2)))
-endef #sm-register-sources
+endef #sm-register-sources_
+sm-register-sources = $(error sm-register-sources is deprecated)
 
 #####
-# 
+# Exported callable macros.
 #####
 define sm-deprecated
 $(error smart: $(strip $1) is deprecated, use $(strip $2) instead)
@@ -181,25 +182,26 @@ define sm-compile-sources
    ,$(error smart: No sources defined))
 endef
 
-define sm-generate-implib-code-win32
+## sm-generate-implib - Generate import library for shared objects.
+define sm-generate-implib.code.win32
   sm.this.depends += $(sm.out.lib)
   sm.this.targets += $(sm.out.lib)/lib$(sm.this.name).a
   sm.this.link.flags += -Wl,-out-implib,$(sm.out.lib)/lib$(sm.this.name).a
  $(sm.out.lib)/lib$(sm.this.name).a:$$(sm.var.$(sm.this.name).module_targets)
-endef #sm-generate-implib-code-win32
-define sm-generate-implib-code-linux
+endef #sm-generate-implib.code.win32
+define sm-generate-implib.code.linux
   sm.this.depends += $(sm.out.lib)
   sm.this.targets += $(sm.out.lib)/lib$(sm.this.name).so
  $(sm.out.lib)/lib$(sm.this.name).so:$$(sm.var.$(sm.this.name).module_targets)
 	$$(call sm.tool.common.ln,$(sm.top)/$$(sm.var.$(sm.this.name).module_targets),$$@)
-endef #sm-generate-implib-code-linux
+endef #sm-generate-implib.code.linux
 define sm-generate-implib
 $(call sm-check-not-empty,sm.os.name)\
 $(if $(call equal,$(sm.this.type),shared),\
-  $(eval $(sm-generate-implib-code-$(sm.os.name))))
-endef
+  $(eval $(sm-generate-implib.code.$(sm.os.name))))
+endef #sm-generate-implib
 
-## Copy headers to $(sm.out.inc)
+## sm-copy-files - Copy headers to $(sm.out.inc)
 ##	usage 1: $(call sm-copy-files, $(headers))
 ##	usage 2: $(call sm-copy-files, $(headers), subdir)
 define sm-copy-files
@@ -213,14 +215,14 @@ define sm-copy-files
     $(error smart: You must specify files for arg one))
 endef
 
-## Copy headers
+## sm-copy-headers - Copy headers
 # shortcuts for: $(call sm-copy-files, $1, $(sm.out.inc)/$2)
 define sm-copy-headers
  $(call sm-check-not-empty, sm.out.inc)\
  $(call sm-copy-files,$1,$(sm.out.inc)/$(strip $2))
 endef
 
-## Build the current module
+## sm-build-this - Build the current module
 define sm-build-this
  $(if $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects),,\
    $(if $(call not-equal,$(sm.this.type),depends),\
@@ -242,7 +244,7 @@ define sm-build-this
     include $(sm.dir.buildsys)/build-this.mk)
 endef #sm-build-this
 
-## Makefile code for sm-build-depends
+## sm-build-depends  - Makefile code for sm-build-depends
 ## args: 1: module name (required, for sm-new-module)
 ##	 2: module depends (required)
 ##	 3: makefile name for build depends (required, for make command)
@@ -250,7 +252,7 @@ endef #sm-build-this
 ##	 5: extra make targets (optional, for make command)
 ##	 6: make command name (optional, e.g: gmake, default to 'make')
 ##	 7: log type (optional, default: 'smart')
-define sm-build-depends-code
+define sm-build-depends.code
  $(if $1,,$(error module name is empty (arg 1)))\
  $(if $2,,$(error module depends is empty (arg 2)))\
  $(if $3,,$(error module makefile-name is empty (arg 3)))\
@@ -269,19 +271,16 @@ define sm-build-depends-code
 	cd $$< && $(or $(strip $6),make) -f $(strip $3) clean
 
  $$(call sm-build-this)
-endef #sm-build-depends-code
+endef #sm-build-depends.code
 
 ## Build some dependencies by invoking a external Makefile
 ## usage: $(call sm-build-depends, name, depends, makefile-name, [extra-depends], [extra-targets], [make-name], [log-type])
 define sm-build-depends
-$(eval $(sm-build-depends-code))
+$(eval $(sm-build-depends.code))
 endef #sm-build-depends
 
 
-# DEPRECATED
-define sm-load-sub-modules
-$(error use sm-load-subdirs instead)
-endef
+sm-load-sub-modules = $(call sm-deprecated, sm-load-sub-modules, sm-load-subdirs)
 
 ## Load all smart.mk in sub directories.
 ## This will clear variables sm.this.dir and sm.this.dirs

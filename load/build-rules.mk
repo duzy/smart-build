@@ -443,26 +443,25 @@ clean-$(sm.this.name): \
   $(sm.this.clean-steps)
 	@echo "'$(@:clean-%=%)' is cleaned."
 
-define sm.code.make-clean-rules
-  sm.rules.phony.* += \
+define sm.code.clean-rules
+sm.rules.phony.* += \
     clean-$(sm.this.name) \
     clean-$(sm.this.name)-flags \
     clean-$(sm.this.name)-targets \
     clean-$(sm.this.name)-objects \
     clean-$(sm.this.name)-depends \
     $(sm.this.clean-steps)
-
-  clean-$(sm.this.name)-flags:
+clean-$(sm.this.name)-flags:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.prefix).targets))@)$$(call sm.tool.common.rm,$$($(sm.var.prefix).flag_files))
-  clean-$(sm.this.name)-targets:
+clean-$(sm.this.name)-targets:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.prefix).targets))@)$$(call sm.tool.common.rm,$$($(sm.var.prefix).targets))
-  clean-$(sm.this.name)-objects:
+clean-$(sm.this.name)-objects:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.prefix).objects))@)$$(call sm.tool.common.rm,$$($(sm.var.prefix).objects))
-  clean-$(sm.this.name)-depends:
+clean-$(sm.this.name)-depends:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.prefix).depends))@)$$(call sm.tool.common.rm,$$($(sm.var.prefix).depends))
-endef #sm.code.make-clean-rules
+endef #sm.code.clean-rules
 
-$(eval $(sm.code.make-clean-rules))
+$(eval $(sm.code.clean-rules))
 
 endif # sm.var.__module.objects_only
 ##################################################

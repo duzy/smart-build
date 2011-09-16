@@ -24,6 +24,8 @@ endif
 ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
   ifeq ($(strip $(sm.this.type)),depends)
     goal-$(sm.this.name) : $(sm.this.depends) $(sm.this.depends.copyfiles)
+    clean-$(sm.this.name):
+	$(call sm.tool.common.rm, $(sm.this.depends) $(sm.this.depends.copyfiles))
   else
     ifeq ($(strip $(sm.this.toolset)),)
       $(error smart: 'sm.this.toolset' is empty)
