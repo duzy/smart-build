@@ -293,12 +293,12 @@ define sm.fun.make-object-rule
       $(eval sm._var._temp._depend := $(sm._var._temp._object:%.o=%.d))\
       $(eval $(sm.var.prefix).depends += $(sm._var._temp._depend))\
       $(eval include $(sm._var._temp._depend))\
-      $(call sm.rule.dependency.$(strip $1),\
+      $(call sm-rule-dependency-$(strip $1),\
          $(sm._var._temp._depend),$(sm._var._temp._object),\
          $(call sm.fun.compute-source.$(strip $3),$2),\
          $(sm.var.prefix).compile.$(sm.var.__module.compile_id).flags.$(strip $1)))\
  $(call sm.fun.$(sm.this.name).compute-options-compile,$(strip $1))\
- $(call sm.rule.compile.$(strip $1),\
+ $(call sm-rule-compile-$(strip $1),\
     $(sm._var._temp._object),\
     $(call sm.fun.compute-source.$(strip $3),$2),\
     $(sm.var.prefix).compile.$(sm.var.__module.compile_id).flags.$(strip $1))
@@ -371,7 +371,7 @@ $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
 $(eval $(sm.var.prefix).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type))))
 $(call sm-check-defined,sm.var.action.for.$(sm.this.type))
 $(call sm-check-defined,$(sm.var.prefix).lang)
-$(call sm-check-defined,sm.rule.$(sm.var.action.for.$(sm.this.type)).$($(sm.var.prefix).lang))
+$(call sm-check-defined,sm-rule-$(sm.var.action.for.$(sm.this.type))-$($(sm.var.prefix).lang))
 $(call sm-check-defined,sm.fun.$(sm.this.name).compute-options-$(sm.var.action.for.$(sm.this.type)))
 $(call sm-check-defined,sm.fun.$(sm.this.name).compute-objects-$(sm.var.action.for.$(sm.this.type)))
 $(call sm-check-defined,sm.fun.$(sm.this.name).compute-libs-$(sm.var.action.for.$(sm.this.type)))
@@ -382,7 +382,7 @@ $(call sm-check-defined,$(sm.var.prefix).$(sm.var.action.for.$(sm.this.type)).fl
 $(call sm-check-defined,$(sm.var.prefix).$(sm.var.action.for.$(sm.this.type)).objects)
 $(call sm-check-defined,$(sm.var.prefix).$(sm.var.action.for.$(sm.this.type)).libs)
 $(call sm-check-not-empty,$(sm.var.prefix).lang)
-$(call sm.rule.$(sm.var.action.for.$(sm.this.type)).$($(sm.var.prefix).lang),\
+$(call sm-rule-$(sm.var.action.for.$(sm.this.type))-$($(sm.var.prefix).lang),\
    $$($(sm.var.prefix).targets),\
    $$($(sm.var.prefix).objects),\
    $(if $(call is-true,$(sm.this.$(sm.var.action.for.$(sm.this.type)).flags.infile)),\

@@ -50,18 +50,18 @@ define sm-register-sources_
    $(if $(sm.tool.$(strip $2)),$(info smart: '$(strip $2)' toolset included),\
       $(error toolset '$(strip $2)' not well defined in '$(sm._toolset.mk)'))\
    $(foreach sm._var._temp._lang,$(sm.tool.$(strip $2).langs),\
-        $(call sm-check-undefined,sm.rule.compile.$(strip $1),    smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
-        $(call sm-check-undefined,sm.rule.dependency.$(strip $1), smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
-        $(call sm-check-undefined,sm.rule.archive.$(strip $1),    smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
-        $(call sm-check-undefined,sm.rule.link.$(strip $1),       smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')))\
+        $(call sm-check-undefined,sm-rule-compile-$(strip $1),    smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
+        $(call sm-check-undefined,sm-rule-dependency-$(strip $1), smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
+        $(call sm-check-undefined,sm-rule-archive-$(strip $1),    smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')\
+        $(call sm-check-undefined,sm-rule-link-$(strip $1),       smart: '$(sm.toolset.for.$(sm._var._temp._lang))' has been registered for '$(strip $1)')))\
  $(if $(sm.tool.$(strip $2)),,$(error smart: Toolset '$(strip $2)' unimplemented))\
  $(call sm-check-in-list,$(strip $1),sm.tool.$(strip $2).langs,smart: toolset '$(strip $2)' donnot support '$(strip $1)')\
  $(call sm-check-origin,sm.tool.$(strip $2),file,smart: toolset '$(strip $2)' unimplemented)\
  $(foreach sm._var._temp._lang,$(sm.tool.$(strip $2).langs),\
-     $(eval sm.rule.compile.$(sm._var._temp._lang) = $$(call sm.rule.compile,$(sm._var._temp._lang),$$(strip $$1),$$(strip $$2),$$(strip $$3)))\
-     $(eval sm.rule.dependency.$(sm._var._temp._lang) = $$(call sm.rule.dependency,$(sm._var._temp._lang),$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4)))\
-     $(eval sm.rule.archive.$(sm._var._temp._lang) = $$(call sm.rule.archive,$(sm._var._temp._lang),$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4)))\
-     $(eval sm.rule.link.$(sm._var._temp._lang) = $$(call sm.rule.link,$(sm._var._temp._lang),$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4),$$(strip $$5))))\
+     $(eval sm-rule-compile-$(sm._var._temp._lang) = $$(call sm-rule-compile,$(sm._var._temp._lang),$$(strip $$1),$$(strip $$2),$$(strip $$3)))\
+     $(eval sm-rule-dependency-$(sm._var._temp._lang) = $$(call sm-rule-dependency,$(sm._var._temp._lang),$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4)))\
+     $(eval sm-rule-archive-$(sm._var._temp._lang) = $$(call sm-rule-archive,$(sm._var._temp._lang),$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4)))\
+     $(eval sm-rule-link-$(sm._var._temp._lang) = $$(call sm-rule-link,$(sm._var._temp._lang),$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4),$$(strip $$5))))\
  $(eval sm.tool.$(strip $2).$(strip $1).suffix += $(strip $3))\
  $(eval sm.toolset.for.$(strip $1) := $(strip $2))\
  $(foreach s,$3,$(eval sm.toolset.for.file$s := $(strip $2)))

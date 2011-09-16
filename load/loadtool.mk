@@ -13,10 +13,10 @@ include $(sm._toolset.mk)
 sm._toolset.mk :=
 
 define sm.code.init-toolset-lang
-  sm.rule.compile.$1 = $$(call sm.rule.compile,$1,$$(strip $$1),$$(strip $$2),$$(strip $$3))
-  sm.rule.dependency.$1 = $$(call sm.rule.dependency,$1,$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4))
-  sm.rule.archive.$1 = $$(call sm.rule.archive,$1,$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4))
-  sm.rule.link.$1 = $$(call sm.rule.link,$1,$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4),$$(strip $$5))
+  sm-rule-compile-$1 = $$(call sm-rule-compile,$1,$$(strip $$1),$$(strip $$2),$$(strip $$3))
+  sm-rule-dependency-$1 = $$(call sm-rule-dependency,$1,$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4))
+  sm-rule-archive-$1 = $$(call sm-rule-archive,$1,$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4))
+  sm-rule-link-$1 = $$(call sm-rule-link,$1,$$(strip $$1),$$(strip $$2),$$(strip $$3),$$(strip $$4),$$(strip $$5))
   sm.toolset.for.$1 := $(sm.this.toolset)
   $(foreach s,$(sm.tool.$(sm.this.toolset).$1.suffix),\
       $(eval sm.toolset.for.file$s := $(sm.this.toolset)))
