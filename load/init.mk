@@ -72,25 +72,7 @@ endif
 #   sm.toolset := gcc
 # endif
 
-ifneq ($(origin sm-register-sources),file)
-  $(error smart: 'sm-register-sources' unsafe: '$(sm-register-sources)')
-else
-  include $(sm.dir.buildsys)/tools/common.mk
-  ifeq (true,false) # these jobs have been done in build-rules.mk
-  $(call sm-register-sources, c++, gcc, .cpp .c++ .cc .CC .C)
-  $(call sm-register-sources, asm, gcc, .s .S)
-  $(call sm-register-sources, c,   gcc, .c)
-  $(call sm-check-equal,$(sm.tool.gcc),true, smart: gcc toolset not well)
-  $(call sm-check-value, sm.toolset.for.file.cpp, gcc, smart: gcc toolset ignores .cpp)
-  $(call sm-check-value, sm.toolset.for.file.c++, gcc, smart: gcc toolset ignores .c++)
-  $(call sm-check-value, sm.toolset.for.file.cc,  gcc, smart: gcc toolset ignores .cc)
-  $(call sm-check-value, sm.toolset.for.file.CC,  gcc, smart: gcc toolset ignores .CC)
-  $(call sm-check-value, sm.toolset.for.file.C,   gcc, smart: gcc toolset ignores .C)
-  $(call sm-check-value, sm.toolset.for.file.s,   gcc, smart: gcc toolset ignores .s)
-  $(call sm-check-value, sm.toolset.for.file.S,   gcc, smart: gcc toolset ignores .S)
-  $(call sm-check-value, sm.toolset.for.file.c,   gcc, smart: gcc toolset ignores .c)
-  endif
-endif
+include $(sm.dir.buildsys)/tools/common.mk
 
 sm.log.enabled :=
 sm.log.filename :=
