@@ -1,0 +1,6 @@
+
+* Special named variables
+  * sm.this.
+  * sm.args.*
+  * sm.var.*
+  * sm.code.*

@@ -99,6 +99,7 @@ $(if $(call equal,$(sm.this.type),depends),\
 endef
 
 ## Load the build script for the specified module.
+## NOTE: The build script should definitely defined a module using sm-new-module.
 define sm-load-module
 $(if $1,\
   $(if $(wildcard $1),,$(error module build script '$1' missed!))\
@@ -256,9 +257,11 @@ $(if $(wildcard $1),,$(shell [[ -d $1 ]] || mkdir -p $1))
 endef
 
 ## Convert path to relative path (to $(sm.top)).
-define sm-to-relative-path
+define sm-relative-path
 $(patsubst $(sm.top)/%,%,$(strip $1))
 endef
+
+sm-to-relative-path = $(error sm-to-relative-path is deprecated, use sm-relative-path)
 
 
 ################

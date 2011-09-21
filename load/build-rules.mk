@@ -6,20 +6,22 @@ $(call sm-check-not-empty,sm.this.name)
 $(call sm-check-not-empty,sm.this.type)
 $(call sm-check-not-empty,sm.this.toolset,smart: 'sm.this.toolset' for $(sm.this.name) unknown)
 
-ifeq ($(sm.tool.$(sm.this.toolset)),)
+sm.var.toolset := sm.tool.$(sm.this.toolset)
+
+ifeq ($($(sm.var.toolset)),)
   include $(sm.dir.buildsys)/loadtool.mk
 endif
 
-ifeq ($(sm.tool.$(sm.this.toolset)),)
-  $(error smart: sm.tool.$(sm.this.toolset) is not defined)
+ifeq ($($(sm.var.toolset)),)
+  $(error smart: $(sm.var.toolset) is not defined)
 endif
 
 ifeq ($(sm.this.suffix),)
-  $(call sm-check-defined,sm.tool.$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
-  sm.this.suffix := $(sm.tool.$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+  $(call sm-check-defined,$(sm.var.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+  sm.this.suffix := $($(sm.var.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
 endif
 
-$(call sm-check-value, sm.tool.$(sm.this.toolset), true, smart: toolset '$(sm.this.toolset)' is undefined)
+$(call sm-check-value, $(sm.var.toolset), true, smart: toolset '$(sm.this.toolset)' is undefined)
 
 ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects)),)
   $(error smart: no sources for module '$(sm.this.name)')
@@ -54,35 +56,39 @@ sm.var.action.for.static := archive
 sm.var.action.for.shared := link
 sm.var.action.for.exe := link
 sm.var.action.for.t := link
-
-sm.var.prefix := sm.var.$(sm.this.name)
+sm.var.action := $(sm.var.action.for.$(sm.this.type))
+sm.var.this := sm.var.$(sm.this.name)
+sm.fun.this := sm.fun.$(sm.this.name)
 
 ##########
 
 ## Clear compile options for all langs
-$(foreach sm.var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
-  $(eval $(sm.var.prefix).compile.$(sm.var.__module.compile_id).flags.$(sm.var._temp._lang) := )\
-  $(eval $(sm.var.prefix).compile.$(sm.var.__module.compile_id).flags.$(sm.var._temp._lang).assigned := ))
+$(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+  $(eval $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang) := )\
+  $(eval $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang).computed := ))
 
-$(sm.var.prefix).archive.flags :=
-$(sm.var.prefix).archive.flags.assigned :=
-$(sm.var.prefix).archive.objects =
-$(sm.var.prefix).archive.objects.assigned :=
-$(sm.var.prefix).archive.libs :=
-$(sm.var.prefix).archive.libs.assigned :=
-$(sm.var.prefix).link.flags :=
-$(sm.var.prefix).link.flags.assigned :=
-$(sm.var.prefix).link.objects =
-$(sm.var.prefix).link.objects.assigned :=
-$(sm.var.prefix).link.libs :=
-$(sm.var.prefix).link.libs.assigned :=
+## unset sm.var.temp._lang, the name may be used later
+sm.var.temp._lang :=
 
-$(sm.var.prefix).flag_files :=
+$(sm.var.this).archive.flags :=
+$(sm.var.this).archive.flags.computed :=
+$(sm.var.this).archive.objects =
+$(sm.var.this).archive.objects.computed :=
+$(sm.var.this).archive.libs :=
+$(sm.var.this).archive.libs.computed :=
+$(sm.var.this).link.flags :=
+$(sm.var.this).link.flags.computed :=
+$(sm.var.this).link.objects =
+$(sm.var.this).link.objects.computed :=
+$(sm.var.this).link.libs :=
+$(sm.var.this).link.libs.computed :=
+
+$(sm.var.this).flag_files :=
 
 ## eg. $(call sm.code.add-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
 define sm.code.add-items
- $(foreach sm.var._temp._item,$(strip $2),\
-     $(eval $(strip $1) += $(strip $3)$(sm.var._temp._item:$(strip $3)%$(strip $4)=%)$(strip $4)))
+ $(foreach sm.var.temp._item,$(strip $2),\
+     $(eval $(strip $1) += $(strip $3)$(sm.var.temp._item:$(strip $3)%$(strip $4)=%)$(strip $4)))
 endef #sm.code.add-items
 
 ## eg. $(call sm.code.shift-flags-to-file,compile,options.c++)
@@ -91,22 +97,22 @@ $(if $1,,$(error smart: 'sm.code.shift-flags-to-file' action type in arg 1 is em
 $(if $2,,$(error smart: 'sm.code.shift-flags-to-file' needs options type in arg 2))\
 $(if $(call is-true,$(sm.this.$1.flags.infile)),\
      $$(call sm-util-mkdir,$(sm.out.tmp)/$(sm.this.name))\
-     $$(eval $(sm.var.prefix).$1.$2 := $$(subst \",\\\",$$($(sm.var.prefix).$1.$2)))\
-     $$(shell echo $$($(sm.var.prefix).$1.$2) > $(sm.out.tmp)/$(sm.this.name)/$1.$2)\
-     $$(eval $(sm.var.prefix).$1.$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.$2))
+     $$(eval $(sm.var.this).$1.$2 := $$(subst \",\\\",$$($(sm.var.this).$1.$2)))\
+     $$(shell echo $$($(sm.var.this).$1.$2) > $(sm.out.tmp)/$(sm.this.name)/$1.$2)\
+     $$(eval $(sm.var.this).$1.$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.$2))
 endef #sm.code.shift-flags-to-file-instant
 
 
 define sm.code-shift-flags-to-file-r
-  $(sm.var.prefix).$1.$2.flat := $$(subst \",\\\",$$($(sm.var.prefix).$1.$2))
-  $(sm.var.prefix).$1.$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.$2
-  $(sm.var.prefix).flag_files += $(sm.out.tmp)/$(sm.this.name)/$1.$2
+  $(sm.var.this).$1.$2.flat := $$(subst \",\\\",$$($(sm.var.this).$1.$2))
+  $(sm.var.this).$1.$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.$2
+  $(sm.var.this).flag_files += $(sm.out.tmp)/$(sm.this.name)/$1.$2
   $(sm.out.tmp)/$(sm.this.name)/$1.$2: $(sm.this.makefile)
 	@$$(info flags: $$@)
 	@mkdir -p $(sm.out.tmp)/$(sm.this.name)
-	@echo $$($(sm.var.prefix).$1.$2.flat) > $$@
-#  $$(info $(sm.var.prefix).$1.$2 = $$($(sm.var.prefix).$1.$2))
-#  $$(info $(sm.var.prefix).$1.$2.flat = $$($(sm.var.prefix).$1.$2.flat))
+	@echo $$($(sm.var.this).$1.$2.flat) > $$@
+#  $$(info $(sm.var.this).$1.$2 = $$($(sm.var.this).$1.$2))
+#  $$(info $(sm.var.this).$1.$2.flat = $$($(sm.var.this).$1.$2.flat))
 endef
 ## eg. $(call sm.code.shift-flags-to-file,compile,options.c++)
 define sm.code.shift-flags-to-file
@@ -116,15 +122,15 @@ $(if $(call is-true,$(sm.this.$1.flags.infile)),\
    $$(eval $$(call sm.code-shift-flags-to-file-r,$(strip $1),$(strip $2))))
 endef #sm.code.shift-flags-to-file
 
-## eg. $(call sm.code.compute-options-compile,c++)
-define sm.code.compute-options-compile
- $(sm.var.prefix).compile.$(sm.var.__module.compile_id).flags.$1.assigned := true
- $(sm.var.prefix).compile.$(sm.var.__module.compile_id).flags.$1 :=\
+## eg. $(call sm.code.compute-flags-compile,c++)
+define sm.code.compute-flags-compile
+ $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1.computed := true
+ $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1 :=\
   $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
-  $(strip $(sm.tool.$(sm.this.toolset).defines))\
-  $(strip $(sm.tool.$(sm.this.toolset).defines.$1))\
-  $(strip $(sm.tool.$(sm.this.toolset).compile.flags))\
-  $(strip $(sm.tool.$(sm.this.toolset).compile.flags.$1))\
+  $(strip $($(sm.var.toolset).defines))\
+  $(strip $($(sm.var.toolset).defines.$1))\
+  $(strip $($(sm.var.toolset).compile.flags))\
+  $(strip $($(sm.var.toolset).compile.flags.$1))\
   $(strip $(sm.global.defines))\
   $(strip $(sm.global.defines.$1))\
   $(strip $(sm.global.compile.flags))\
@@ -133,111 +139,111 @@ define sm.code.compute-options-compile
   $(strip $(sm.this.defines.$1))\
   $(strip $(sm.this.compile.flags))\
   $(strip $(sm.this.compile.flags.$1))
- $$(call sm.code.add-items, $(sm.var.prefix).compile.$(sm.var.__module.compile_id).flags.$1,\
+ $$(call sm.code.add-items, $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1,\
      $(sm.global.includes) $(sm.this.includes), -I)
  $(call sm.code.shift-flags-to-file,compile,$(sm.var.__module.compile_id).flags.$1)
-endef #sm.code.compute-options-compile
+endef #sm.code.compute-flags-compile
 
 ##
-define sm.code.compute-options-link
- $(sm.var.prefix).link.flags.assigned := true
- $(sm.var.prefix).link.flags :=\
-  $(strip $(sm.tool.$(sm.this.toolset).link.flags))\
+define sm.code.compute-flags-link
+ $(sm.var.this).link.flags.computed := true
+ $(sm.var.this).link.flags :=\
+  $(strip $($(sm.var.toolset).link.flags))\
   $(strip $(sm.global.link.flags))\
   $(strip $(sm.this.link.flags))
  $(if $(call equal,$(sm.this.type),shared),\
-     $$(if $$(filter -shared,$$($(sm.var.prefix).link.flags)),,\
-        $$(eval $(sm.var.prefix).link.flags += -shared)))
+     $$(if $$(filter -shared,$$($(sm.var.this).link.flags)),,\
+        $$(eval $(sm.var.this).link.flags += -shared)))
  $(call sm.code.shift-flags-to-file,link,options)
-endef #sm.code.compute-options-link
+endef #sm.code.compute-flags-link
 
-define sm.code.compute-options-archive
- $(sm.var.prefix).archive.flags.assigned := true
- $(sm.var.prefix).archive.flags := \
+define sm.code.compute-flags-archive
+ $(sm.var.this).archive.flags.computed := true
+ $(sm.var.this).archive.flags := \
   $(strip $(sm.global.archive.flags)) \
   $(strip $(sm.this.archive.flags))
  $(call sm.code.shift-flags-to-file,archive,options)
-endef #sm.code.compute-options-archive
+endef #sm.code.compute-flags-archive
 
 define sm.code.compute-objects-link
- $(sm.var.prefix).link.objects.assigned := true
- $(sm.var.prefix).link.objects := $($(sm.var.prefix).objects)
+ $(sm.var.this).link.objects.computed := true
+ $(sm.var.this).link.objects := $($(sm.var.this).objects)
  $(call sm.code.shift-flags-to-file,link,objects)
 endef #sm.code.compute-objects-link
 
 define sm.code.compute-objects-archive
- $(sm.var.prefix).archive.objects.assigned := true
- $(sm.var.prefix).archive.objects := $($(sm.var.prefix).objects)
+ $(sm.var.this).archive.objects.computed := true
+ $(sm.var.this).archive.objects := $($(sm.var.this).objects)
  $(call sm.code.shift-flags-to-file,archive,objects)
 endef #sm.code.compute-objects-archive
 
 ##
 define sm.code.compute-libs-link
- $(sm.var.prefix).link.libs.assigned := true
- $(sm.var.prefix).link.libs :=
- $$(call sm.code.add-items, $(sm.var.prefix).link.libs,\
+ $(sm.var.this).link.libs.computed := true
+ $(sm.var.this).link.libs :=
+ $$(call sm.code.add-items, $(sm.var.this).link.libs,\
      $(sm.global.libdirs) $(sm.this.libdirs), -L)
- $$(call sm.code.add-items, $(sm.var.prefix).link.libs,\
+ $$(call sm.code.add-items, $(sm.var.this).link.libs,\
      $(sm.global.libs) $(sm.this.libs), -l)
  $(call sm.code.shift-flags-to-file,link,libs)
 endef #sm.code.compute-libs-link
 
-$(call sm-check-defined,sm.code.compute-options-compile, smart: 'sm.code.compute-options-compile' not defined)
-$(call sm-check-defined,sm.code.compute-options-archive, smart: 'sm.code.compute-options-archive' not defined)
-$(call sm-check-defined,sm.code.compute-options-link,	 smart: 'sm.code.compute-options-link' not defined)
+$(call sm-check-defined,sm.code.compute-flags-compile, smart: 'sm.code.compute-flags-compile' not defined)
+$(call sm-check-defined,sm.code.compute-flags-archive, smart: 'sm.code.compute-flags-archive' not defined)
+$(call sm-check-defined,sm.code.compute-flags-link,	 smart: 'sm.code.compute-flags-link' not defined)
 $(call sm-check-defined,sm.code.compute-libs-link,       smart: 'sm.code.compute-libs-link' not defined)
 
-define sm.fun.$(sm.this.name).compute-options-compile
-$(if $($(sm.var.prefix).compile.$(sm.var.__module.compile_id).flags.$1.assigned),,\
-   $(eval $(call sm.code.compute-options-compile,$1)))
-endef #sm.fun.$(sm.this.name).compute-options-compile
+define sm.fun.this.compute-flags-compile
+$(if $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1.computed),,\
+   $(eval $(call sm.code.compute-flags-compile,$1)))
+endef #sm.fun.this.compute-flags-compile
 
-define sm.fun.$(sm.this.name).compute-options-archive
- $(if $($(sm.var.prefix).archive.flags.assigned),,\
-   $(eval $(call sm.code.compute-options-archive)))
-endef #sm.fun.$(sm.this.name).compute-options-archive
+define sm.fun.this.compute-flags-archive
+ $(if $($(sm.var.this).archive.flags.computed),,\
+   $(eval $(call sm.code.compute-flags-archive)))
+endef #sm.fun.this.compute-flags-archive
 
-define sm.fun.$(sm.this.name).compute-options-link
- $(if $($(sm.var.prefix).link.flags.assigned),,\
-   $(eval $(call sm.code.compute-options-link)))
-endef #sm.fun.$(sm.this.name).compute-options-link
+define sm.fun.this.compute-flags-link
+ $(if $($(sm.var.this).link.flags.computed),,\
+   $(eval $(call sm.code.compute-flags-link)))
+endef #sm.fun.this.compute-flags-link
 
-define sm.fun.$(sm.this.name).compute-objects-archive
- $(if $($(sm.var.prefix).archive.objects.assigned),,\
+define sm.fun.this.compute-objects-archive
+ $(if $($(sm.var.this).archive.objects.computed),,\
    $(eval $(call sm.code.compute-objects-archive)))
-endef #sm.fun.$(sm.this.name).compute-objects-archive
+endef #sm.fun.this.compute-objects-archive
 
-define sm.fun.$(sm.this.name).compute-libs-archive
- $(eval $(sm.var.prefix).archive.libs.assigned := true)\
- $(eval $(sm.var.prefix).archive.libs :=)
-endef #sm.fun.$(sm.this.name).compute-libs-archive
+define sm.fun.this.compute-libs-archive
+ $(eval $(sm.var.this).archive.libs.computed := true)\
+ $(eval $(sm.var.this).archive.libs :=)
+endef #sm.fun.this.compute-libs-archive
 
-define sm.fun.$(sm.this.name).compute-objects-link
- $(if $($(sm.var.prefix).link.objects.assigned),,\
+define sm.fun.this.compute-objects-link
+ $(if $($(sm.var.this).link.objects.computed),,\
    $(eval $(call sm.code.compute-objects-link)))
-endef #sm.fun.$(sm.this.name).compute-objects-link
+endef #sm.fun.this.compute-objects-link
 
-define sm.fun.$(sm.this.name).compute-libs-link
- $(if $($(sm.var.prefix).link.libs.assigned),,\
+define sm.fun.this.compute-libs-link
+ $(if $($(sm.var.this).link.libs.computed),,\
    $(eval $(call sm.code.compute-libs-link)))
-endef #sm.fun.$(sm.this.name).compute-libs-link
+endef #sm.fun.this.compute-libs-link
 
 ##################################################
 
 ## The output object file prefix
-sm.var._temp._object_prefix := \
-  $(call sm-to-relative-path,$(sm.out.obj))$(sm.this.dir:$(sm.top)%=%)
+sm.var.temp._object_prefix := \
+  $(call sm-relative-path,$(sm.out.obj))$(sm.this.dir:$(sm.top)%=%)
 
-## Fixes the prefix for 'out/debug/obj.' like value
-sm.var._temp._object_prefix := $(sm.var._temp._object_prefix:%.=%)
+## Fixes the prefix for 'out/debug/obj.'
+sm.var.temp._object_prefix := $(sm.var.temp._object_prefix:%.=%)
 
 # BUG: wrong if more than one sm-build-this occurs in a smart.mk
-#$(warning $(sm.this.name): $(sm.var._temp._object_prefix))
+#$(warning $(sm.this.name): $(sm.var.temp._object_prefix))
 
 ##
 ##
 define sm.fun.compute-object.
-$(sm.var._temp._object_prefix)/$(basename $(subst ..,_,$(call sm-to-relative-path,$1))).o
+$(sm.var.temp._object_prefix)/$(basename $(subst ..,_,$(call sm-relative-path,$1))).o
 endef #sm.fun.compute-object.
 
 define sm.fun.compute-object.external
@@ -247,31 +253,31 @@ endef #sm.fun.compute-object.external
 ##
 ## source file of relative location
 define sm.fun.compute-source.
-$(call sm-to-relative-path,$(sm.this.dir)/$(strip $1))
+$(call sm-relative-path,$(sm.this.dir)/$(strip $1))
 endef #sm.fun.compute-source.
 
 ##
 ## source file of fixed location
 define sm.fun.compute-source.external
-$(call sm-to-relative-path,$(strip $1))
+$(call sm-relative-path,$(strip $1))
 endef #sm.fun.compute-source.external
 
 ##
 ## binary module to be built
 define sm.fun.compute-module-targets-exe
-$(call sm-to-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
+$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.compute-exe-module-targets
 
 define sm.fun.compute-module-targets-t
-$(call sm-to-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
+$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.compute-t-module-targets
 
 define sm.fun.compute-module-targets-shared
-$(call sm-to-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
+$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
 endef #sm.fun.compute-shared-module-targets
 
 define sm.fun.compute-module-targets-static
-$(call sm-to-relative-path,$(sm.out.lib))/lib$(sm.this.name:lib%=%)$(sm.this.suffix)
+$(call sm-relative-path,$(sm.out.lib))/lib$(sm.this.name:lib%=%)$(sm.this.suffix)
 endef #sm.fun.compute-static-module-targets
 
 ##################################################
@@ -285,37 +291,35 @@ define sm.fun.make-object-rule
  $(if $3,$(call sm-check-equal,$(strip $3),external,smart: arg \#3 must be 'external' if specified))\
  $(call sm-check-defined,sm.fun.compute-source.$(strip $3), smart: I know how to compute sources of lang '$(strip $1)$(if $3,($(strip $3)))')\
  $(call sm-check-defined,sm.fun.compute-object.$(strip $3), smart: I know how to compute objects of lang '$(strip $1)$(if $3,($(strip $3)))')\
- $(call sm-check-defined,sm.fun.$(sm.this.name).compute-options-compile, smart: no callback for getting compile options of lang '$(strip $1)')\
- $(eval sm.var._temp._object := $(call sm.fun.compute-object.$(strip $3),$2))\
- $(eval $(sm.var.prefix).objects += $(sm.var._temp._object))\
+ $(call sm-check-defined,sm.fun.this.compute-flags-compile, smart: no callback for getting compile options of lang '$(strip $1)')\
+ $(eval sm.var.temp._object := $(call sm.fun.compute-object.$(strip $3),$2))\
+ $(eval $(sm.var.this).objects += $(sm.var.temp._object))\
  $(if $(and $(call is-true,$(sm.this.gen_deps)),\
             $(call not-equal,$(MAKECMDGOALS),clean)),\
-      $(eval sm.var._temp._depend := $(sm.var._temp._object:%.o=%.d))\
-      $(eval $(sm.var.prefix).depends += $(sm.var._temp._depend))\
-      $(eval include $(sm.var._temp._depend))\
+      $(eval sm.var.temp._depend := $(sm.var.temp._object:%.o=%.d))\
+      $(eval $(sm.var.this).depends += $(sm.var.temp._depend))\
+      $(eval include $(sm.var.temp._depend))\
       $(eval \
-        sm.args.output := $(sm.var._temp._depend)
-        sm.args.target := $(sm.var._temp._object)
+        sm.args.output := $(sm.var.temp._depend)
+        sm.args.target := $(sm.var.temp._object)
         sm.args.sources := $(call sm.fun.compute-source.$(strip $3),$2)
-        sm.args.flags.0 := $$($(sm.var.prefix).compile.$(sm.var.__module.compile_id).flags.$(strip $1))
+        sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(strip $1))
       )$(sm-rule-dependency-$(strip $1)))\
- $(call sm.fun.$(sm.this.name).compute-options-compile,$(strip $1))\
+ $(call sm.fun.this.compute-flags-compile,$(strip $1))\
  $(eval \
-   sm.args.target := $(sm.var._temp._object)
+   sm.args.target := $(sm.var.temp._object)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $3),$2)
-   sm.args.flags.0 := $$($(sm.var.prefix).compile.$(sm.var.__module.compile_id).flags.$(strip $1))
+   sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(strip $1))
  )$(sm-rule-compile-$(strip $1))
 endef #sm.fun.make-object-rule
 
 ##
 ## Produce code for make object rules
 define sm.code.make-rules
-$(if $1,,$(error smart: arg \#1 must be lang-type))\
-$(if $(sm.tool.$(sm.this.toolset).$1.suffix),,$(error smart: no registered suffixes for $(sm.this.toolset)/$1))\
- sm.var._temp._suffix.$1 := $$(sm.tool.$(sm.this.toolset).$1.suffix:%=\%%)
- sm.this.sources.$1 := $$(filter $$(sm.var._temp._suffix.$1),$$(sm.this.sources))
- sm.this.sources.external.$1 := $$(filter $$(sm.var._temp._suffix.$1),$$(sm.this.sources.external))
- sm.this.sources.has.$1 := $$(if $$(sm.this.sources.$1)$$(sm.this.sources.external.$1),true,)
+ sm.var.temp._suffix.$1      := $$($(sm.var.toolset).$1.suffix:%=\%%)
+ sm.this.sources.$1          := $$(filter $$(sm.var.temp._suffix.$1),$$(sm.this.sources))
+ sm.this.sources.external.$1 := $$(filter $$(sm.var.temp._suffix.$1),$$(sm.this.sources.external))
+ sm.this.sources.has.$1      := $$(if $$(sm.this.sources.$1)$$(sm.this.sources.external.$1),true,)
  ifeq ($$(sm.this.sources.has.$1),true)
   $$(call sm-check-flavor, sm.fun.make-object-rule, recursive)
   $$(foreach _,$$(sm.this.sources.$1),$$(call sm.fun.make-object-rule,$1,$$_))
@@ -326,31 +330,32 @@ endef #sm.code.make-rules
 ##
 ## Make object rules, eg. $(call sm.fun.make-object-rules,c++)
 define sm.fun.make-object-rules
-$(eval $(sm.code.make-rules))
+$(if $(sm.var.temp._lang),,$(error smart: internal: sm.var.temp._lang is empty))\
+$(eval $(call sm.code.make-rules,$(sm.var.temp._lang)))
 endef #sm.fun.make-object-rules
 
 ##################################################
 
-$(sm.var.prefix).targets :=
+$(sm.var.this).targets :=
+
+ifeq ($(sm.var.__module.compile_count),)
+  ## in case that only sm-build-this (no sm-compile-sources) is called
+  sm.var.__module.compile_count := 1
+endif # $(sm.var.__module.compile_count) is empty
 
 ifeq ($(sm.var.__module.compile_count),1)
-## clear these vars only once (see sm-compile-sources)
-$(sm.var.prefix).objects := $(sm.this.objects)
-$(sm.var.prefix).depends :=
-else
-ifeq ($(sm.var.__module.compile_count),)
-## in case that only sm-build-this (no sm-compile-sources) is called
-$(sm.var.prefix).objects := $(sm.this.objects)
-$(sm.var.prefix).depends :=
-endif
+  ## clear these vars only once (see sm-compile-sources)
+  $(sm.var.this).objects := $(sm.this.objects)
+  $(sm.var.this).depends :=
 endif
 
 ## Make object rules for sources of different lang
-$(foreach sm.var._temp._lang,$(sm.tool.$(sm.this.toolset).langs),\
-  $(call sm.fun.make-object-rules,$(sm.var._temp._lang))\
-  $(if $($(sm.var.prefix).lang),,\
-    $(if $(sm.this.sources.has.$(sm.var._temp._lang)),\
-         $(eval $(sm.var.prefix).lang := $(sm.var._temp._lang)))))
+$(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+  $(if $($(sm.var.toolset).$(sm.var.temp._lang).suffix),,$(error smart: no toolset for $(sm.this.toolset)/$(sm.var.temp._lang)))\
+  $(sm.fun.make-object-rules)\
+  $(if $($(sm.var.this).lang),,\
+    $(if $(sm.this.sources.has.$(sm.var.temp._lang)),\
+         $(eval $(sm.var.this).lang := $(sm.var.temp._lang)))))
 
 ifeq ($(sm.this.type),t)
   sm.this.sources.$(sm.this.lang).t := $(filter %.t,$(sm.this.sources))
@@ -360,8 +365,8 @@ ifeq ($(sm.this.type),t)
     $(call sm-check-flavor, sm.fun.make-object-rule, recursive)
     $(foreach _,$(sm.this.sources.$(sm.this.lang).t),$(call sm.fun.make-object-rule,$(sm.this.lang),$_))
     $(foreach _,$(sm.this.sources.external.$(sm.this.lang).t),$(call sm.fun.make-object-rule,$(sm.this.lang),$_,external))
-    ifeq ($($(sm.var.prefix).lang),)
-      $(sm.var.prefix).lang := $(sm.this.lang)
+    ifeq ($($(sm.var.this).lang),)
+      $(sm.var.this).lang := $(sm.this.lang)
     endif
   endif
 endif
@@ -369,31 +374,34 @@ endif
 #-----------------------------------------------
 ## Make rule for targets of the module
 ifneq ($(sm.var.__module.objects_only),true)
-$(if $($(sm.var.prefix).objects),,$(error smart: No objects for building '$(sm.this.name)'))
+$(if $($(sm.var.this).objects),,$(error smart: No objects for building '$(sm.this.name)'))
 $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
-$(eval $(sm.var.prefix).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type))))
-$(call sm-check-defined,sm.var.action.for.$(sm.this.type))
-$(call sm-check-defined,$(sm.var.prefix).lang)
-$(call sm-check-defined,sm-rule-$(sm.var.action.for.$(sm.this.type))-$($(sm.var.prefix).lang))
-$(call sm-check-defined,sm.fun.$(sm.this.name).compute-options-$(sm.var.action.for.$(sm.this.type)))
-$(call sm-check-defined,sm.fun.$(sm.this.name).compute-objects-$(sm.var.action.for.$(sm.this.type)))
-$(call sm-check-defined,sm.fun.$(sm.this.name).compute-libs-$(sm.var.action.for.$(sm.this.type)))
-$(call sm.fun.$(sm.this.name).compute-options-$(sm.var.action.for.$(sm.this.type)))
-$(call sm.fun.$(sm.this.name).compute-objects-$(sm.var.action.for.$(sm.this.type)))
-$(call sm.fun.$(sm.this.name).compute-libs-$(sm.var.action.for.$(sm.this.type)))
-$(call sm-check-defined,$(sm.var.prefix).$(sm.var.action.for.$(sm.this.type)).flags)
-$(call sm-check-defined,$(sm.var.prefix).$(sm.var.action.for.$(sm.this.type)).objects)
-$(call sm-check-defined,$(sm.var.prefix).$(sm.var.action.for.$(sm.this.type)).libs)
-$(call sm-check-not-empty,$(sm.var.prefix).lang)
+$(eval $(sm.var.this).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type))))
 
-  sm.args.target := $($(sm.var.prefix).targets)
-  sm.args.sources := $($(sm.var.prefix).objects)
-  sm.args.flags.0 = $(if $(call is-true,$(sm.this.$(sm.var.action.for.$(sm.this.type)).flags.infile)),\
-     ,$$($(sm.var.prefix).$(sm.var.action.for.$(sm.this.type)).flags))
-  sm.args.flags.1 = $$($(sm.var.prefix).$(sm.var.action.for.$(sm.this.type)).libs)
-  $(sm-rule-$(sm.var.action.for.$(sm.this.type))-$($(sm.var.prefix).lang))
+$(call sm-check-defined,sm.var.action)
+$(call sm-check-defined,$(sm.var.this).lang)
+$(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
+$(call sm-check-defined,sm.fun.this.compute-flags-$(sm.var.action))
+$(call sm-check-defined,sm.fun.this.compute-objects-$(sm.var.action))
+$(call sm-check-defined,sm.fun.this.compute-libs-$(sm.var.action))
 
-  ifeq ($(strip $($(sm.var.prefix).targets)),)
+$(call sm.fun.this.compute-flags-$(sm.var.action))
+$(call sm.fun.this.compute-objects-$(sm.var.action))
+$(call sm.fun.this.compute-libs-$(sm.var.action))
+
+$(call sm-check-defined,$(sm.var.this).$(sm.var.action).flags)
+$(call sm-check-defined,$(sm.var.this).$(sm.var.action).objects)
+$(call sm-check-defined,$(sm.var.this).$(sm.var.action).libs)
+$(call sm-check-not-empty,$(sm.var.this).lang)
+
+  sm.args.target := $($(sm.var.this).targets)
+  sm.args.sources := $($(sm.var.this).objects)
+  sm.args.flags.0 = $(if $(call is-true,$(sm.this.$(sm.var.action).flags.infile)),\
+     ,$$($(sm.var.this).$(sm.var.action).flags))
+  sm.args.flags.1 = $$($(sm.var.this).$(sm.var.action).libs)
+  $(sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
+
+  ifeq ($(strip $($(sm.var.this).targets)),)
     $(error smart: internal error: targets mis-computed)
   endif
 endif #sm.var.__module.objects_only
@@ -403,15 +411,15 @@ endif #sm.var.__module.objects_only
 #   $(error smart: internal error: sources mis-computed)
 # endif
 
-ifeq ($(strip $($(sm.var.prefix).objects)),)
+ifeq ($(strip $($(sm.var.this).objects)),)
   $(error smart: internal error: objects mis-calculated)
 endif
 
-$(sm.var.prefix).user_defined_targets := $(strip $(sm.this.targets))
-$(sm.var.prefix).module_targets := $($(sm.var.prefix).targets)
-$(sm.var.prefix).targets += $($(sm.var.prefix).user_defined_targets)
-sm.this.targets = $($(sm.var.prefix).targets)
-sm.this.objects = $($(sm.var.prefix).objects)
+$(sm.var.this).user_defined_targets := $(strip $(sm.this.targets))
+$(sm.var.this).module_targets := $($(sm.var.this).targets)
+$(sm.var.this).targets += $($(sm.var.this).user_defined_targets)
+sm.this.targets = $($(sm.var.this).targets)
+sm.this.objects = $($(sm.var.this).objects)
 
 ##################################################
 ifneq ($(sm.var.__module.objects_only),true)
@@ -420,16 +428,16 @@ ifeq ($(MAKECMDGOALS),clean)
   goal-$(sm.this.name) : ; @true
 else
   goal-$(sm.this.name) : \
-    $($(sm.var.prefix).flag_files) \
+    $($(sm.var.this).flag_files) \
     $(sm.this.depends) \
     $(sm.this.depends.copyfiles) \
-    $($(sm.var.prefix).targets)
+    $($(sm.var.this).targets)
 endif
 
 ifeq ($(sm.this.type),t)
   define sm.code.make-test-rules
   sm.global.tests += test-$(sm.this.name)
-  test-$(sm.this.name): $($(sm.var.prefix).targets)
+  test-$(sm.this.name): $($(sm.var.this).targets)
 	@echo test: $(sm.this.name) - $$< && $$<
   endef #sm.code.make-test-rules
   $(eval $(sm.code.make-test-rules))
@@ -455,13 +463,13 @@ sm.rules.phony.* += \
     clean-$(sm.this.name)-depends \
     $(sm.this.clean-steps)
 clean-$(sm.this.name)-flags:
-	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.prefix).targets))@)$$(call sm.tool.common.rm,$$($(sm.var.prefix).flag_files))
+	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.this).targets))@)$$(call sm.tool.common.rm,$$($(sm.var.this).flag_files))
 clean-$(sm.this.name)-targets:
-	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.prefix).targets))@)$$(call sm.tool.common.rm,$$($(sm.var.prefix).targets))
+	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.this).targets))@)$$(call sm.tool.common.rm,$$($(sm.var.this).targets))
 clean-$(sm.this.name)-objects:
-	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.prefix).objects))@)$$(call sm.tool.common.rm,$$($(sm.var.prefix).objects))
+	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.this).objects))@)$$(call sm.tool.common.rm,$$($(sm.var.this).objects))
 clean-$(sm.this.name)-depends:
-	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.prefix).depends))@)$$(call sm.tool.common.rm,$$($(sm.var.prefix).depends))
+	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.this).depends))@)$$(call sm.tool.common.rm,$$($(sm.var.this).depends))
 endef #sm.code.clean-rules
 
 $(eval $(sm.code.clean-rules))
