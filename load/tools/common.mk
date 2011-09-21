@@ -1,5 +1,16 @@
 #
 
+sm.tool.common.langs := web cweb noweb
+sm.tool.common.web.suffix := .web
+sm.tool.common.cweb.suffix := .w
+sm.tool.common.noweb.suffix := .nw
+
+##################################################
+
+
+
+##################################################
+
 define sm.tool.common.rm
 $(if $1,rm -f $1)
 endef #sm.tool.common.rm
@@ -25,3 +36,4 @@ endef #sm.tool.common.mv
 define sm.tool.common.ln
 $(if $(and $1,$2),ln -sf $1 $2)
 endef #sm.tool.common.ln
+

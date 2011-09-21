@@ -382,14 +382,40 @@ endif
 #-----------------------------------------------
 #-----------------------------------------------
 
+## Returns true if $(sm.var.temp._source) is not supported by $(sm.this.toolset),
+## and set variable sm.var.common.lang.XXX, where is the source suffix.
+define sm.fun.is-strange-source
+$(strip $(eval \
+   sm.fun.is-strange-source.result :=
+   ifeq ($(call not-equal,$(strip $(sm.toolset.for.file$(suffix $(sm.var.temp._source)))),$(strip $(sm.this.toolset))),true)
+     sm.fun.is-strange-source.result := true
+     $$(foreach _,$(sm.tool.common.langs),\
+         $$(if $$(filter $(suffix $(sm.var.temp._source)),$$(sm.tool.common.$$_.suffix)),\
+               $$(eval sm.fun.is-strange-source.result :=)\
+               $$(eval sm.this.sources.common += $(sm.var.temp._source))\
+               $$(eval sm.this.sources.$$_ += $(sm.var.temp._source))\
+               $$(eval sm.var.common.langs += $$_)\
+               $$(eval sm.var.common.lang$(suffix $(sm.var.temp._source)) := $$_)\
+               $$(info smart: $$_: TODO: $(sm.var.temp._source))))
+   endif
+   $(null))$(sm.fun.is-strange-source.result))
+endef #sm.fun.is-strange-source
+
 ## Check sources
+sm.var.common.langs :=
+sm.this.sources.common :=
 sm.this.sources.unknown :=
 $(foreach sm.var.temp._source,$(sm.this.sources)$(sm.this.sources.external),\
- $(if $(call not-equal,$(strip $(sm.toolset.for.file$(suffix $(sm.var.temp._source)))),$(strip $(sm.this.toolset))),\
+ $(if $(sm.fun.is-strange-source),\
      $(info smart:0:warning: "$(sm.var.temp._source)" is unsupported by toolset "$(sm.this.toolset)")\
      $(eval sm.this.sources.unknown += $(sm.var.temp._source))))
 
-## Append unkown sources(TODO: this may be no sense!)
+sm.this.sources.common := $(strip $(sm.this.sources.common))
+$(sm.var.this).sources.common := $(sm.this.sources.common)
+$(foreach _,$(sm.var.common.langs),\
+  $(eval $(sm.var.this).sources.$_ := $(sm.this.sources.$_)))
+
+## Append unkown sources(FIXME: this may be no sense!)
 $(sm.var.this).sources.unknown += $(sm.this.sources.unknown)
 
 ## Make object rules for sources of different lang
