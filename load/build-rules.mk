@@ -57,15 +57,15 @@ sm.var.action.shared := link
 sm.var.action.exe := link
 sm.var.action.t := link
 sm.var.action := $(sm.var.action.$(sm.this.type))
-sm.var.depend.sufix.static := .d
-sm.var.depend.sufix.shared := .d
-sm.var.depend.sufix.exe := .d
-sm.var.depend.sufix.t := .t.d
-sm.var.depend.sufix := $(sm.var.depend.sufix.$(sm.this.type))
+sm.var.depend.suffixes.static := .d
+sm.var.depend.suffixes.shared := .d
+sm.var.depend.suffixes.exe := .d
+sm.var.depend.suffixes.t := .t.d
+sm.var.depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
 sm.var.this := sm.var.$(sm.this.name)
 sm.fun.this := sm.fun.$(sm.this.name)
 
-$(sm.var.this).depend.sufix := $(sm.var.depend.sufix)
+$(sm.var.this).depend.suffixes := $(sm.var.depend.suffixes)
 
 ##########
 
@@ -297,7 +297,7 @@ ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
 ##   eg. $(call sm.fun.make-depend-rule, external)
 ##   eg. $(call sm.fun.make-depend-rule, intermediate)
 define sm.fun.make-depend-rule
-  $(eval sm.var.temp._depend := $(sm.var.temp._object:%.o=%$(sm.var.depend.sufix)))\
+  $(eval sm.var.temp._depend := $(sm.var.temp._object:%.o=%$(sm.var.depend.suffixes)))\
   $(eval $(sm.var.this).depends += $(sm.var.temp._depend))\
   $(eval \
     include $(sm.var.temp._depend)
@@ -409,6 +409,9 @@ $(foreach sm.var.temp._source,$(sm.this.sources)$(sm.this.sources.external),\
  $(if $(sm.fun.is-strange-source),\
      $(info smart:0:warning: "$(sm.var.temp._source)" is unsupported by toolset "$(sm.this.toolset)")\
      $(eval sm.this.sources.unknown += $(sm.var.temp._source))))
+
+## filter out %.t files.
+sm.this.sources.unknown := $(filter-out %.t,$(sm.this.sources.unknown))
 
 sm.this.sources.common := $(strip $(sm.this.sources.common))
 $(sm.var.this).sources.common := $(sm.this.sources.common)
