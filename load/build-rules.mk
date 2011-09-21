@@ -291,6 +291,7 @@ endef #sm.fun.compute-module-targets-static
 
 ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
              $(call not-equal,$(MAKECMDGOALS),clean)),)
+## FIXME: $(sm.var.this).depends is always single!
 ## Make rule for source dependency
 ##   eg. $(call sm.fun.make-depend-rule)
 ##   eg. $(call sm.fun.make-depend-rule, external)
@@ -312,6 +313,7 @@ else
   sm.fun.make-depend-rule :=
 endif #if sm.this.gen_deps && MAKECMDGOALS != clean
 
+## FIXME: $(sm.var.this).objects is always single
 ## Make rule for building object
 ##   eg. $(call sm.fun.make-object-rule)
 ##   eg. $(call sm.fun.make-object-rule, external)
