@@ -197,8 +197,8 @@ endef #sm.code.compute-libs-link
 
 $(call sm-check-defined,sm.code.compute-flags-compile, smart: 'sm.code.compute-flags-compile' not defined)
 $(call sm-check-defined,sm.code.compute-flags-archive, smart: 'sm.code.compute-flags-archive' not defined)
-$(call sm-check-defined,sm.code.compute-flags-link,	 smart: 'sm.code.compute-flags-link' not defined)
-$(call sm-check-defined,sm.code.compute-libs-link,       smart: 'sm.code.compute-libs-link' not defined)
+$(call sm-check-defined,sm.code.compute-flags-link,    smart: 'sm.code.compute-flags-link' not defined)
+$(call sm-check-defined,sm.code.compute-libs-link,     smart: 'sm.code.compute-libs-link' not defined)
 
 define sm.fun.this.compute-flags-compile
 $(if $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1.computed),,\
@@ -305,6 +305,7 @@ define sm.fun.make-depend-rule
     sm.args.target := $(sm.var.temp._object)
     sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
     sm.args.flags.0 = $$$$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+    sm.args.flags.0 += $$(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
     sm.args.flags.1 :=
     sm.args.flags.2 :=
   )$(sm-rule-dependency-$(sm.var.temp._lang))
@@ -332,7 +333,8 @@ define sm.fun.make-object-rule
  $(eval \
    sm.args.target := $(sm.var.temp._object)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
-   sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+   sm.args.flags.0 := $$(strip $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang)))
+   sm.args.flags.0 += $$(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
    sm.args.flags.1 :=
    sm.args.flags.2 :=
  )$(sm-rule-compile-$(sm.var.temp._lang))
@@ -373,7 +375,7 @@ ifeq ($(sm.var.__module.compile_count),1)
   ## clear these vars only once (see sm-compile-sources)
   $(sm.var.this).sources := $(sm.this.sources)
   $(sm.var.this).objects := $(sm.this.objects)
-  #$(sm.var.this).depends :=
+  $(sm.var.this).depends :=
 endif
 
 #-----------------------------------------------
