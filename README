@@ -37,7 +37,9 @@ TODO: documentation for these:
       * sm.this.makefile
       * sm.this.gen_deps
       * sm.this.sources
+      * sm.this.sources.t
       * sm.this.sources.LANG
+      * sm.this.sources.LANG.t
       * sm.this.sources.external
       * sm.this.sources.external.LANG
       * sm.this.sources.external.LANG.t
