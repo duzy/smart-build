@@ -266,19 +266,19 @@ endef #sm.fun.compute-source.external
 ## binary module to be built
 define sm.fun.compute-module-targets-exe
 $(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
-endef #sm.fun.compute-exe-module-targets
+endef #sm.fun.compute-module-targets-exe
 
 define sm.fun.compute-module-targets-t
 $(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
-endef #sm.fun.compute-t-module-targets
+endef #sm.fun.compute-module-targets-t
 
 define sm.fun.compute-module-targets-shared
 $(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
-endef #sm.fun.compute-shared-module-targets
+endef #sm.fun.compute-module-targets-shared
 
 define sm.fun.compute-module-targets-static
 $(call sm-relative-path,$(sm.out.lib))/lib$(sm.this.name:lib%=%)$(sm.this.suffix)
-endef #sm.fun.compute-static-module-targets
+endef #sm.fun.compute-module-targets-static
 
 ##################################################
 
@@ -286,13 +286,13 @@ endef #sm.fun.compute-static-module-targets
 ##   eg. $(call sm.fun.make-object-rule, c++, foobar.cpp)
 ##   eg. $(call sm.fun.make-object-rule, c++, ~/sources/foobar.cpp, external)
 define sm.fun.make-object-rule
- $(if $1,,$(error smart: arg \#1 must be the lang type))\
- $(if $2,,$(error smart: arg \#2 must be the source file))\
- $(if $3,$(call sm-check-equal,$(strip $3),external,smart: arg \#3 must be 'external' if specified))\
- $(call sm-check-defined,sm.fun.compute-source.$(strip $3), smart: I know how to compute sources of lang '$(strip $1)$(if $3,($(strip $3)))')\
- $(call sm-check-defined,sm.fun.compute-object.$(strip $3), smart: I know how to compute objects of lang '$(strip $1)$(if $3,($(strip $3)))')\
- $(call sm-check-defined,sm.fun.this.compute-flags-compile, smart: no callback for getting compile options of lang '$(strip $1)')\
- $(eval sm.var.temp._object := $(call sm.fun.compute-object.$(strip $3),$2))\
+ $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
+ $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
+ $(if $1,$(call sm-check-equal,$(strip $1),external,smart: arg \#3 must be 'external' if specified))\
+ $(call sm-check-defined,sm.fun.compute-source.$(strip $1), smart: I know how to compute sources of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
+ $(call sm-check-defined,sm.fun.compute-object.$(strip $1), smart: I know how to compute objects of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
+ $(call sm-check-defined,sm.fun.this.compute-flags-compile, smart: no callback for getting compile options of lang '$(sm.var.temp._lang)')\
+ $(eval sm.var.temp._object := $(call sm.fun.compute-object.$(strip $1),$(sm.var.temp._source)))\
  $(eval $(sm.var.this).objects += $(sm.var.temp._object))\
  $(if $(and $(call is-true,$(sm.this.gen_deps)),\
             $(call not-equal,$(MAKECMDGOALS),clean)),\
@@ -302,36 +302,36 @@ define sm.fun.make-object-rule
       $(eval \
         sm.args.output := $(sm.var.temp._depend)
         sm.args.target := $(sm.var.temp._object)
-        sm.args.sources := $(call sm.fun.compute-source.$(strip $3),$2)
-        sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(strip $1))
-      )$(sm-rule-dependency-$(strip $1)))\
- $(call sm.fun.this.compute-flags-compile,$(strip $1))\
+        sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
+        sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+      )$(sm-rule-dependency-$(sm.var.temp._lang)))\
+ $(call sm.fun.this.compute-flags-compile,$(sm.var.temp._lang))\
  $(eval \
    sm.args.target := $(sm.var.temp._object)
-   sm.args.sources := $(call sm.fun.compute-source.$(strip $3),$2)
-   sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(strip $1))
- )$(sm-rule-compile-$(strip $1))
+   sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
+   sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+ )$(sm-rule-compile-$(sm.var.temp._lang))
 endef #sm.fun.make-object-rule
 
 ##
 ## Produce code for make object rules
-define sm.code.make-rules
- sm.var.temp._suffix.$1      := $$($(sm.var.toolset).$1.suffix:%=\%%)
- sm.this.sources.$1          := $$(filter $$(sm.var.temp._suffix.$1),$$(sm.this.sources))
- sm.this.sources.external.$1 := $$(filter $$(sm.var.temp._suffix.$1),$$(sm.this.sources.external))
- sm.this.sources.has.$1      := $$(if $$(sm.this.sources.$1)$$(sm.this.sources.external.$1),true,)
- ifeq ($$(sm.this.sources.has.$1),true)
+define sm.code.make-object-rules
+ sm.var.temp._suffix.$(sm.var.temp._lang)      := $$($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
+ sm.this.sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix.$(sm.var.temp._lang)),$$(sm.this.sources))
+ sm.this.sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix.$(sm.var.temp._lang)),$$(sm.this.sources.external))
+ sm.this.sources.has.$(sm.var.temp._lang)      := $$(if $$(sm.this.sources.$(sm.var.temp._lang))$$(sm.this.sources.external.$(sm.var.temp._lang)),true,)
+ ifeq ($$(sm.this.sources.has.$(sm.var.temp._lang)),true)
   $$(call sm-check-flavor, sm.fun.make-object-rule, recursive)
-  $$(foreach _,$$(sm.this.sources.$1),$$(call sm.fun.make-object-rule,$1,$$_))
-  $$(foreach _,$$(sm.this.sources.external.$1),$$(call sm.fun.make-object-rule,$1,$$_,external))
+  $$(foreach sm.var.temp._source,$$(sm.this.sources.$(sm.var.temp._lang)),$$(call sm.fun.make-object-rule,))
+  $$(foreach sm.var.temp._source,$$(sm.this.sources.external.$(sm.var.temp._lang)),$$(call sm.fun.make-object-rule,external))
  endif
-endef #sm.code.make-rules
+endef #sm.code.make-object-rules
 
 ##
 ## Make object rules, eg. $(call sm.fun.make-object-rules,c++)
 define sm.fun.make-object-rules
 $(if $(sm.var.temp._lang),,$(error smart: internal: sm.var.temp._lang is empty))\
-$(eval $(call sm.code.make-rules,$(sm.var.temp._lang)))
+$(eval $(call sm.code.make-object-rules,$(sm.var.temp._lang)))
 endef #sm.fun.make-object-rules
 
 ##################################################
@@ -363,8 +363,10 @@ ifeq ($(sm.this.type),t)
   sm.this.sources.has.$(sm.this.lang).t := $(if $(sm.this.sources.$(sm.this.lang).t)$(sm.this.sources.external.$(sm.this.lang).t),true)
   ifeq ($(or $(sm.this.sources.has.$(sm.this.lang)),$(sm.this.sources.has.$(sm.this.lang).t)),true)
     $(call sm-check-flavor, sm.fun.make-object-rule, recursive)
-    $(foreach _,$(sm.this.sources.$(sm.this.lang).t),$(call sm.fun.make-object-rule,$(sm.this.lang),$_))
-    $(foreach _,$(sm.this.sources.external.$(sm.this.lang).t),$(call sm.fun.make-object-rule,$(sm.this.lang),$_,external))
+    # set sm.var.temp._lang, used by sm.fun.make-object-rule
+    sm.var.temp._lang := $(sm.this.lang)
+    $(foreach sm.var.temp._source,$(sm.this.sources.$(sm.this.lang).t),$(call sm.fun.make-object-rule))
+    $(foreach sm.var.temp._source,$(sm.this.sources.external.$(sm.this.lang).t),$(call sm.fun.make-object-rule,external))
     ifeq ($($(sm.var.this).lang),)
       $(sm.var.this).lang := $(sm.this.lang)
     endif
