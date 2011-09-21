@@ -340,16 +340,22 @@ define sm.fun.make-object-rule
  )$(if $(sm.this.sources.unknown),,$(sm-rule-compile-$(sm.var.temp._lang)))
 endef #sm.fun.make-object-rule
 
+# TODO: smart conditional
+# $(cond
+#   (foo $(var-1))
+#   (bar $(var-2))
+#   (car $(var-3)))
+
 ##
 ## Produce code for make object rules
 define sm.code.make-object-rules
  sm.var.temp._suffix.$(sm.var.temp._lang)      := $$($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
  sm.this.sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix.$(sm.var.temp._lang)),$$(sm.this.sources))
  sm.this.sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix.$(sm.var.temp._lang)),$$(sm.this.sources.external))
- sm.this.sources.has.$(sm.var.temp._lang)      := $$(if $$(sm.this.sources.$(sm.var.temp._lang))$$(sm.this.sources.external.$(sm.var.temp._lang)),true,)
+ sm.this.sources.has.$(sm.var.temp._lang)      := $$(if $$(sm.this.sources.$(sm.var.temp._lang))$$(sm.this.sources.external.$(sm.var.temp._lang)),true)
  ifeq ($$(sm.this.sources.has.$(sm.var.temp._lang)),true)
   $$(call sm-check-flavor, sm.fun.make-object-rule, recursive)
-  $$(foreach sm.var.temp._source,$$(sm.this.sources.$(sm.var.temp._lang)),$$(call sm.fun.make-object-rule,))
+  $$(foreach sm.var.temp._source,$$(sm.this.sources.$(sm.var.temp._lang)),$$(call sm.fun.make-object-rule))
   $$(foreach sm.var.temp._source,$$(sm.this.sources.external.$(sm.var.temp._lang)),$$(call sm.fun.make-object-rule,external))
  endif
 endef #sm.code.make-object-rules
