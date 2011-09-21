@@ -396,7 +396,7 @@ $(strip $(eval \
                $$(eval sm.this.sources.$$_ += $(sm.var.temp._source))\
                $$(eval sm.var.common.langs += $$_)\
                $$(eval sm.var.common.lang$(suffix $(sm.var.temp._source)) := $$_)\
-               $$(info smart: $$_: TODO: $(sm.var.temp._source))))
+               $$(info smart: $$_: $(sm.var.temp._source))))
    endif
    $(null))$(sm.fun.is-strange-source.result))
 endef #sm.fun.is-strange-source
@@ -420,11 +420,16 @@ $(sm.var.this).sources.unknown += $(sm.this.sources.unknown)
 
 ## Make object rules for sources of different lang
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
-  $(if $($(sm.var.toolset).$(sm.var.temp._lang).suffix),,$(error smart: no toolset for $(sm.this.toolset)/$(sm.var.temp._lang)))\
+  $(if $($(sm.var.toolset).$(sm.var.temp._lang).suffix),\
+      ,$(error smart: no toolset for $(sm.this.toolset)/$(sm.var.temp._lang)))\
   $(sm.fun.make-object-rules)\
   $(if $($(sm.var.this).lang),,\
     $(if $(sm.this.sources.has.$(sm.var.temp._lang)),\
          $(eval $(sm.var.this).lang := $(sm.var.temp._lang)))))
+
+## Make object rules for common sources(e.g. .w, .nw, etc)
+$(foreach sm.var.temp._lang,$(sm.var.common.langs),\
+   $(info smart:0:TODO: object rules for $(sm.this.sources.$(sm.var.temp._lang))))
 
 ## Make object rules for .t sources file
 ifeq ($(sm.this.type),t)
@@ -443,14 +448,14 @@ ifeq ($(sm.this.type),t)
   endif
 endif
 
-sm.var.temp._make_targets := \
+sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $(sm.this.sources.unknown)),),\
             $(call equal,$(strip $($(sm.var.this).objects)),),\
             $(call is-true,$(sm.var.__module.objects_only))\
         ),,true)
 
 ## Make rule for targets of the module
-ifeq ($(sm.var.temp._make_targets),true)
+ifeq ($(sm.var.temp._should_make_targets),true)
 $(if $($(sm.var.this).objects),,$(error smart: no objects for building '$(sm.this.name)'))
 $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
 $(eval $(sm.var.this).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type))))
@@ -498,7 +503,7 @@ sm.this.depends = $($(sm.var.this).depends)
 
 ##################################################
 #ifneq ($(sm.var.__module.objects_only),true)
-ifeq ($(sm.var.temp._make_targets),true)
+ifeq ($(sm.var.temp._should_make_targets),true)
 
 ifeq ($(strip $($(sm.var.this).objects)),)
   $(warning smart: no objects)
@@ -554,6 +559,6 @@ endef #sm.code.clean-rules
 
 $(eval $(sm.code.clean-rules))
 
-endif # sm.var.temp._make_targets == true
+endif # sm.var.temp._should_make_targets == true
 #endif # sm.var.__module.objects_only
 ##################################################
