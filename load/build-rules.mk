@@ -373,7 +373,7 @@ ifeq ($(sm.var.__module.compile_count),1)
   ## clear these vars only once (see sm-compile-sources)
   $(sm.var.this).sources := $(sm.this.sources)
   $(sm.var.this).objects := $(sm.this.objects)
-  $(sm.var.this).depends :=
+  #$(sm.var.this).depends :=
 endif
 
 #-----------------------------------------------
@@ -454,6 +454,10 @@ $(sm.var.this).module_targets := $($(sm.var.this).targets)
 $(sm.var.this).targets += $($(sm.var.this).user_defined_targets)
 sm.this.targets = $($(sm.var.this).targets)
 sm.this.objects = $($(sm.var.this).objects)
+sm.this.depends = $($(sm.var.this).depends)
+
+#$(info $(sm.var.this).objects: $($(sm.var.this).objects))
+#$(info $(sm.var.this).depends: $($(sm.var.this).depends))
 
 ##################################################
 ifneq ($(sm.var.__module.objects_only),true)

@@ -11,7 +11,7 @@ $(call sm-check-equal,$(sm.this.name),foo)
 $(call sm-check-equal,$(sm.this.type),exe)
 #$(call sm-check-equal,$(sm.this.suffix),$(if $(sm.os.name.win32),.exe))
 #$(info $(sm.os.name.win32))
-sm.this.verbose := false
+sm.this.verbose := true
 
 sm.this.defines := 
 sm.this.compile.flags :=
