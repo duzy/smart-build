@@ -289,25 +289,28 @@ endef #sm.fun.compute-module-targets-static
 
 ##################################################
 
+ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
+             $(call not-equal,$(MAKECMDGOALS),clean)),)
 ## Make rule for source dependency
 ##   eg. $(call sm.fun.make-depend-rule)
 ##   eg. $(call sm.fun.make-depend-rule, external)
 ##   eg. $(call sm.fun.make-depend-rule, intermediate)
 define sm.fun.make-depend-rule
- $(if $(and $(call is-true,$(sm.this.gen_deps)),\
-            $(call not-equal,$(MAKECMDGOALS),clean)),\
-      $(eval sm.var.temp._depend := $(sm.var.temp._object:%.o=%$(sm.var.depend.sufix)))\
-      $(eval $(sm.var.this).depends += $(sm.var.temp._depend))\
-      $(eval \
-        include $(sm.var.temp._depend)
-        sm.args.output := $(sm.var.temp._depend)
-        sm.args.target := $(sm.var.temp._object)
-        sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
-        sm.args.flags.0 = $$$$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
-        sm.args.flags.1 :=
-        sm.args.flags.2 :=
-      )$(sm-rule-dependency-$(sm.var.temp._lang)))
+  $(eval sm.var.temp._depend := $(sm.var.temp._object:%.o=%$(sm.var.depend.sufix)))\
+  $(eval $(sm.var.this).depends += $(sm.var.temp._depend))\
+  $(eval \
+    include $(sm.var.temp._depend)
+    sm.args.output := $(sm.var.temp._depend)
+    sm.args.target := $(sm.var.temp._object)
+    sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
+    sm.args.flags.0 = $$$$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+    sm.args.flags.1 :=
+    sm.args.flags.2 :=
+  )$(sm-rule-dependency-$(sm.var.temp._lang))
 endef #sm.fun.make-depend-rule
+else
+  sm.fun.make-depend-rule :=
+endif #if sm.this.gen_deps && MAKECMDGOALS != clean
 
 ## Make rule for building object
 ##   eg. $(call sm.fun.make-object-rule)
