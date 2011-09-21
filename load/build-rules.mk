@@ -24,7 +24,7 @@ endif
 $(call sm-check-value, $(sm.var.toolset), true, smart: toolset '$(sm.this.toolset)' is undefined)
 
 ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects)),)
-  $(error smart: no sources for module '$(sm.this.name)')
+  $(error smart: no sources or objects for module '$(sm.this.name)')
 endif
 
 ##################################################
@@ -52,13 +52,20 @@ $(foreach _,compile archive link,$(eval $(call sm.code.check-variables,$_)))
 
 ##################################################
 
-sm.var.action.for.static := archive
-sm.var.action.for.shared := link
-sm.var.action.for.exe := link
-sm.var.action.for.t := link
-sm.var.action := $(sm.var.action.for.$(sm.this.type))
+sm.var.action.static := archive
+sm.var.action.shared := link
+sm.var.action.exe := link
+sm.var.action.t := link
+sm.var.action := $(sm.var.action.$(sm.this.type))
+sm.var.depend.sufix.static := .d
+sm.var.depend.sufix.shared := .d
+sm.var.depend.sufix.exe := .d
+sm.var.depend.sufix.t := .t.d
+sm.var.depend.sufix := $(sm.var.depend.sufix.$(sm.this.type))
 sm.var.this := sm.var.$(sm.this.name)
 sm.fun.this := sm.fun.$(sm.this.name)
+
+$(sm.var.this).depend.sufix := $(sm.var.depend.sufix)
 
 ##########
 
@@ -282,9 +289,30 @@ endef #sm.fun.compute-module-targets-static
 
 ##################################################
 
+## Make rule for source dependency
+##   eg. $(call sm.fun.make-depend-rule)
+##   eg. $(call sm.fun.make-depend-rule, external)
+##   eg. $(call sm.fun.make-depend-rule, intermediate)
+define sm.fun.make-depend-rule
+ $(if $(and $(call is-true,$(sm.this.gen_deps)),\
+            $(call not-equal,$(MAKECMDGOALS),clean)),\
+      $(eval sm.var.temp._depend := $(sm.var.temp._object:%.o=%$(sm.var.depend.sufix)))\
+      $(eval $(sm.var.this).depends += $(sm.var.temp._depend))\
+      $(eval \
+        include $(sm.var.temp._depend)
+        sm.args.output := $(sm.var.temp._depend)
+        sm.args.target := $(sm.var.temp._object)
+        sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
+        sm.args.flags.0 = $$$$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+        sm.args.flags.1 :=
+        sm.args.flags.2 :=
+      )$(sm-rule-dependency-$(sm.var.temp._lang)))
+endef #sm.fun.make-depend-rule
+
 ## Make rule for building object
-##   eg. $(call sm.fun.make-object-rule, c++, foobar.cpp)
-##   eg. $(call sm.fun.make-object-rule, c++, ~/sources/foobar.cpp, external)
+##   eg. $(call sm.fun.make-object-rule)
+##   eg. $(call sm.fun.make-object-rule, external)
+##   eg. $(call sm.fun.make-object-rule, intermediate)
 define sm.fun.make-object-rule
  $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
@@ -294,22 +322,14 @@ define sm.fun.make-object-rule
  $(call sm-check-defined,sm.fun.this.compute-flags-compile, smart: no callback for getting compile options of lang '$(sm.var.temp._lang)')\
  $(eval sm.var.temp._object := $(call sm.fun.compute-object.$(strip $1),$(sm.var.temp._source)))\
  $(eval $(sm.var.this).objects += $(sm.var.temp._object))\
- $(if $(and $(call is-true,$(sm.this.gen_deps)),\
-            $(call not-equal,$(MAKECMDGOALS),clean)),\
-      $(eval sm.var.temp._depend := $(sm.var.temp._object:%.o=%.d))\
-      $(eval $(sm.var.this).depends += $(sm.var.temp._depend))\
-      $(eval include $(sm.var.temp._depend))\
-      $(eval \
-        sm.args.output := $(sm.var.temp._depend)
-        sm.args.target := $(sm.var.temp._object)
-        sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
-        sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
-      )$(sm-rule-dependency-$(sm.var.temp._lang)))\
+ $(call sm.fun.make-depend-rule,$1)\
  $(call sm.fun.this.compute-flags-compile,$(sm.var.temp._lang))\
  $(eval \
    sm.args.target := $(sm.var.temp._object)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
    sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+   sm.args.flags.1 :=
+   sm.args.flags.2 :=
  )$(sm-rule-compile-$(sm.var.temp._lang))
 endef #sm.fun.make-object-rule
 
@@ -343,11 +363,16 @@ ifeq ($(sm.var.__module.compile_count),)
   sm.var.__module.compile_count := 1
 endif # $(sm.var.__module.compile_count) is empty
 
+## If first time building this...
 ifeq ($(sm.var.__module.compile_count),1)
   ## clear these vars only once (see sm-compile-sources)
+  $(sm.var.this).sources := $(sm.this.sources)
   $(sm.var.this).objects := $(sm.this.objects)
   $(sm.var.this).depends :=
 endif
+
+#-----------------------------------------------
+#-----------------------------------------------
 
 ## Make object rules for sources of different lang
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
@@ -357,23 +382,23 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
     $(if $(sm.this.sources.has.$(sm.var.temp._lang)),\
          $(eval $(sm.var.this).lang := $(sm.var.temp._lang)))))
 
+## Make object rules for .t sources file
 ifeq ($(sm.this.type),t)
-  sm.this.sources.$(sm.this.lang).t := $(filter %.t,$(sm.this.sources))
-  sm.this.sources.external.$(sm.this.lang).t := $(filter %.t,$(sm.this.sources.external))
-  sm.this.sources.has.$(sm.this.lang).t := $(if $(sm.this.sources.$(sm.this.lang).t)$(sm.this.sources.external.$(sm.this.lang).t),true)
-  ifeq ($(or $(sm.this.sources.has.$(sm.this.lang)),$(sm.this.sources.has.$(sm.this.lang).t)),true)
+  # set sm.var.temp._lang, used by sm.fun.make-object-rule
+  sm.var.temp._lang := $(sm.this.lang)
+  sm.this.sources.$(sm.var.temp._lang).t := $(filter %.t,$(sm.this.sources))
+  sm.this.sources.external.$(sm.var.temp._lang).t := $(filter %.t,$(sm.this.sources.external))
+  sm.this.sources.has.$(sm.var.temp._lang).t := $(if $(sm.this.sources.$(sm.var.temp._lang).t)$(sm.this.sources.external.$(sm.var.temp._lang).t),true)
+  ifeq ($(or $(sm.this.sources.has.$(sm.var.temp._lang)),$(sm.this.sources.has.$(sm.var.temp._lang).t)),true)
     $(call sm-check-flavor, sm.fun.make-object-rule, recursive)
-    # set sm.var.temp._lang, used by sm.fun.make-object-rule
-    sm.var.temp._lang := $(sm.this.lang)
-    $(foreach sm.var.temp._source,$(sm.this.sources.$(sm.this.lang).t),$(call sm.fun.make-object-rule))
-    $(foreach sm.var.temp._source,$(sm.this.sources.external.$(sm.this.lang).t),$(call sm.fun.make-object-rule,external))
+    $(foreach sm.var.temp._source,$(sm.this.sources.$(sm.var.temp._lang).t),$(call sm.fun.make-object-rule))
+    $(foreach sm.var.temp._source,$(sm.this.sources.external.$(sm.var.temp._lang).t),$(call sm.fun.make-object-rule,external))
     ifeq ($($(sm.var.this).lang),)
       $(sm.var.this).lang := $(sm.this.lang)
     endif
   endif
 endif
 
-#-----------------------------------------------
 ## Make rule for targets of the module
 ifneq ($(sm.var.__module.objects_only),true)
 $(if $($(sm.var.this).objects),,$(error smart: No objects for building '$(sm.this.name)'))
@@ -407,6 +432,8 @@ $(call sm-check-not-empty,$(sm.var.this).lang)
     $(error smart: internal error: targets mis-computed)
   endif
 endif #sm.var.__module.objects_only
+
+#-----------------------------------------------
 #-----------------------------------------------
 
 # ifeq ($(strip $(sm.this.sources.c)$(sm.this.sources.c++)$(sm.this.sources.asm)),)
