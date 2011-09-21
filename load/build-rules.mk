@@ -304,7 +304,7 @@ define sm.fun.make-depend-rule
     sm.args.output := $(sm.var.temp._depend)
     sm.args.target := $(sm.var.temp._object)
     sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
-    sm.args.flags.0 = $$$$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+    sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
     sm.args.flags.0 += $$(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
     sm.args.flags.1 :=
     sm.args.flags.2 :=

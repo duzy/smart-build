@@ -19,7 +19,7 @@ sm.this.lang := c
 
 sm.this.sources := foobar.t
 
-sm.this.compile.flags := -DTEST=\"$(sm.this.name)\"
+sm.this.compile.flags-foobar.t := -DTEST=\"$(sm.this.name)\"
 
 sm.this.includes := $(sm.this.dir)/../include
 
