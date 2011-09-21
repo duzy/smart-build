@@ -337,7 +337,7 @@ define sm.fun.make-object-rule
    sm.args.flags.0 += $$(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
    sm.args.flags.1 :=
    sm.args.flags.2 :=
- )$(sm-rule-compile-$(sm.var.temp._lang))
+ )$(if $(sm.this.sources.unknown),,$(sm-rule-compile-$(sm.var.temp._lang)))
 endef #sm.fun.make-object-rule
 
 ##
@@ -358,7 +358,7 @@ endef #sm.code.make-object-rules
 ## Make object rules, eg. $(call sm.fun.make-object-rules,c++)
 define sm.fun.make-object-rules
 $(if $(sm.var.temp._lang),,$(error smart: internal: sm.var.temp._lang is empty))\
-$(eval $(call sm.code.make-object-rules,$(sm.var.temp._lang)))
+$(eval $(sm.code.make-object-rules))
 endef #sm.fun.make-object-rules
 
 ##################################################
@@ -373,13 +373,24 @@ endif # $(sm.var.__module.compile_count) is empty
 ## If first time building this...
 ifeq ($(sm.var.__module.compile_count),1)
   ## clear these vars only once (see sm-compile-sources)
-  $(sm.var.this).sources := $(sm.this.sources)
+  $(sm.var.this).sources :=
+  $(sm.var.this).sources.unknown :=
   $(sm.var.this).objects := $(sm.this.objects)
   $(sm.var.this).depends :=
 endif
 
 #-----------------------------------------------
 #-----------------------------------------------
+
+## Check sources
+sm.this.sources.unknown :=
+$(foreach sm.var.temp._source,$(sm.this.sources)$(sm.this.sources.external),\
+ $(if $(call not-equal,$(strip $(sm.toolset.for.file$(suffix $(sm.var.temp._source)))),$(strip $(sm.this.toolset))),\
+     $(info smart:0:warning: "$(sm.var.temp._source)" is unsupported by toolset "$(sm.this.toolset)")\
+     $(eval sm.this.sources.unknown += $(sm.var.temp._source))))
+
+## Append unkown sources(TODO: this may be no sense!)
+$(sm.var.this).sources.unknown += $(sm.this.sources.unknown)
 
 ## Make object rules for sources of different lang
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
@@ -406,9 +417,15 @@ ifeq ($(sm.this.type),t)
   endif
 endif
 
+sm.var.temp._make_targets := \
+  $(if $(or $(call not-equal,$(strip $(sm.this.sources.unknown)),),\
+            $(call equal,$(strip $($(sm.var.this).objects)),),\
+            $(call is-true,$(sm.var.__module.objects_only))\
+        ),,true)
+
 ## Make rule for targets of the module
-ifneq ($(sm.var.__module.objects_only),true)
-$(if $($(sm.var.this).objects),,$(error smart: No objects for building '$(sm.this.name)'))
+ifeq ($(sm.var.temp._make_targets),true)
+$(if $($(sm.var.this).objects),,$(error smart: no objects for building '$(sm.this.name)'))
 $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
 $(eval $(sm.var.this).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type))))
 
@@ -443,14 +460,6 @@ endif #sm.var.__module.objects_only
 #-----------------------------------------------
 #-----------------------------------------------
 
-# ifeq ($(strip $(sm.this.sources.c)$(sm.this.sources.c++)$(sm.this.sources.asm)),)
-#   $(error smart: internal error: sources mis-computed)
-# endif
-
-ifeq ($(strip $($(sm.var.this).objects)),)
-  $(error smart: internal error: objects mis-calculated)
-endif
-
 $(sm.var.this).user_defined_targets := $(strip $(sm.this.targets))
 $(sm.var.this).module_targets := $($(sm.var.this).targets)
 $(sm.var.this).targets += $($(sm.var.this).user_defined_targets)
@@ -462,7 +471,12 @@ sm.this.depends = $($(sm.var.this).depends)
 #$(info $(sm.var.this).depends: $($(sm.var.this).depends))
 
 ##################################################
-ifneq ($(sm.var.__module.objects_only),true)
+#ifneq ($(sm.var.__module.objects_only),true)
+ifeq ($(sm.var.temp._make_targets),true)
+
+ifeq ($(strip $($(sm.var.this).objects)),)
+  $(warning smart: no objects)
+endif
 
 ifeq ($(MAKECMDGOALS),clean)
   goal-$(sm.this.name) : ; @true
@@ -514,5 +528,6 @@ endef #sm.code.clean-rules
 
 $(eval $(sm.code.clean-rules))
 
-endif # sm.var.__module.objects_only
+endif # sm.var.temp._make_targets == true
+#endif # sm.var.__module.objects_only
 ##################################################

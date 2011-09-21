@@ -198,7 +198,8 @@ define sm-build-this
  $(eval \
     sm.global.goals += goal-$(sm.this.name)
     sm.var.__module.compile_id := 0
-    include $(sm.dir.buildsys)/build-this.mk)
+    include $(sm.dir.buildsys)/build-this.mk)\
+ $(if $(sm.this.sources.unknown),$(error smart: strange sources: $(strip $(sm.this.sources.unknown))))
 endef #sm-build-this
 
 ## sm-build-depends  - Makefile code for sm-build-depends
