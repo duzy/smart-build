@@ -20,13 +20,19 @@ sm.tool.gcc.cmd.asm := gcc
 sm.tool.gcc.cmd.ld := gcc
 sm.tool.gcc.cmd.ar := ar crs
 
-## languages supported by this toolset, the order is important,
+## Languages supported by this toolset, the order is important,
 ## the order defines the priority of linker
 sm.tool.gcc.langs := c++ c asm
 sm.tool.gcc.c.suffix := .c
 sm.tool.gcc.c++.suffix := .cpp .c++ .cc .CC .C
 sm.tool.gcc.asm.suffix := .s .S
 
+## Compilation output files(objects) suffixes.
+sm.tool.gcc.intermediate.suffix.c := .o
+sm.tool.gcc.intermediate.suffix.c++ := .o
+sm.tool.gcc.intermediate.suffix.asm := .o
+
+## Target link output file suffix.
 sm.tool.gcc.target.suffix.win32.static := .a
 sm.tool.gcc.target.suffix.win32.shared := .so
 sm.tool.gcc.target.suffix.win32.exe := .exe

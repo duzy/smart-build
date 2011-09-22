@@ -181,17 +181,17 @@ define sm.code.compute-flags-archive
  $(call sm.code.shift-flags-to-file,archive,options)
 endef #sm.code.compute-flags-archive
 
-define sm.code.compute-objects-link
+define sm.code.compute-intermediates-link
  $(sm.var.this).link.objects.computed := true
  $(sm.var.this).link.objects := $($(sm.var.this).objects)
  $(call sm.code.shift-flags-to-file,link,objects)
-endef #sm.code.compute-objects-link
+endef #sm.code.compute-intermediates-link
 
-define sm.code.compute-objects-archive
+define sm.code.compute-intermediates-archive
  $(sm.var.this).archive.objects.computed := true
  $(sm.var.this).archive.objects := $($(sm.var.this).objects)
  $(call sm.code.shift-flags-to-file,archive,objects)
-endef #sm.code.compute-objects-archive
+endef #sm.code.compute-intermediates-archive
 
 ##
 define sm.code.compute-libs-link
@@ -224,20 +224,20 @@ define sm.fun.compute-flags-link
    $(eval $(call sm.code.compute-flags-link)))
 endef #sm.fun.compute-flags-link
 
-define sm.fun.compute-objects-archive
+define sm.fun.compute-intermediates-archive
  $(if $($(sm.var.this).archive.objects.computed),,\
-   $(eval $(call sm.code.compute-objects-archive)))
-endef #sm.fun.compute-objects-archive
+   $(eval $(call sm.code.compute-intermediates-archive)))
+endef #sm.fun.compute-intermediates-archive
 
 define sm.fun.compute-libs-archive
  $(eval $(sm.var.this).archive.libs.computed := true)\
  $(eval $(sm.var.this).archive.libs :=)
 endef #sm.fun.compute-libs-archive
 
-define sm.fun.compute-objects-link
+define sm.fun.compute-intermediates-link
  $(if $($(sm.var.this).link.objects.computed),,\
-   $(eval $(call sm.code.compute-objects-link)))
-endef #sm.fun.compute-objects-link
+   $(eval $(call sm.code.compute-intermediates-link)))
+endef #sm.fun.compute-intermediates-link
 
 define sm.fun.compute-libs-link
  $(if $($(sm.var.this).link.libs.computed),,\
@@ -258,13 +258,13 @@ sm.var.temp._object_prefix := $(sm.var.temp._object_prefix:%.=%)
 
 ##
 ##
-define sm.fun.compute-object.
+define sm.fun.compute-intermediate.
 $(sm.var.temp._object_prefix)/$(basename $(subst ..,_,$(call sm-relative-path,$1))).o
-endef #sm.fun.compute-object.
+endef #sm.fun.compute-intermediate.
 
-define sm.fun.compute-object.external
-$(call sm.fun.compute-object.,$1)
-endef #sm.fun.compute-object.external
+define sm.fun.compute-intermediate.external
+$(call sm.fun.compute-intermediate.,$1)
+endef #sm.fun.compute-intermediate.external
 
 ##
 ## source file of relative location
@@ -297,6 +297,12 @@ $(call sm-relative-path,$(sm.out.lib))/lib$(sm.this.name:lib%=%)$(sm.this.suffix
 endef #sm.fun.compute-module-targets-static
 
 ##################################################
+
+# TODO: smart conditional
+# $(cond
+#   (foo $(var-1))
+#   (bar $(var-2))
+#   (car $(var-3)))
 
 ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
              $(call not-equal,$(MAKECMDGOALS),clean)),)
@@ -333,9 +339,9 @@ define sm.fun.make-rule-compile
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
  $(if $1,$(call sm-check-equal,$(strip $1),external,smart: arg \#3 must be 'external' if specified))\
  $(call sm-check-defined,sm.fun.compute-source.$(strip $1), smart: I donot know how to compute sources of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
- $(call sm-check-defined,sm.fun.compute-object.$(strip $1), smart: I donot how to compute objects of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
+ $(call sm-check-defined,sm.fun.compute-intermediate.$(strip $1), smart: I donot how to compute objects of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
  $(call sm-check-defined,sm.fun.compute-flags-compile, smart: no callback for getting compile options of lang '$(sm.var.temp._lang)')\
- $(eval sm.var.temp._object := $(call sm.fun.compute-object.$(strip $1),$(sm.var.temp._source)))\
+ $(eval sm.var.temp._object := $(call sm.fun.compute-intermediate.$(strip $1),$(sm.var.temp._source)))\
  $(eval $(sm.var.this).objects += $(sm.var.temp._object))\
  $(call sm.fun.make-rule-depend,$1)\
  $(call sm.fun.compute-flags-compile,$(sm.var.temp._lang))\
@@ -348,14 +354,6 @@ define sm.fun.make-rule-compile
    sm.args.flags.2 :=
  )$(sm-rule-compile-$(sm.var.temp._lang))
 endef #sm.fun.make-rule-compile
-
-# TODO: smart conditional
-# $(cond
-#   (foo $(var-1))
-#   (bar $(var-2))
-#   (car $(var-3)))
-
-$(call sm-check-flavor, sm.fun.make-rule-compile, recursive)
 
 ##
 ## Make object rules, eg. $(call sm.fun.make-rules-compile,c++)
@@ -502,11 +500,11 @@ $(call sm-check-defined,sm.var.action)
 $(call sm-check-defined,$(sm.var.this).lang)
 $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
 $(call sm-check-defined,sm.fun.compute-flags-$(sm.var.action))
-$(call sm-check-defined,sm.fun.compute-objects-$(sm.var.action))
+$(call sm-check-defined,sm.fun.compute-intermediates-$(sm.var.action))
 $(call sm-check-defined,sm.fun.compute-libs-$(sm.var.action))
 
 $(call sm.fun.compute-flags-$(sm.var.action))
-$(call sm.fun.compute-objects-$(sm.var.action))
+$(call sm.fun.compute-intermediates-$(sm.var.action))
 $(call sm.fun.compute-libs-$(sm.var.action))
 
 $(call sm-check-defined,$(sm.var.this).$(sm.var.action).flags)
