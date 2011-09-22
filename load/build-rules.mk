@@ -246,20 +246,20 @@ endef #sm.fun.compute-libs-link
 
 ##################################################
 
-## The output object file prefix
-sm.var.temp._object_prefix := \
+## The output intermediate file's prefix
+sm.var.temp._intermediate_prefix := \
   $(call sm-relative-path,$(sm.out.obj))$(sm.this.dir:$(sm.top)%=%)
 
 ## Fixes the prefix for 'out/debug/obj.'
-sm.var.temp._object_prefix := $(sm.var.temp._object_prefix:%.=%)
+sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix:%.=%)
 
 # BUG: wrong if more than one sm-build-this occurs in a smart.mk
-#$(warning $(sm.this.name): $(sm.var.temp._object_prefix))
+#$(warning $(sm.this.name): $(sm.var.temp._intermediate_prefix))
 
 ##
 ##
 define sm.fun.compute-intermediate.
-$(sm.var.temp._object_prefix)/$(basename $(subst ..,_,$(call sm-relative-path,$1))).o
+$(sm.var.temp._intermediate_prefix)/$(basename $(subst ..,_,$(call sm-relative-path,$1))).o
 endef #sm.fun.compute-intermediate.
 
 define sm.fun.compute-intermediate.external
