@@ -464,7 +464,7 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(if $(and $(call equal,$(strip $($(sm.var.this).lang)),),\
              $(sm.this.sources.has.$(sm.var.temp._lang))),\
          $(info smart: language choosed: $(sm.var.temp._lang))\
-         $(eval $(sm.var.this).lang := $(sm.var.temp._lang))))
+         $(eval $(sm.var.this).lang := $(sm.var.temp._lang))))\
 
 ## Make object rules for .t sources file
 ifeq ($(sm.this.type),t)
