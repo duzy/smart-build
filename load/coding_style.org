@@ -3,4 +3,5 @@
   * sm.this.
   * sm.args.*
   * sm.var.*
+  * sm.fun.*
   * sm.code.*

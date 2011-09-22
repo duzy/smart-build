@@ -1,4 +1,15 @@
 #
+#  For any source list of mixture suffixes, e.g. 'foo.cpp foo.S foo.w',
+#  I will first check sm.tool.$(sm.this.toolset) to see if the toolset
+#  can process the source files, if not I will check sm.tool.common for
+#  the source files, if sm.tool.common can't handle it, I will complain
+#  with a error.
+#
+#  The source files with suffix '.t' are special fot unit test projects.
+#  They are special because event if no toolset will handle with them, 
+#  wouldn't it be treated as strange. And processing the .t source files
+#  requires sm.this.lang to be specified.
+#  
 
 $(call sm-check-not-empty,sm.top)
 $(call sm-check-not-empty,sm.this.dir)
@@ -200,40 +211,40 @@ $(call sm-check-defined,sm.code.compute-flags-archive, smart: 'sm.code.compute-f
 $(call sm-check-defined,sm.code.compute-flags-link,    smart: 'sm.code.compute-flags-link' not defined)
 $(call sm-check-defined,sm.code.compute-libs-link,     smart: 'sm.code.compute-libs-link' not defined)
 
-define sm.fun.this.compute-flags-compile
+define sm.fun.compute-flags-compile
 $(if $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1.computed),,\
    $(eval $(call sm.code.compute-flags-compile,$1)))
-endef #sm.fun.this.compute-flags-compile
+endef #sm.fun.compute-flags-compile
 
-define sm.fun.this.compute-flags-archive
+define sm.fun.compute-flags-archive
  $(if $($(sm.var.this).archive.flags.computed),,\
    $(eval $(call sm.code.compute-flags-archive)))
-endef #sm.fun.this.compute-flags-archive
+endef #sm.fun.compute-flags-archive
 
-define sm.fun.this.compute-flags-link
+define sm.fun.compute-flags-link
  $(if $($(sm.var.this).link.flags.computed),,\
    $(eval $(call sm.code.compute-flags-link)))
-endef #sm.fun.this.compute-flags-link
+endef #sm.fun.compute-flags-link
 
-define sm.fun.this.compute-objects-archive
+define sm.fun.compute-objects-archive
  $(if $($(sm.var.this).archive.objects.computed),,\
    $(eval $(call sm.code.compute-objects-archive)))
-endef #sm.fun.this.compute-objects-archive
+endef #sm.fun.compute-objects-archive
 
-define sm.fun.this.compute-libs-archive
+define sm.fun.compute-libs-archive
  $(eval $(sm.var.this).archive.libs.computed := true)\
  $(eval $(sm.var.this).archive.libs :=)
-endef #sm.fun.this.compute-libs-archive
+endef #sm.fun.compute-libs-archive
 
-define sm.fun.this.compute-objects-link
+define sm.fun.compute-objects-link
  $(if $($(sm.var.this).link.objects.computed),,\
    $(eval $(call sm.code.compute-objects-link)))
-endef #sm.fun.this.compute-objects-link
+endef #sm.fun.compute-objects-link
 
-define sm.fun.this.compute-libs-link
+define sm.fun.compute-libs-link
  $(if $($(sm.var.this).link.libs.computed),,\
    $(eval $(call sm.code.compute-libs-link)))
-endef #sm.fun.this.compute-libs-link
+endef #sm.fun.compute-libs-link
 
 ##################################################
 
@@ -293,10 +304,10 @@ ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
              $(call not-equal,$(MAKECMDGOALS),clean)),)
 ## FIXME: $(sm.var.this).depends is always single!
 ## Make rule for source dependency
-##   eg. $(call sm.fun.make-depend-rule)
-##   eg. $(call sm.fun.make-depend-rule, external)
-##   eg. $(call sm.fun.make-depend-rule, intermediate)
-define sm.fun.make-depend-rule
+##   eg. $(call sm.fun.make-rule-depend)
+##   eg. $(call sm.fun.make-rule-depend, external)
+##   eg. $(call sm.fun.make-rule-depend, intermediate)
+define sm.fun.make-rule-depend
   $(eval sm.var.temp._depend := $(sm.var.temp._object:%.o=%$(sm.var.depend.suffixes)))\
   $(eval $(sm.var.this).depends += $(sm.var.temp._depend))\
   $(eval \
@@ -309,27 +320,27 @@ define sm.fun.make-depend-rule
     sm.args.flags.1 :=
     sm.args.flags.2 :=
   )$(sm-rule-dependency-$(sm.var.temp._lang))
-endef #sm.fun.make-depend-rule
+endef #sm.fun.make-rule-depend
 else
-  sm.fun.make-depend-rule :=
+  sm.fun.make-rule-depend :=
 endif #if sm.this.gen_deps && MAKECMDGOALS != clean
 
 ## FIXME: $(sm.var.this).objects is always single
 ## Make rule for building object
-##   eg. $(call sm.fun.make-object-rule)
-##   eg. $(call sm.fun.make-object-rule, external)
-##   eg. $(call sm.fun.make-object-rule, intermediate)
-define sm.fun.make-object-rule
+##   eg. $(call sm.fun.make-rule-compile)
+##   eg. $(call sm.fun.make-rule-compile, external)
+##   eg. $(call sm.fun.make-rule-compile, intermediate)
+define sm.fun.make-rule-compile
  $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
  $(if $1,$(call sm-check-equal,$(strip $1),external,smart: arg \#3 must be 'external' if specified))\
- $(call sm-check-defined,sm.fun.compute-source.$(strip $1), smart: I know how to compute sources of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
- $(call sm-check-defined,sm.fun.compute-object.$(strip $1), smart: I know how to compute objects of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
- $(call sm-check-defined,sm.fun.this.compute-flags-compile, smart: no callback for getting compile options of lang '$(sm.var.temp._lang)')\
+ $(call sm-check-defined,sm.fun.compute-source.$(strip $1), smart: I donot know how to compute sources of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
+ $(call sm-check-defined,sm.fun.compute-object.$(strip $1), smart: I donot how to compute objects of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
+ $(call sm-check-defined,sm.fun.compute-flags-compile, smart: no callback for getting compile options of lang '$(sm.var.temp._lang)')\
  $(eval sm.var.temp._object := $(call sm.fun.compute-object.$(strip $1),$(sm.var.temp._source)))\
  $(eval $(sm.var.this).objects += $(sm.var.temp._object))\
- $(call sm.fun.make-depend-rule,$1)\
- $(call sm.fun.this.compute-flags-compile,$(sm.var.temp._lang))\
+ $(call sm.fun.make-rule-depend,$1)\
+ $(call sm.fun.compute-flags-compile,$(sm.var.temp._lang))\
  $(eval \
    sm.args.target := $(sm.var.temp._object)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
@@ -338,7 +349,7 @@ define sm.fun.make-object-rule
    sm.args.flags.1 :=
    sm.args.flags.2 :=
  )$(if $(sm.this.sources.unknown),,$(sm-rule-compile-$(sm.var.temp._lang)))
-endef #sm.fun.make-object-rule
+endef #sm.fun.make-rule-compile
 
 # TODO: smart conditional
 # $(cond
@@ -348,24 +359,35 @@ endef #sm.fun.make-object-rule
 
 ##
 ## Produce code for make object rules
-define sm.code.make-object-rules
- sm.var.temp._suffix.$(sm.var.temp._lang)      := $$($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
- sm.this.sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix.$(sm.var.temp._lang)),$$(sm.this.sources))
- sm.this.sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix.$(sm.var.temp._lang)),$$(sm.this.sources.external))
+$(call sm-check-flavor, sm.fun.make-rule-compile, recursive)
+define sm.code.make-rules-compile
+ sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $$($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
+ sm.this.sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$$(sm.this.sources))
+ sm.this.sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$$(sm.this.sources.external))
  sm.this.sources.has.$(sm.var.temp._lang)      := $$(if $$(sm.this.sources.$(sm.var.temp._lang))$$(sm.this.sources.external.$(sm.var.temp._lang)),true)
  ifeq ($$(sm.this.sources.has.$(sm.var.temp._lang)),true)
-  $$(call sm-check-flavor, sm.fun.make-object-rule, recursive)
-  $$(foreach sm.var.temp._source,$$(sm.this.sources.$(sm.var.temp._lang)),$$(call sm.fun.make-object-rule))
-  $$(foreach sm.var.temp._source,$$(sm.this.sources.external.$(sm.var.temp._lang)),$$(call sm.fun.make-object-rule,external))
+  $$(foreach sm.var.temp._source,$$(sm.this.sources.$(sm.var.temp._lang)),$$(call sm.fun.make-rule-compile))
+  $$(foreach sm.var.temp._source,$$(sm.this.sources.external.$(sm.var.temp._lang)),$$(call sm.fun.make-rule-compile,external))
  endif
-endef #sm.code.make-object-rules
+endef #sm.code.make-rules-compile
 
 ##
-## Make object rules, eg. $(call sm.fun.make-object-rules,c++)
-define sm.fun.make-object-rules
+## Make object rules, eg. $(call sm.fun.make-rules-compile,c++)
+##
+## Computes sources of a specific languange via sm.var.temp._temp and generate
+## compilation rules for them.
+define sm.fun.make-rules-compile
 $(if $(sm.var.temp._lang),,$(error smart: internal: sm.var.temp._lang is empty))\
-$(eval $(sm.code.make-object-rules))
-endef #sm.fun.make-object-rules
+$(eval $(sm.code.make-rules-compile))
+endef #sm.fun.make-rules-compile
+
+## Same as sm.fun.make-rules-compile, but the common source file like 'foo.w'
+## may generate output like 'out/common/foo.cpp', this will be then appended
+## to sm.this.sources.c++ which will then be used by sm.fun.make-rules-compile.
+define sm.fun.make-rules-compile-common
+$(if $(sm.var.temp._lang),,$(error smart: internal: sm.var.temp._lang is empty))\
+$(warning TODO: object rules for $(sm.this.sources.$(sm.var.temp._lang)))
+endef #sm.fun.make-rules-compile-common
 
 ##################################################
 
@@ -413,44 +435,48 @@ sm.this.sources.common :=
 sm.this.sources.unknown :=
 $(foreach sm.var.temp._source,$(sm.this.sources)$(sm.this.sources.external),\
  $(if $(sm.fun.is-strange-source),\
-     $(info smart:0:warning: "$(sm.var.temp._source)" is unsupported by toolset "$(sm.this.toolset)")\
+     $(warning warning: "$(sm.var.temp._source)" is unsupported by toolset "$(sm.this.toolset)")\
      $(eval sm.this.sources.unknown += $(sm.var.temp._source))))
 
-## filter out %.t files.
+## Filter out %.t files, since it's not 'unknown'.
 sm.this.sources.unknown := $(filter-out %.t,$(sm.this.sources.unknown))
 
+## Export computed common sources.
 sm.this.sources.common := $(strip $(sm.this.sources.common))
 $(sm.var.this).sources.common := $(sm.this.sources.common)
 $(foreach _,$(sm.var.common.langs),\
   $(eval $(sm.var.this).sources.$_ := $(sm.this.sources.$_)))
 
-## Append unkown sources(FIXME: this may be no sense!)
-$(sm.var.this).sources.unknown += $(sm.this.sources.unknown)
+## Export unkown sources(FIXME: this may be no sense!)
+$(sm.var.this).sources.unknown := $(sm.this.sources.unknown)
+
+## Make object rules for common sources(files not handled by the toolset, e.g. .w, .nw, etc)
+$(foreach sm.var.temp._lang,$(sm.var.common.langs),\
+   $(if $(sm.tool.common.$(sm.var.temp._lang).suffix),\
+      ,$(error smart: toolset $(sm.this.toolset)/$(sm.var.temp._lang) has no suffixes))\
+   $(sm.fun.make-rules-compile-common))
 
 ## Make object rules for sources of different lang
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(if $($(sm.var.toolset).$(sm.var.temp._lang).suffix),\
-      ,$(error smart: no toolset for $(sm.this.toolset)/$(sm.var.temp._lang)))\
-  $(sm.fun.make-object-rules)\
-  $(if $($(sm.var.this).lang),,\
-    $(if $(sm.this.sources.has.$(sm.var.temp._lang)),\
-         $(eval $(sm.var.this).lang := $(sm.var.temp._lang)))))
-
-## Make object rules for common sources(e.g. .w, .nw, etc)
-$(foreach sm.var.temp._lang,$(sm.var.common.langs),\
-   $(info smart:0:TODO: object rules for $(sm.this.sources.$(sm.var.temp._lang))))
+      ,$(error smart: toolset $(sm.this.toolset)/$(sm.var.temp._lang) has no suffixes))\
+  $(sm.fun.make-rules-compile)\
+  $(if $(and $(call equal,$(strip $($(sm.var.this).lang)),),\
+             $(sm.this.sources.has.$(sm.var.temp._lang))),\
+         $(info smart: language choosed: $(sm.var.temp._lang))\
+         $(eval $(sm.var.this).lang := $(sm.var.temp._lang))))
 
 ## Make object rules for .t sources file
 ifeq ($(sm.this.type),t)
-  # set sm.var.temp._lang, used by sm.fun.make-object-rule
+  # set sm.var.temp._lang, used by sm.fun.make-rule-compile
   sm.var.temp._lang := $(sm.this.lang)
   sm.this.sources.$(sm.var.temp._lang).t := $(filter %.t,$(sm.this.sources))
   sm.this.sources.external.$(sm.var.temp._lang).t := $(filter %.t,$(sm.this.sources.external))
   sm.this.sources.has.$(sm.var.temp._lang).t := $(if $(sm.this.sources.$(sm.var.temp._lang).t)$(sm.this.sources.external.$(sm.var.temp._lang).t),true)
   ifeq ($(or $(sm.this.sources.has.$(sm.var.temp._lang)),$(sm.this.sources.has.$(sm.var.temp._lang).t)),true)
-    $(call sm-check-flavor, sm.fun.make-object-rule, recursive)
-    $(foreach sm.var.temp._source,$(sm.this.sources.$(sm.var.temp._lang).t),$(call sm.fun.make-object-rule))
-    $(foreach sm.var.temp._source,$(sm.this.sources.external.$(sm.var.temp._lang).t),$(call sm.fun.make-object-rule,external))
+    $(call sm-check-flavor, sm.fun.make-rule-compile, recursive)
+    $(foreach sm.var.temp._source,$(sm.this.sources.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile))
+    $(foreach sm.var.temp._source,$(sm.this.sources.external.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile,external))
     ifeq ($($(sm.var.this).lang),)
       $(sm.var.this).lang := $(sm.this.lang)
     endif
@@ -472,13 +498,13 @@ $(eval $(sm.var.this).targets := $(strip $(call sm.fun.compute-module-targets-$(
 $(call sm-check-defined,sm.var.action)
 $(call sm-check-defined,$(sm.var.this).lang)
 $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
-$(call sm-check-defined,sm.fun.this.compute-flags-$(sm.var.action))
-$(call sm-check-defined,sm.fun.this.compute-objects-$(sm.var.action))
-$(call sm-check-defined,sm.fun.this.compute-libs-$(sm.var.action))
+$(call sm-check-defined,sm.fun.compute-flags-$(sm.var.action))
+$(call sm-check-defined,sm.fun.compute-objects-$(sm.var.action))
+$(call sm-check-defined,sm.fun.compute-libs-$(sm.var.action))
 
-$(call sm.fun.this.compute-flags-$(sm.var.action))
-$(call sm.fun.this.compute-objects-$(sm.var.action))
-$(call sm.fun.this.compute-libs-$(sm.var.action))
+$(call sm.fun.compute-flags-$(sm.var.action))
+$(call sm.fun.compute-objects-$(sm.var.action))
+$(call sm.fun.compute-libs-$(sm.var.action))
 
 $(call sm-check-defined,$(sm.var.this).$(sm.var.action).flags)
 $(call sm-check-defined,$(sm.var.this).$(sm.var.action).objects)
@@ -490,6 +516,8 @@ $(call sm-check-not-empty,$(sm.var.this).lang)
   sm.args.flags.0 = $(if $(call is-true,$(sm.this.$(sm.var.action).flags.infile)),\
      ,$$($(sm.var.this).$(sm.var.action).flags))
   sm.args.flags.1 = $$($(sm.var.this).$(sm.var.action).libs)
+
+  $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
   $(sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
 
   ifeq ($(strip $($(sm.var.this).targets)),)

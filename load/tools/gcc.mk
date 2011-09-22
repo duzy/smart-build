@@ -108,7 +108,7 @@ endef #sm.tool.gcc.link.c++
 ##
 ##
 define sm.tool.gcc.link.asm
-$(sm.tool.gcc.cmd.as) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
+$(sm.tool.gcc.cmd.asm) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
 endef #sm.tool.gcc.link.asm
 
 ##
