@@ -376,7 +376,7 @@ define sm.fun.make-rule-compile-common
    sm.args.lang = $(sm.this.lang)
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(sm.var.temp._source))\
- $(warning #TODO: common: $(sm.var.temp._source) -> $(sm.var.temp._intermediate)
+ $(eval \
    sm.this.sources.$(sm.var.temp._target_lang) += $(sm.var.temp._intermediate)
    $(sm.args.target) : $(sm.args.sources)
 	$(sm.tool.common.compile.$(sm.var.temp._lang))
@@ -490,6 +490,7 @@ $(foreach sm.var.temp._lang,$(sm.var.common.langs),\
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(if $($(sm.var.toolset).$(sm.var.temp._lang).suffix),\
       ,$(error smart: toolset $(sm.this.toolset)/$(sm.var.temp._lang) has no suffixes))\
+  $(eval $(sm.var.this).sources.$(sm.var.temp._lang) := $(sm.this.sources.$(sm.var.temp._lang)))\
   $(sm.fun.make-rules-compile)\
   $(if $(and $(call equal,$(strip $($(sm.var.this).lang)),),\
              $(sm.this.sources.has.$(sm.var.temp._lang))),\
@@ -569,7 +570,6 @@ sm.this.depends = $($(sm.var.this).depends)
 #$(info $(sm.var.this).depends: $($(sm.var.this).depends))
 
 ##################################################
-#ifneq ($(sm.var.__module.objects_only),true)
 ifeq ($(sm.var.temp._should_make_targets),true)
 
 ifeq ($(strip $($(sm.var.this).objects)),)
@@ -627,5 +627,4 @@ endef #sm.code.clean-rules
 $(eval $(sm.code.clean-rules))
 
 endif # sm.var.temp._should_make_targets == true
-#endif # sm.var.__module.objects_only
 ##################################################
