@@ -121,7 +121,7 @@ $(if $(call is-true,$(sm.this.$1.flags.infile)),\
 endef #sm.code.shift-flags-to-file-instant
 
 
-define sm.code-shift-flags-to-file-r
+define sm.code.shift-flags-to-file-r
   $(sm.var.this).$1.$2.flat := $$(subst \",\\\",$$($(sm.var.this).$1.$2))
   $(sm.var.this).$1.$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.$2
   $(sm.var.this).flag_files += $(sm.out.tmp)/$(sm.this.name)/$1.$2
@@ -129,13 +129,13 @@ define sm.code-shift-flags-to-file-r
 	@$$(info flags: $$@)
 	@mkdir -p $(sm.out.tmp)/$(sm.this.name)
 	@echo $$($(sm.var.this).$1.$2.flat) > $$@
-endef
+endef #sm.code.shift-flags-to-file-r
 ## eg. $(call sm.code.shift-flags-to-file,compile,options.c++)
 define sm.code.shift-flags-to-file
 $(if $1,,$(error smart: 'sm.code.shift-flags-to-file' action type in arg 1 is empty))\
 $(if $2,,$(error smart: 'sm.code.shift-flags-to-file' needs options type in arg 2))\
 $(if $(call is-true,$(sm.this.$1.flags.infile)),\
-   $$(eval $$(call sm.code-shift-flags-to-file-r,$(strip $1),$(strip $2))))
+   $$(eval $$(call sm.code.shift-flags-to-file-r,$(strip $1),$(strip $2))))
 endef #sm.code.shift-flags-to-file
 
 ## eg. $(call sm.code.compute-flags-compile,c++)
@@ -378,7 +378,9 @@ define sm.fun.make-rule-compile-common
    sm.args.sources := $(sm.var.temp._source))\
  $(eval \
    sm.this.sources.$(sm.var.temp._target_lang) += $(sm.var.temp._intermediate)
+   sm.this.sources.has.$(sm.var.temp._target_lang) := true
    $(sm.args.target) : $(sm.args.sources)
+	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -vp $(dir $(sm.args.target))
 	$(sm.tool.common.compile.$(sm.var.temp._lang))
   )
 endef #sm.fun.make-rule-compile-common

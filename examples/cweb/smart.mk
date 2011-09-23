@@ -9,3 +9,4 @@ $(sm-build-this)
 
 $(info foo: $(sm.var.foo.sources.c++))
 $(info foo: $(sm.this.sources.c++))
+$(info foo: $(sm.this.objects))
