@@ -1,7 +1,14 @@
 
 * Special named variables
-  * sm.this.
+  * sm.this.*
+    User module uses these variables to define a module.
   * sm.args.*
+    Variables that they are used by toolsets.
   * sm.var.*
+    Internal used variables.
+  * sm.var.temp._*
+    Internal used temporary variables which are used within expesion context. 
   * sm.fun.*
+    Internal used temporary callables.
   * sm.code.*
+    Variables contain codes to be evaluated later.

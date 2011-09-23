@@ -256,15 +256,24 @@ sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix:%.=%)
 # BUG: wrong if more than one sm-build-this occurs in a smart.mk
 #$(warning $(sm.this.name): $(sm.var.temp._intermediate_prefix))
 
+## Compute the intermediate name without suffix.
+define sm.fun.compute-intermediate-name
+$(sm.var.temp._intermediate_prefix)/$(basename $(subst ..,_,$(call sm-relative-path,$(sm.var.temp._source))))
+endef #sm.fun.compute-intermediate-name
+
 ##
 ##
 define sm.fun.compute-intermediate.
-$(sm.var.temp._intermediate_prefix)/$(basename $(subst ..,_,$(call sm-relative-path,$1))).o
+$(sm.fun.compute-intermediate-name)$(sm.tool.$(sm.this.toolset).intermediate.suffix.$(sm.var.temp._lang))
 endef #sm.fun.compute-intermediate.
 
 define sm.fun.compute-intermediate.external
-$(call sm.fun.compute-intermediate.,$1)
+$(sm.fun.compute-intermediate.)
 endef #sm.fun.compute-intermediate.external
+
+define sm.fun.compute-intermediate.common
+$(sm.fun.compute-intermediate-name)$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.this.lang))
+endef #sm.fun.compute-intermediate.common
 
 ##
 ## source file of relative location
@@ -312,12 +321,12 @@ ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
 ##   eg. $(call sm.fun.make-rule-depend, external)
 ##   eg. $(call sm.fun.make-rule-depend, intermediate)
 define sm.fun.make-rule-depend
-  $(eval sm.var.temp._depend := $(sm.var.temp._object:%.o=%$(sm.var.depend.suffixes)))\
+  $(eval sm.var.temp._depend := $(sm.var.temp._intermediate:%.o=%$(sm.var.depend.suffixes)))\
   $(eval $(sm.var.this).depends += $(sm.var.temp._depend))\
   $(eval \
     include $(sm.var.temp._depend)
     sm.args.output := $(sm.var.temp._depend)
-    sm.args.target := $(sm.var.temp._object)
+    sm.args.target := $(sm.var.temp._intermediate)
     sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
     sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
     sm.args.flags.0 += $$(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
@@ -329,7 +338,6 @@ else
   sm.fun.make-rule-depend :=
 endif #if sm.this.gen_deps && MAKECMDGOALS != clean
 
-## FIXME: $(sm.var.this).objects is always single
 ## Make rule for building object
 ##   eg. $(call sm.fun.make-rule-compile)
 ##   eg. $(call sm.fun.make-rule-compile, external)
@@ -341,12 +349,12 @@ define sm.fun.make-rule-compile
  $(call sm-check-defined,sm.fun.compute-source.$(strip $1), smart: I donot know how to compute sources of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
  $(call sm-check-defined,sm.fun.compute-intermediate.$(strip $1), smart: I donot how to compute objects of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
  $(call sm-check-defined,sm.fun.compute-flags-compile, smart: no callback for getting compile options of lang '$(sm.var.temp._lang)')\
- $(eval sm.var.temp._object := $(call sm.fun.compute-intermediate.$(strip $1),$(sm.var.temp._source)))\
- $(eval $(sm.var.this).objects += $(sm.var.temp._object))\
+ $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.$(strip $1)))\
+ $(eval $(sm.var.this).objects += $(sm.var.temp._intermediate))\
  $(call sm.fun.make-rule-depend,$1)\
  $(call sm.fun.compute-flags-compile,$(sm.var.temp._lang))\
  $(eval \
-   sm.args.target := $(sm.var.temp._object)
+   sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
    sm.args.flags.0 := $$(strip $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang)))
    sm.args.flags.0 += $$(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
@@ -354,6 +362,13 @@ define sm.fun.make-rule-compile
    sm.args.flags.2 :=
  )$(sm-rule-compile-$(sm.var.temp._lang))
 endef #sm.fun.make-rule-compile
+
+define sm.fun.make-rule-compile-common
+ $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
+ $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
+ $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.common))\
+ $(info TODO: common: $(sm.var.temp._source) -> $(sm.var.temp._intermediate))
+endef #sm.fun.make-rule-compile-common
 
 ##
 ## Make object rules, eg. $(call sm.fun.make-rules-compile,c++)
@@ -375,13 +390,13 @@ endef #sm.fun.make-rules-compile
 ## to sm.this.sources.c++ which will then be used by sm.fun.make-rules-compile.
 define sm.fun.make-rules-compile-common
 $(if $(sm.var.temp._lang),,$(error smart: internal: sm.var.temp._lang is empty))\
-$(warning TODO: make compile rules for $(sm.this.sources.common), and updates sm.this.sources.LANG)
+$(eval \
+  ifeq ($$(sm.this.sources.has.$(sm.var.temp._lang)),true)
+    $$(foreach sm.var.temp._source,$$(sm.this.sources.$(sm.var.temp._lang)),\
+       $$(call sm.fun.make-rule-compile-common))
+  endif
+  $(null))
 endef #sm.fun.make-rules-compile-common
-# $(eval \
-#   ifeq ($$(sm.this.sources.has.$(sm.var.temp._lang)),true)
-#     $$(foreach sm.var.temp._source,$$(sm.this.sources.$(sm.var.temp._lang)),$$(call sm.fun.make-rule-compile))
-#   endif
-#  )
 
 ##################################################
 
@@ -423,9 +438,10 @@ $(strip $(eval \
                $$(eval sm.var.temp._is_strange_source :=)\
                $$(eval sm.this.sources.common += $(sm.var.temp._source))\
                $$(eval sm.this.sources.$$_ += $(sm.var.temp._source))\
+               $$(eval sm.this.sources.has.$$_ := true)\
                $$(eval sm.var.common.langs += $$_)\
                $$(eval sm.var.common.lang$(suffix $(sm.var.temp._source)) := $$_)\
-               $$(info smart: $$_: $(sm.var.temp._source))))
+               $(null)))
    endif
    $(null))$(sm.var.temp._is_strange_source))
 endef #sm.fun.check-strange-and-compute-common-source

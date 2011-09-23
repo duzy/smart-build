@@ -5,6 +5,12 @@ sm.tool.common.web.suffix := .web
 sm.tool.common.cweb.suffix := .w
 sm.tool.common.noweb.suffix := .nw
 
+sm.tool.common.intermediate.suffix.web := .p
+sm.tool.common.intermediate.suffix.cweb.c++ = .cpp
+sm.tool.common.intermediate.suffix.cweb.c = .c
+sm.tool.common.intermediate.suffix.noweb.c++ := .cpp
+sm.tool.common.intermediate.suffix.noweb.c := .c
+
 ##################################################
 
 
