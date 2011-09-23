@@ -247,32 +247,35 @@ endef #sm.fun.compute-libs-link
 ##################################################
 
 ## The output intermediate file's prefix
-sm.var.temp._intermediate_prefix := \
-  $(call sm-relative-path,$(sm.out.obj))$(sm.this.dir:$(sm.top)%=%)
+sm.var.temp._intermediate_prefix := $(sm.this.dir:$(sm.top)%=%)
 
 ## Fixes the prefix for 'out/debug/obj.'
 sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix:%.=%)
+ifneq ($(sm.var.temp._intermediate_prefix),)
+  sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix)/
+endif
 
 # BUG: wrong if more than one sm-build-this occurs in a smart.mk
 #$(warning $(sm.this.name): $(sm.var.temp._intermediate_prefix))
 
 ## Compute the intermediate name without suffix.
 define sm.fun.compute-intermediate-name
-$(sm.var.temp._intermediate_prefix)/$(basename $(subst ..,_,$(call sm-relative-path,$(sm.var.temp._source))))
+$(sm.var.temp._intermediate_prefix)$(basename $(subst ..,_,$(call sm-relative-path,$(sm.var.temp._source))))
 endef #sm.fun.compute-intermediate-name
 
 ##
 ##
 define sm.fun.compute-intermediate.
-$(sm.fun.compute-intermediate-name)$(sm.tool.$(sm.this.toolset).intermediate.suffix.$(sm.var.temp._lang))
+$(sm.out.obj)/$(sm.fun.compute-intermediate-name)$(sm.tool.$(sm.this.toolset).intermediate.suffix.$(sm.var.temp._lang))
 endef #sm.fun.compute-intermediate.
 
 define sm.fun.compute-intermediate.external
 $(sm.fun.compute-intermediate.)
 endef #sm.fun.compute-intermediate.external
 
+#$(suffix $(sm.var.temp._source))
 define sm.fun.compute-intermediate.common
-$(sm.fun.compute-intermediate-name)$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.this.lang))
+$(sm.out.inter)/$(sm.fun.compute-intermediate-name)$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.this.lang))
 endef #sm.fun.compute-intermediate.common
 
 ##
@@ -367,7 +370,17 @@ define sm.fun.make-rule-compile-common
  $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
  $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.common))\
- $(info TODO: common: $(sm.var.temp._source) -> $(sm.var.temp._intermediate))
+ $(eval \
+   sm.var.temp._target_lang := $(if $(sm.tool.common.target.lang.$(sm.var.temp._lang)),\
+     $(sm.tool.common.target.lang.$(sm.var.temp._lang)),$(sm.this.lang))
+   sm.args.lang = $(sm.this.lang)
+   sm.args.target := $(sm.var.temp._intermediate)
+   sm.args.sources := $(sm.var.temp._source))\
+ $(warning #TODO: common: $(sm.var.temp._source) -> $(sm.var.temp._intermediate)
+   sm.this.sources.$(sm.var.temp._target_lang) += $(sm.var.temp._intermediate)
+   $(sm.args.target) : $(sm.args.sources)
+	$(sm.tool.common.compile.$(sm.var.temp._lang))
+  )
 endef #sm.fun.make-rule-compile-common
 
 ##

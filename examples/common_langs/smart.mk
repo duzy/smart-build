@@ -5,7 +5,7 @@
 $(call sm-new-module, foo, exe, gcc)
 
 sm.this.lang := c++
-sm.this.sources := foo.c foo.cpp foo.web foo.w foo.nw
+sm.this.sources := foo1.c foo2.cpp foo3.web foo4.w foo5.nw
 
 $(sm-build-this)
 
@@ -23,14 +23,14 @@ $(info foo: sources: common: $(sm.this.sources.common))
 $(info foo: sources: common: $(sm.var.foo.sources.common))
 $(info foo: sources: all: $(sm.var.foo.sources))
 
-#$(call sm-check-equal,$(sm.this.sources.c),foo.c)
-#$(call sm-check-equal,$(sm.this.sources.c++))
-#$(call sm-check-equal,$(sm.this.sources.pascal))
-$(call sm-check-equal,$(sm.this.sources.cweb),foo.w)
-$(call sm-check-equal,$(sm.this.sources.common),foo.web foo.w foo.nw)
-#$(call sm-check-equal,$(sm.var.foo.sources.c),foo.c)
-#$(call sm-check-equal,$(sm.var.foo.sources.c++),foo.cpp)
-#$(call sm-check-equal,$(sm.var.foo.sources.pascal))
-$(call sm-check-equal,$(sm.var.foo.sources.cweb),foo.w)
-$(call sm-check-equal,$(sm.var.foo.sources.common),foo.web foo.w foo.nw)
-#$(call sm-check-equal,$(sm.var.foo.sources))
+$(call sm-check-equal,$(sm.this.sources.c),foo1.c)
+$(call sm-check-equal,$(sm.this.sources.c++),foo2.cpp $(sm.out.inter)/foo4.cpp)
+$(call sm-check-equal,$(sm.this.sources.pascal),$(sm.out.inter)/foo3.p)
+$(call sm-check-equal,$(sm.this.sources.cweb),foo4.w)
+$(call sm-check-equal,$(sm.this.sources.common),foo3.web foo4.w foo5.nw)
+$(call sm-check-equal,$(sm.var.foo.sources.c),foo1.c)
+$(call sm-check-equal,$(sm.var.foo.sources.c++),foo2.cpp $(sm.out.inter)/foo4.cpp)
+$(call sm-check-equal,$(sm.var.foo.sources.pascal),$(sm.out.inter)/foo3.p)
+$(call sm-check-equal,$(sm.var.foo.sources.cweb),foo4.w)
+$(call sm-check-equal,$(sm.var.foo.sources.common),foo3.web foo4.w foo5.nw)
+$(call sm-check-equal,$(sm.var.foo.sources))

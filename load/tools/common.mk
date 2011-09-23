@@ -6,14 +6,51 @@ sm.tool.common.cweb.suffix := .w
 sm.tool.common.noweb.suffix := .nw
 
 sm.tool.common.intermediate.suffix.web := .p
-sm.tool.common.intermediate.suffix.cweb.c++ = .cpp
+sm.tool.common.intermediate.suffix.web.c := .p
+sm.tool.common.intermediate.suffix.web.c++ := .p
+sm.tool.common.intermediate.suffix.cweb = .c
 sm.tool.common.intermediate.suffix.cweb.c = .c
-sm.tool.common.intermediate.suffix.noweb.c++ := .cpp
+sm.tool.common.intermediate.suffix.cweb.c++ = .cpp
+sm.tool.common.intermediate.suffix.noweb :=
 sm.tool.common.intermediate.suffix.noweb.c := .c
+sm.tool.common.intermediate.suffix.noweb.c++ := .cpp
+
+sm.tool.common.target.lang.web := pascal
+sm.tool.common.target.lang.cweb :=
+sm.tool.common.target.lang.noweb :=
 
 ##################################################
 
+##
+##
+##
+define sm.tool.common.compile.web.private
+tangle $(sm.args.sources) && \
+mv $(word 1,$(sm.args.sources:%.web=%.p)) $(sm.args.target)
+endef #sm.tool.common.compile.web.private
 
+##
+##
+##
+define sm.tool.common.compile.cweb.private
+ctangle \
+ $(word 1,$(sm.args.sources)) \
+ $(or $(word 2,$(sm.args.sources)),-) \
+ $(sm.args.target)
+endef #sm.tool.common.compile.cweb.private
+
+##
+##
+##
+define sm.tool.common.compile.noweb.private
+notangle -$(sm.args.lang) $(sm.args.sources) && \
+mv $(word 1,$(sm.args.sources:%.nw=%.p)) $(sm.args.target)
+endef #sm.tool.common.compile.noweb.private
+
+sm.tool.common.compile       = $(call sm.tool.common.compile.$(sm.args.lang).private)
+sm.tool.common.compile.web   = $(eval sm.args.lang:=web)$(sm.tool.common.compile)
+sm.tool.common.compile.cweb  = $(eval sm.args.lang:=cweb)$(sm.tool.common.compile)
+sm.tool.common.compile.noweb = $(eval sm.args.lang:=noweb)$(sm.tool.common.compile)
 
 ##################################################
 
