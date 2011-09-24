@@ -120,7 +120,7 @@ $(if $(call is-true,$(sm.this.$1.flags.infile)),\
      $$(eval $(sm.var.this).$1.$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.$2))
 endef #sm.code.shift-flags-to-file-instant
 
-
+##
 define sm.code.shift-flags-to-file-r
   $(sm.var.this).$1.$2.flat := $$(subst \",\\\",$$($(sm.var.this).$1.$2))
   $(sm.var.this).$1.$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.$2
@@ -326,7 +326,7 @@ define sm.fun.make-rule-depend
   $(eval sm.var.temp._depend := $(sm.var.temp._intermediate:%.o=%$(sm.var.depend.suffixes)))\
   $(eval $(sm.var.this).depends += $(sm.var.temp._depend))\
   $(eval \
-    include $(sm.var.temp._depend)
+    -include $(sm.var.temp._depend)
     sm.args.output := $(sm.var.temp._depend)
     sm.args.target := $(sm.var.temp._intermediate)
     sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
@@ -334,7 +334,18 @@ define sm.fun.make-rule-depend
     sm.args.flags.0 += $$(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
     sm.args.flags.1 :=
     sm.args.flags.2 :=
-  )$(sm-rule-dependency-$(sm.var.temp._lang))
+  )$(eval \
+   ifeq ($(sm.global.has.rule.$(sm.args.output)),)
+    sm.global.has.rule.$(sm.args.output) := true
+    $(sm.args.output) : $(sm.args.sources)
+	$$(call sm-util-mkdir,$$(@D))
+	$(if $(call equal,$(sm.this.verbose),true),,\
+          $$(info smart: update $(sm.args.output))\
+        $(sm.var.Q))$(sm.tool.$(sm.this.toolset).dependency.$(sm.args.lang))
+   else
+    $$(info smart: rule duplicated for $(sm.args.output))
+   endif
+  )
 endef #sm.fun.make-rule-depend
 else
   sm.fun.make-rule-depend :=
@@ -365,16 +376,14 @@ define sm.fun.make-rule-compile
  )$(sm-rule-compile-$(sm.var.temp._lang))
 endef #sm.fun.make-rule-compile
 
-#	$(if $(call equal,$(sm.this.verbose),true),\
-#             $(sm.tool.common.compile.$(sm.var.temp._lang)),\
-#           $$(info $(sm.var.temp._lang): $(sm.this.name) += $$^ --> $$@)\
-#           $(sm.var.Q)$(sm.tool.common.compile.$(sm.var.temp._lang))>/dev/null)
+##
 define sm.fun.make-rule-compile-common-command
 $(strip $(if $(call equal,$(sm.this.verbose),true),$2,\
    $$(info $1: $(sm.this.name) += $$^ --> $$@)\
    $(sm.var.Q)$2>/dev/null))
 endef #sm.fun.make-rule-compile-common-command
 
+##
 define sm.fun.make-rule-compile-common
  $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
@@ -389,9 +398,14 @@ define sm.fun.make-rule-compile-common
  $(eval \
    sm.this.sources.$(sm.var.temp._target_lang) += $(sm.var.temp._intermediate)
    sm.this.sources.has.$(sm.var.temp._target_lang) := true
+  ifeq ($(sm.global.has.rule.$(sm.args.target)),)
+   sm.global.has.rule.$(sm.args.target) := true
    $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.$(sm.var.temp._lang)))
+  else
+   $$(info smart: rule duplicated for $(sm.args.target))
+  endif
   )\
  $(eval sm.var.temp._target_lang := $(sm.tool.common.target.lang.literal.$(sm.var.temp._lang)))\
  $(if $(sm.var.temp._target_lang),$(eval \
@@ -401,20 +415,30 @@ define sm.fun.make-rule-compile-common
   )$(eval #TODO: rules for producing .tex sources ($(sm.var.temp._target_lang))
    sm.this.sources.$(sm.var.temp._target_lang) += $(sm.args.target)
    sm.this.sources.has.$(sm.var.temp._target_lang) := true
+  ifeq ($(sm.global.has.rule.$(sm.args.target)),)
+   sm.global.has.rule.$(sm.args.target) := true
    $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.literal.$(sm.var.temp._lang)))
+  else
+   $$(info smart: rule duplicated for $(sm.args.target))
+  endif
   )$(eval # recalculate target/sources
    sm.args.sources := $(sm.args.target)
    sm.args.target := $(basename $(sm.args.target)).dvi
   )$(eval # rules for producing .dvi/.pdf targets
    $(sm.var.this).documents += $(sm.out.doc)/$(notdir $(sm.args.target))
+  ifeq ($(sm.global.has.rule.$(sm.args.target)),)
+   sm.global.has.rule.$(sm.args.target) := true
    $(sm.out.doc)/$(notdir $(sm.args.target)) : $(sm.args.target)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	@$$(info smart: copy $$< -> $$@)$(call sm.tool.common.cp,$$<,$$@)
    $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.$(sm.var.temp._target_lang).dvi.private))
+  else
+   $$(info smart: rule duplicated for $(sm.args.target))
+  endif
   ))
 endef #sm.fun.make-rule-compile-common
 
@@ -437,7 +461,7 @@ endef #sm.fun.make-rules-compile
 ## may generate output like 'out/common/foo.cpp', this will be then appended
 ## to sm.this.sources.c++ which will then be used by sm.fun.make-rules-compile.
 define sm.fun.make-rules-compile-common
-$(if $(sm.var.temp._lang),,$(error smart: internal: sm.var.temp._lang is empty))\
+$(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
 $(eval \
   ifeq ($$(sm.this.sources.has.$(sm.var.temp._lang)),true)
     $$(foreach sm.var.temp._source,$$(sm.this.sources.$(sm.var.temp._lang)),\

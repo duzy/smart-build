@@ -2,7 +2,7 @@
 
 $(call sm-new-module, cweave, exe, gcc)
 
-sm.this.verbose := true
+sm.this.verbose := false
 sm.this.lang := c
 sm.this.sources := cweave.w common.w prod.w
 
