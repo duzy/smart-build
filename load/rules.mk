@@ -20,8 +20,8 @@ define sm-rule-dependency
 $(eval $(sm.args.output) : $(sm.args.sources)
 	$$(call sm-util-mkdir,$$(@D))
 	$(if $(call equal,$(sm.this.verbose),true),,\
-          $$(info $(sm.args.output): $$@)\
-        @)$(sm.tool.$(sm.this.toolset).dependency.$(sm.args.lang)))
+          $$(info smart: update $(sm.args.output))\
+        $(sm.var.Q))$(sm.tool.$(sm.this.toolset).dependency.$(sm.args.lang)))
 endef #sm-rule-dependency
 
 sm-rule-compile = $(eval sm.args.action := compile)$(call sm-rule)

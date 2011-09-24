@@ -375,13 +375,18 @@ define sm.fun.make-rule-compile-common
      $(sm.tool.common.target.lang.$(sm.var.temp._lang)),$(sm.this.lang))
    sm.args.lang = $(sm.this.lang)
    sm.args.target := $(sm.var.temp._intermediate)
-   sm.args.sources := $(sm.var.temp._source))\
+   sm.args.sources := $(sm.var.temp._source)
+  )\
  $(eval \
    sm.this.sources.$(sm.var.temp._target_lang) += $(sm.var.temp._intermediate)
    sm.this.sources.has.$(sm.var.temp._target_lang) := true
    $(sm.args.target) : $(sm.args.sources)
-	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -vp $(dir $(sm.args.target))
-	$(sm.tool.common.compile.$(sm.var.temp._lang))
+	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
+	@[[ -d $(sm.out.tmp) ]] || mkdir -p $(sm.out.tmp)
+	$(if $(call equal,$(sm.this.verbose),true),\
+             $(sm.tool.common.compile.$(sm.var.temp._lang)),\
+           $$(info $(sm.var.temp._lang): $(sm.this.name) += $$^ --> $$@)\
+           $(sm.var.Q)$(sm.tool.common.compile.$(sm.var.temp._lang))>/dev/null)
   )
 endef #sm.fun.make-rule-compile-common
 

@@ -21,6 +21,7 @@ streams from |iostream|.
 @<Include ...@>=
 #include <iostream>
 
+@ 
 @ A C++ program will be start from the main procedure.
 
 @d SIMPLE_MACRO "foo"

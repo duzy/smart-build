@@ -7,6 +7,6 @@ sm.this.sources := main.w
 
 $(sm-build-this)
 
-$(info foo: $(sm.var.foo.sources.c++))
-$(info foo: $(sm.this.sources.c++))
-$(info foo: $(sm.this.objects))
+$(call sm-check-equal,$(strip $(sm.var.foo.sources.c++)),$(sm.out.inter)/main.cpp)
+$(call sm-check-equal,$(strip $(sm.this.sources.c++)),$(sm.out.inter)/main.cpp)
+$(call sm-check-equal,$(strip $(sm.this.objects)),$(sm.out.obj)/$(sm.out.inter)/main.o)
