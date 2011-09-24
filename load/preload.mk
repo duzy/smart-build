@@ -26,9 +26,14 @@ sm.this.out_implib :=
 sm.this.rpath :=
 sm.this.rpath-link :=
 sm.this.sources :=
+sm.this.sources.common :=
 sm.this.sources.generated :=
 sm.this.suffix :=
 sm.this.type :=
 sm.this.toolset :=
 sm.this.targets :=
 sm.this.whole_archives :=
+
+$(foreach sm.var.temp._lang,$(sm.tool.common.langs),\
+   $(eval sm.this.sources.$(sm.var.temp._lang) :=)\
+   $(eval sm.this.sources.has.$(sm.var.temp._lang) :=))

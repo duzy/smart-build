@@ -487,7 +487,8 @@ $(strip $(eval \
                $$(eval sm.this.sources.common += $(sm.var.temp._source))\
                $$(eval sm.this.sources.$$_ += $(sm.var.temp._source))\
                $$(eval sm.this.sources.has.$$_ := true)\
-               $$(eval sm.var.common.langs += $$_)\
+               $$(if $$(filter $$_,$$(sm.var.common.langs)),,\
+                   $$(eval sm.var.common.langs += $$_))\
                $$(eval sm.var.common.lang$(suffix $(sm.var.temp._source)) := $$_)\
                $(null)))
    endif
