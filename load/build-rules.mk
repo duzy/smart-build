@@ -273,7 +273,6 @@ define sm.fun.compute-intermediate.external
 $(sm.fun.compute-intermediate.)
 endef #sm.fun.compute-intermediate.external
 
-#$(suffix $(sm.var.temp._source))
 define sm.fun.compute-intermediate.common
 $(sm.out.inter)/$(sm.fun.compute-intermediate-name)$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.this.lang))
 endef #sm.fun.compute-intermediate.common
@@ -366,13 +365,23 @@ define sm.fun.make-rule-compile
  )$(sm-rule-compile-$(sm.var.temp._lang))
 endef #sm.fun.make-rule-compile
 
+#	$(if $(call equal,$(sm.this.verbose),true),\
+#             $(sm.tool.common.compile.$(sm.var.temp._lang)),\
+#           $$(info $(sm.var.temp._lang): $(sm.this.name) += $$^ --> $$@)\
+#           $(sm.var.Q)$(sm.tool.common.compile.$(sm.var.temp._lang))>/dev/null)
+define sm.fun.make-rule-compile-common-command
+$(strip $(if $(call equal,$(sm.this.verbose),true),$2,\
+   $$(info $1: $(sm.this.name) += $$^ --> $$@)\
+   $(sm.var.Q)$2>/dev/null))
+endef #sm.fun.make-rule-compile-common-command
+
 define sm.fun.make-rule-compile-common
  $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
+ $(eval sm.var.temp._target_lang := $(strip $(or \
+     $(sm.tool.common.target.lang.$(sm.var.temp._lang)),$(sm.this.lang))))\
  $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.common))\
  $(eval \
-   sm.var.temp._target_lang := $(if $(sm.tool.common.target.lang.$(sm.var.temp._lang)),\
-     $(sm.tool.common.target.lang.$(sm.var.temp._lang)),$(sm.this.lang))
    sm.args.lang = $(sm.this.lang)
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(sm.var.temp._source)
@@ -382,12 +391,31 @@ define sm.fun.make-rule-compile-common
    sm.this.sources.has.$(sm.var.temp._target_lang) := true
    $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
-	@[[ -d $(sm.out.tmp) ]] || mkdir -p $(sm.out.tmp)
-	$(if $(call equal,$(sm.this.verbose),true),\
-             $(sm.tool.common.compile.$(sm.var.temp._lang)),\
-           $$(info $(sm.var.temp._lang): $(sm.this.name) += $$^ --> $$@)\
-           $(sm.var.Q)$(sm.tool.common.compile.$(sm.var.temp._lang))>/dev/null)
-  )
+	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.$(sm.var.temp._lang)))
+  )\
+ $(eval sm.var.temp._target_lang := $(sm.tool.common.target.lang.literal.$(sm.var.temp._lang)))\
+ $(if $(sm.var.temp._target_lang),$(eval \
+   # TODO: should use sm.args.targets including .tex, .idx, .scn files
+   sm.args.target := $(basename $(sm.var.temp._intermediate))$(sm.tool.common.intermediate.suffix.$(sm.var.temp._target_lang))
+   sm.args.sources := $(sm.var.temp._source)
+  )$(eval #TODO: rules for producing .tex sources ($(sm.var.temp._target_lang))
+   sm.this.sources.$(sm.var.temp._target_lang) += $(sm.args.target)
+   sm.this.sources.has.$(sm.var.temp._target_lang) := true
+   $(sm.args.target) : $(sm.args.sources)
+	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
+	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.literal.$(sm.var.temp._lang)))
+  )$(eval # recalculate target/sources
+   sm.args.sources := $(sm.args.target)
+   sm.args.target := $(basename $(sm.args.target)).dvi
+  )$(eval # rules for producing .dvi/.pdf targets
+   $(sm.var.this).documents += $(sm.out.doc)/$(notdir $(sm.args.target))
+   $(sm.out.doc)/$(notdir $(sm.args.target)) : $(sm.args.target)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	@$$(info smart: copy $$< -> $$@)$(call sm.tool.common.cp,$$<,$$@)
+   $(sm.args.target) : $(sm.args.sources)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.$(sm.var.temp._target_lang).dvi.private))
+  ))
 endef #sm.fun.make-rule-compile-common
 
 ##
@@ -530,8 +558,9 @@ sm.var.temp._should_make_targets := \
 ## Make rule for targets of the module
 ifeq ($(sm.var.temp._should_make_targets),true)
 $(if $($(sm.var.this).objects),,$(error smart: no objects for building '$(sm.this.name)'))
+
 $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
-$(eval $(sm.var.this).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type))))
+$(sm.var.this).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type)))
 
 $(call sm-check-defined,sm.var.action)
 $(call sm-check-defined,$(sm.var.this).lang)
@@ -572,6 +601,7 @@ $(sm.var.this).targets += $($(sm.var.this).user_defined_targets)
 sm.this.targets = $($(sm.var.this).targets)
 sm.this.objects = $($(sm.var.this).objects)
 sm.this.depends = $($(sm.var.this).depends)
+sm.this.documents = $($(sm.var.this).documents)
 
 #$(info $(sm.var.this).objects: $($(sm.var.this).objects))
 #$(info $(sm.var.this).depends: $($(sm.var.this).depends))
@@ -585,12 +615,19 @@ endif
 
 ifeq ($(MAKECMDGOALS),clean)
   goal-$(sm.this.name) : ; @true
+  doc-$(sm.this.name) : ; @true
 else
   goal-$(sm.this.name) : \
     $($(sm.var.this).flag_files) \
     $(sm.this.depends) \
     $(sm.this.depends.copyfiles) \
     $($(sm.var.this).targets)
+
+  ifneq ($($(sm.var.this).documents),)
+    doc-$(sm.this.name) : $($(sm.var.this).documents)
+  else
+    doc-$(sm.this.name) : ; @echo smart: No documents for $(sm.this.name).
+  endif
 endif
 
 ifeq ($(sm.this.type),t)

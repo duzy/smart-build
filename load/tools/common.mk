@@ -14,10 +14,15 @@ sm.tool.common.intermediate.suffix.cweb.c++ = .cpp
 sm.tool.common.intermediate.suffix.noweb :=
 sm.tool.common.intermediate.suffix.noweb.c := .c
 sm.tool.common.intermediate.suffix.noweb.c++ := .cpp
+sm.tool.common.intermediate.suffix.TeX := .tex
+sm.tool.common.intermediate.suffix.LaTeX := .tex
 
 sm.tool.common.target.lang.web := pascal
 sm.tool.common.target.lang.cweb :=
 sm.tool.common.target.lang.noweb :=
+sm.tool.common.target.lang.literal.web := TeX
+sm.tool.common.target.lang.literal.cweb := TeX
+sm.tool.common.target.lang.literal.noweb := TeX
 
 ##################################################
 
@@ -28,6 +33,12 @@ define sm.tool.common.compile.web.private
 tangle $(sm.args.sources) && \
 mv $(word 1,$(sm.args.sources:%.web=%.p)) $(sm.args.target)
 endef #sm.tool.common.compile.web.private
+
+## Literal source generation(for documentation)
+define sm.tool.common.compile.literal.web.private
+weave $(sm.args.sources) && \
+mv $(word 1,$(sm.args.sources:%.web=%.p)) $(sm.args.target)
+endef #sm.tool.common.compile.literal.web.private
 
 ##
 ##
@@ -40,6 +51,14 @@ ctangle \
 endef #sm.tool.common.compile.cweb.private
 
 ##
+define sm.tool.common.compile.literal.cweb.private
+cweave \
+ $(word 1,$(sm.args.sources)) \
+ $(or $(word 2,$(sm.args.sources)),-) \
+ $(sm.args.target)
+endef #sm.tool.common.compile.literal.cweb.private
+
+##
 ##
 ##
 define sm.tool.common.compile.noweb.private
@@ -47,10 +66,49 @@ notangle -$(sm.args.lang) $(sm.args.sources) && \
 mv $(word 1,$(sm.args.sources:%.nw=%.p)) $(sm.args.target)
 endef #sm.tool.common.compile.noweb.private
 
+##
+define sm.tool.common.compile.noweb.private
+noweave -$(sm.args.lang) $(sm.args.sources) && \
+mv $(word 1,$(sm.args.sources:%.nw=%.p)) $(sm.args.target)
+endef #sm.tool.common.compile.noweb.private
+
 sm.tool.common.compile       = $(call sm.tool.common.compile.$(sm.args.lang).private)
 sm.tool.common.compile.web   = $(eval sm.args.lang:=web)$(sm.tool.common.compile)
 sm.tool.common.compile.cweb  = $(eval sm.args.lang:=cweb)$(sm.tool.common.compile)
 sm.tool.common.compile.noweb = $(eval sm.args.lang:=noweb)$(sm.tool.common.compile)
+
+sm.tool.common.compile.literal       = $(call sm.tool.common.compile.literal.$(sm.args.lang).private)
+sm.tool.common.compile.literal.web   = $(eval sm.args.lang:=web)$(sm.tool.common.compile.literal)
+sm.tool.common.compile.literal.cweb  = $(eval sm.args.lang:=cweb)$(sm.tool.common.compile.literal)
+sm.tool.common.compile.literal.noweb = $(eval sm.args.lang:=noweb)$(sm.tool.common.compile.literal)
+
+##
+## Plain TeX compilation commands
+## -> DVI output
+define sm.tool.common.compile.TeX.dvi.private
+cd $(dir $(word 1,$(sm.args.sources))) && \
+tex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources)))
+endef #sm.tool.common.compile.TeX.dvi.private
+
+## -> PDF output
+define sm.tool.common.compile.TeX.pdf.private
+cd $(dir $(word 1,$(sm.args.sources))) && \
+pdftex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources)))
+endef #sm.tool.common.compile.TeX.pdf.private
+
+##
+## LaTeX compilation commands
+## -> DVI output
+define sm.tool.common.compile.LaTeX.dvi.private
+cd $(dir $(word 1,$(sm.args.sources))) && \
+latex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources)))
+endef #sm.tool.common.compile.LaTeX.dvi.private
+
+## -> PDF output
+define sm.tool.common.compile.LaTeX.pdf.private
+cd $(dir $(word 1,$(sm.args.sources))) && \
+pdflatex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources)))
+endef #sm.tool.common.compile.LaTeX.pdf.private
 
 ##################################################
 

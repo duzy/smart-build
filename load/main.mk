@@ -70,6 +70,7 @@ endif
 ifneq ($(sm.global.goals),)
   all: $(sm.global.goals)
   clean: $(sm.global.goals:goal-%=clean-%)
+  doc: $(sm.global.goals:goal-%=doc-%)
 
   ifneq ($(sm.global.tests),)
     test: $(sm.global.tests)
@@ -81,6 +82,7 @@ ifneq ($(sm.global.goals),)
   $(call sm-check-not-empty, sm.out.inc)
   $(call sm-check-not-empty, sm.out.obj)
   $(call sm-check-not-empty, sm.out.tmp)
+  $(call sm-check-not-empty, sm.out.inter)
 
   ## rules for output dirs, TODO: replace sm-util-mkdir on these dirs with it
   $(sm.out) \
@@ -89,6 +91,7 @@ ifneq ($(sm.global.goals),)
   $(sm.out.inc) \
   $(sm.out.obj) \
   $(sm.out.tmp) \
+  $(sm.out.inter) \
   :; $(call sm-util-mkdir,$@) @true
 
 else

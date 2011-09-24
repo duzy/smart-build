@@ -24,7 +24,7 @@ streams from |iostream|.
 @ 
 @ A C++ program will be start from the main procedure.
 
-@d SIMPLE_MACRO "foo"
+@d SIMPLE_MACRO "This is a simpile Literate Programming example."
 
 @<The main...@>=
 int main(int argc, char**argv)
