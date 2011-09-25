@@ -1,41 +1,68 @@
 #
+#
+#
+# Normally building a common target from the sources may be of
+#    *) one phrase: all source files can be transform into the target directly
+#    *) two phrases:
+#	1) all source files must be transformed into a intermediate format
+#	2) the target file can be generated from the intermediate files.
+# 
+
 
 ## common languages and their suffixes
-sm.tool.common.langs := web cweb noweb
+sm.tool.common.langs := web cweb noweb TeX
 sm.tool.common.web.suffix := .web
 sm.tool.common.cweb.suffix := .w
 sm.tool.common.noweb.suffix := .nw
 sm.tool.common.TeX.suffix := .tex
 sm.tool.common.LaTeX.suffix := .latex
 
-## set target langs for tangle, ctangle, notangle, etc.
-sm.tool.common.intermediate.lang.web := pascal
-sm.tool.common.intermediate.lang.cweb :=
-sm.tool.common.intermediate.lang.noweb :=
+## Set intermediate langs for tangle, ctangle, notangle, etc.
+## 
+## Only if the transformation is possible, will the variable be assigned
+## to the target languange, the empty value tells that the transformation
+## is not possible.
+sm.tool.common.intermediate.lang.web.pascal := pascal
+sm.tool.common.intermediate.lang.web.TeX := TeX
+sm.tool.common.intermediate.lang.web.LaTeX := LaTeX
+sm.tool.common.intermediate.lang.cweb.c := c
+sm.tool.common.intermediate.lang.cweb.c++ := c++
+sm.tool.common.intermediate.lang.cweb.TeX := TeX
+sm.tool.common.intermediate.lang.cweb.LaTeX := LaTeX
+sm.tool.common.intermediate.lang.noweb.c := c
+sm.tool.common.intermediate.lang.noweb.c++ := c++
+sm.tool.common.intermediate.lang.noweb.TeX := TeX
+sm.tool.common.intermediate.lang.noweb.LaTeX := LaTeX
 
-## set target langs for weave, cweave, noweave, etc.
+## Set target langs for weave, cweave, noweave, etc.
+##
+## For TeX and LaTeX, since they are literal language themselves, the values
+## are not transformed.
 sm.tool.common.intermediate.lang.literal.web := TeX
 sm.tool.common.intermediate.lang.literal.cweb := TeX
 sm.tool.common.intermediate.lang.literal.noweb := TeX
+#sm.tool.common.intermediate.lang.literal.TeX := TeX
+#sm.tool.common.intermediate.lang.literal.LaTeX := LaTeX
 
 ## known intermediate suffixes list, empty if no intermediates
 sm.tool.common.intermediate.suffix.web := .p
 sm.tool.common.intermediate.suffix.web.c := .p
 sm.tool.common.intermediate.suffix.web.c++ := .p
+sm.tool.common.intermediate.suffix.web.pascal := .p
 sm.tool.common.intermediate.suffix.web.TeX := .tex
 sm.tool.common.intermediate.suffix.web.LaTeX := .latex
-sm.tool.common.intermediate.suffix.cweb = .c
+sm.tool.common.intermediate.suffix.cweb = $(error smart: undetermined intermediate form)
 sm.tool.common.intermediate.suffix.cweb.c = .c
 sm.tool.common.intermediate.suffix.cweb.c++ = .cpp
 sm.tool.common.intermediate.suffix.cweb.TeX = .tex
 sm.tool.common.intermediate.suffix.cweb.LaTeX = .latex
-sm.tool.common.intermediate.suffix.noweb :=
+sm.tool.common.intermediate.suffix.noweb = $(error smart: undetermined intermediate form)
 sm.tool.common.intermediate.suffix.noweb.c := .c
 sm.tool.common.intermediate.suffix.noweb.c++ := .cpp
 sm.tool.common.intermediate.suffix.noweb.TeX := .tex
 sm.tool.common.intermediate.suffix.noweb.LaTeX := .latex
-sm.tool.common.intermediate.suffix.TeX :=
-sm.tool.common.intermediate.suffix.LaTeX :=
+sm.tool.common.intermediate.suffix.TeX := .dvi
+sm.tool.common.intermediate.suffix.LaTeX := .dvi
 
 ##################################################
 

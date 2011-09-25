@@ -387,36 +387,44 @@ endef #sm.fun.make-rule-compile-common-command
 define sm.fun.make-rule-compile-common
  $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
- $(eval ## target output file language, e.g. Parscal, C, C++, etc.
-   sm.var.temp._target_lang := $(strip $(or \
-     $(sm.tool.common.intermediate.lang.$(sm.var.temp._lang)),$(sm.this.lang))))\
+ $(eval ## Compute output file and literal output languages\
+   ## target output file language, e.g. Parscal, C, C++, TeX, etc.
+   sm.var.temp._output_lang := $(sm.tool.common.intermediate.lang.$(sm.var.temp._lang).$(sm.this.lang))
+   ## literal output file language, e.g. TeX, LaTeX, etc.
+   sm.var.temp._literal_lang := $(sm.tool.common.intermediate.lang.literal.$(sm.var.temp._lang))
+  )\
  $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.common))\
- $(eval ## args for sm.tool.common.compile.*
+ $(if $(and $(call not-equal,$(sm.var.temp._literal_lang),$(sm.var.temp._lang)),
+            $(sm.var.temp._output_lang)),$(eval \
+   ## args for sm.tool.common.compile.*
    sm.args.lang = $(sm.this.lang)
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(sm.var.temp._source)
-  )\
- $(eval ## rule for cweb to c compilation
-   sm.this.sources.$(sm.var.temp._target_lang) += $(sm.var.temp._intermediate)
-   sm.this.sources.has.$(sm.var.temp._target_lang) := true
-  ifeq ($(sm.global.has.rule.$(sm.args.target)),)
-   sm.global.has.rule.$(sm.args.target) := true
-   $(sm.args.target) : $(sm.args.sources)
+  )$(eval \
+   ifneq ($(sm.var.temp._output_lang),)
+    ## If $(sm.var.temp._source) is possible to be transformed into another lang.
+     sm.this.sources.$(sm.var.temp._output_lang) += $(sm.args.target)
+     sm.this.sources.has.$(sm.var.temp._output_lang) := true
+   endif
+   ## Make rule for generating intermediate file (e.g. cweb to c compilation)
+   ifeq ($(sm.global.has.rule.$(sm.args.target)),)
+     sm.global.has.rule.$(sm.args.target) := true
+     $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.$(sm.var.temp._lang)))
-  else
-   #$$(info smart: rule duplicated for $(sm.args.target))
-  endif
-  )\
- $(eval sm.var.temp._target_lang := $(sm.tool.common.intermediate.lang.literal.$(sm.var.temp._lang)))\
- $(if $(sm.var.temp._target_lang),$(eval ## If source can have literal(.tex) output...
+   else
+     #$$(info smart: rule duplicated for $(sm.args.target))
+   endif
+  ),$(info ignored: $(sm.var.temp._lang), $(sm.var.temp._output_lang), $(sm.var.temp._literal_lang), $(sm.args.sources)))\
+ $(if $(sm.var.temp._literal_lang),$(eval \
+   ## If source can have literal(.tex) output...
    # TODO: should use sm.args.targets to including .tex, .idx, .scn files
-   sm.args.target := $(basename $(sm.var.temp._intermediate))$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.var.temp._target_lang))
+   sm.args.target := $(basename $(sm.var.temp._intermediate))$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.var.temp._literal_lang))
    sm.args.sources := $(sm.var.temp._source)
   )$(eval ## compilate rule for documentation sources(.tex files)
-   #TODO: rules for producing .tex sources ($(sm.var.temp._target_lang))
-   sm.this.sources.$(sm.var.temp._target_lang) += $(sm.args.target)
-   sm.this.sources.has.$(sm.var.temp._target_lang) := true
+   #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
+   sm.this.sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
+   sm.this.sources.has.$(sm.var.temp._literal_lang) := true
   ifeq ($(sm.global.has.rule.$(sm.args.target)),)
    sm.global.has.rule.$(sm.args.target) := true
    $(sm.args.target) : $(sm.args.sources)
@@ -437,7 +445,7 @@ define sm.fun.make-rule-compile-common
 	@$$(info smart: copy $$< -> $$@)$(call sm.tool.common.cp,$$<,$$@)
    $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.$(sm.var.temp._target_lang).dvi.private))
+	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.$(sm.var.temp._literal_lang).dvi.private))
   else
    #$$(info smart: rule duplicated for $(sm.args.target))
   endif
