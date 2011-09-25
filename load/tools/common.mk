@@ -10,7 +10,7 @@
 
 
 ## common languages and their suffixes
-sm.tool.common.langs := web cweb noweb TeX
+sm.tool.common.langs := web cweb noweb
 sm.tool.common.web.suffix := .web
 sm.tool.common.cweb.suffix := .w
 sm.tool.common.noweb.suffix := .nw

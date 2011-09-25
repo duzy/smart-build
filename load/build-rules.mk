@@ -483,12 +483,9 @@ endef #sm.fun.make-rules-compile
 ## to sm.this.sources.c++ which will then be used by sm.fun.make-rules-compile.
 define sm.fun.make-rules-compile-common
 $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
-$(eval \
-  ifeq ($$(sm.this.sources.has.$(sm.var.temp._lang)),true)
-    $$(foreach sm.var.temp._source,$$(sm.this.sources.$(sm.var.temp._lang)),\
-       $$(call sm.fun.make-rule-compile-common))
-  endif
-  $(null))
+$(if $(sm.this.sources.has.$(sm.var.temp._lang)),\
+    $(foreach sm.var.temp._source,$(sm.this.sources.$(sm.var.temp._lang)),\
+       $(call sm.fun.make-rule-compile-common)))
 endef #sm.fun.make-rules-compile-common
 
 ##################################################
