@@ -408,19 +408,16 @@ define sm.fun.make-rule-compile-common
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(sm.var.temp._source)
   )$(eval \
-   ifneq ($(sm.var.temp._output_lang),)
-    ## If $(sm.var.temp._source) is possible to be transformed into another lang.
-     sm.this.sources.$(sm.var.temp._output_lang) += $(sm.args.target)
-     sm.this.sources.has.$(sm.var.temp._output_lang) := true
-   endif
+   ## If $(sm.var.temp._source) is possible to be transformed into another lang.
+   sm.this.sources.$(sm.var.temp._output_lang) += $(sm.args.target)
+   sm.this.sources.has.$(sm.var.temp._output_lang) := true
    ## Make rule for generating intermediate file (e.g. cweb to c compilation)
    ifeq ($(sm.global.has.rule.$(sm.args.target)),)
      sm.global.has.rule.$(sm.args.target) := true
      $(sm.args.target) : $(sm.args.sources)
-	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
-	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.$(sm.var.temp._lang)))
-   else
-     #$$(info smart: rule duplicated for $(sm.args.target))
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
+            $(sm.tool.common.compile.$(sm.var.temp._lang)))
    endif
   ))\
  $(if $(sm.var.temp._literal_lang),$(eval \
@@ -434,12 +431,11 @@ define sm.fun.make-rule-compile-common
      sm.this.sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
      sm.this.sources.has.$(sm.var.temp._literal_lang) := true
      ifeq ($(sm.global.has.rule.$(sm.args.target)),)
-     sm.global.has.rule.$(sm.args.target) := true
-     $(sm.args.target) : $(sm.args.sources)
-	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
-	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.literal.$(sm.var.temp._lang)))
-     else
-     #$$(info smart: rule duplicated for $(sm.args.target))
+       sm.global.has.rule.$(sm.args.target) := true
+       $(sm.args.target) : $(sm.args.sources)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
+            $(sm.tool.common.compile.literal.$(sm.var.temp._lang)))
      endif
    else
 $$(info literal: $(sm.args.sources) -> $(sm.args.target))
