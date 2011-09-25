@@ -18,15 +18,13 @@ $(eval \
              )$(sm.var.Q)\
         )$(sm.tool.$(sm.this.toolset).$(sm.args.action).$(sm.args.lang))
   else
-   $$(info smart: rule duplicated for $(sm.args.target))
+   #$$(info smart: rule duplicated for $(sm.args.target))
   endif
   )
 endef #sm-rule
 
-define sm-rule-dependency
-$(error smart: internal: sm-rule-dependency is deprecated)
-endef #sm-rule-dependency
-
 sm-rule-compile = $(eval sm.args.action := compile)$(call sm-rule)
 sm-rule-link    = $(eval sm.args.action := link)$(call sm-rule)
 sm-rule-archive = $(eval sm.args.action := archive)$(call sm-rule)
+
+sm-rule-dependency = $(error smart: internal: sm-rule-dependency is deprecated)

@@ -1,28 +1,41 @@
 #
 
+## common languages and their suffixes
 sm.tool.common.langs := web cweb noweb
 sm.tool.common.web.suffix := .web
 sm.tool.common.cweb.suffix := .w
 sm.tool.common.noweb.suffix := .nw
+sm.tool.common.TeX.suffix := .tex
+sm.tool.common.LaTeX.suffix := .latex
 
+## set target langs for tangle, ctangle, notangle, etc.
+sm.tool.common.intermediate.lang.web := pascal
+sm.tool.common.intermediate.lang.cweb :=
+sm.tool.common.intermediate.lang.noweb :=
+
+## set target langs for weave, cweave, noweave, etc.
+sm.tool.common.intermediate.lang.literal.web := TeX
+sm.tool.common.intermediate.lang.literal.cweb := TeX
+sm.tool.common.intermediate.lang.literal.noweb := TeX
+
+## known intermediate suffixes list, empty if no intermediates
 sm.tool.common.intermediate.suffix.web := .p
 sm.tool.common.intermediate.suffix.web.c := .p
 sm.tool.common.intermediate.suffix.web.c++ := .p
+sm.tool.common.intermediate.suffix.web.TeX := .tex
+sm.tool.common.intermediate.suffix.web.LaTeX := .latex
 sm.tool.common.intermediate.suffix.cweb = .c
 sm.tool.common.intermediate.suffix.cweb.c = .c
 sm.tool.common.intermediate.suffix.cweb.c++ = .cpp
+sm.tool.common.intermediate.suffix.cweb.TeX = .tex
+sm.tool.common.intermediate.suffix.cweb.LaTeX = .latex
 sm.tool.common.intermediate.suffix.noweb :=
 sm.tool.common.intermediate.suffix.noweb.c := .c
 sm.tool.common.intermediate.suffix.noweb.c++ := .cpp
-sm.tool.common.intermediate.suffix.TeX := .tex
-sm.tool.common.intermediate.suffix.LaTeX := .tex
-
-sm.tool.common.target.lang.web := pascal
-sm.tool.common.target.lang.cweb :=
-sm.tool.common.target.lang.noweb :=
-sm.tool.common.target.lang.literal.web := TeX
-sm.tool.common.target.lang.literal.cweb := TeX
-sm.tool.common.target.lang.literal.noweb := TeX
+sm.tool.common.intermediate.suffix.noweb.TeX := .tex
+sm.tool.common.intermediate.suffix.noweb.LaTeX := .latex
+sm.tool.common.intermediate.suffix.TeX :=
+sm.tool.common.intermediate.suffix.LaTeX :=
 
 ##################################################
 
@@ -82,6 +95,8 @@ sm.tool.common.compile.literal.web   = $(eval sm.args.lang:=web)$(sm.tool.common
 sm.tool.common.compile.literal.cweb  = $(eval sm.args.lang:=cweb)$(sm.tool.common.compile.literal)
 sm.tool.common.compile.literal.noweb = $(eval sm.args.lang:=noweb)$(sm.tool.common.compile.literal)
 
+##################################################
+
 ##
 ## Plain TeX compilation commands
 ## -> DVI output
@@ -110,6 +125,8 @@ cd $(dir $(word 1,$(sm.args.sources))) && \
 pdflatex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources)))
 endef #sm.tool.common.compile.LaTeX.pdf.private
 
+sm.tool.common.compile.TeX =
+
 ##################################################
 
 define sm.tool.common.rm
@@ -137,4 +154,3 @@ endef #sm.tool.common.mv
 define sm.tool.common.ln
 $(if $(and $1,$2),ln -sf $1 $2)
 endef #sm.tool.common.ln
-

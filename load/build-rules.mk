@@ -343,7 +343,7 @@ define sm.fun.make-rule-depend
           $$(info smart: update $(sm.args.output))\
         $(sm.var.Q))$(sm.tool.$(sm.this.toolset).dependency.$(sm.args.lang))
    else
-    $$(info smart: rule duplicated for $(sm.args.output))
+    #$$(info smart: rule duplicated for $(sm.args.output))
    endif
   )
 endef #sm.fun.make-rule-depend
@@ -387,15 +387,16 @@ endef #sm.fun.make-rule-compile-common-command
 define sm.fun.make-rule-compile-common
  $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
- $(eval sm.var.temp._target_lang := $(strip $(or \
-     $(sm.tool.common.target.lang.$(sm.var.temp._lang)),$(sm.this.lang))))\
+ $(eval ## target output file language, e.g. Parscal, C, C++, etc.
+   sm.var.temp._target_lang := $(strip $(or \
+     $(sm.tool.common.intermediate.lang.$(sm.var.temp._lang)),$(sm.this.lang))))\
  $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.common))\
- $(eval \
+ $(eval ## args for sm.tool.common.compile.*
    sm.args.lang = $(sm.this.lang)
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(sm.var.temp._source)
   )\
- $(eval \
+ $(eval ## rule for cweb to c compilation
    sm.this.sources.$(sm.var.temp._target_lang) += $(sm.var.temp._intermediate)
    sm.this.sources.has.$(sm.var.temp._target_lang) := true
   ifeq ($(sm.global.has.rule.$(sm.args.target)),)
@@ -404,15 +405,16 @@ define sm.fun.make-rule-compile-common
 	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.$(sm.var.temp._lang)))
   else
-   $$(info smart: rule duplicated for $(sm.args.target))
+   #$$(info smart: rule duplicated for $(sm.args.target))
   endif
   )\
- $(eval sm.var.temp._target_lang := $(sm.tool.common.target.lang.literal.$(sm.var.temp._lang)))\
- $(if $(sm.var.temp._target_lang),$(eval \
-   # TODO: should use sm.args.targets including .tex, .idx, .scn files
-   sm.args.target := $(basename $(sm.var.temp._intermediate))$(sm.tool.common.intermediate.suffix.$(sm.var.temp._target_lang))
+ $(eval sm.var.temp._target_lang := $(sm.tool.common.intermediate.lang.literal.$(sm.var.temp._lang)))\
+ $(if $(sm.var.temp._target_lang),$(eval ## If source can have literal(.tex) output...
+   # TODO: should use sm.args.targets to including .tex, .idx, .scn files
+   sm.args.target := $(basename $(sm.var.temp._intermediate))$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.var.temp._target_lang))
    sm.args.sources := $(sm.var.temp._source)
-  )$(eval #TODO: rules for producing .tex sources ($(sm.var.temp._target_lang))
+  )$(eval ## compilate rule for documentation sources(.tex files)
+   #TODO: rules for producing .tex sources ($(sm.var.temp._target_lang))
    sm.this.sources.$(sm.var.temp._target_lang) += $(sm.args.target)
    sm.this.sources.has.$(sm.var.temp._target_lang) := true
   ifeq ($(sm.global.has.rule.$(sm.args.target)),)
@@ -421,7 +423,7 @@ define sm.fun.make-rule-compile-common
 	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.literal.$(sm.var.temp._lang)))
   else
-   $$(info smart: rule duplicated for $(sm.args.target))
+   #$$(info smart: rule duplicated for $(sm.args.target))
   endif
   )$(eval # recalculate target/sources
    sm.args.sources := $(sm.args.target)
@@ -437,7 +439,7 @@ define sm.fun.make-rule-compile-common
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.$(sm.var.temp._target_lang).dvi.private))
   else
-   $$(info smart: rule duplicated for $(sm.args.target))
+   #$$(info smart: rule duplicated for $(sm.args.target))
   endif
   ))
 endef #sm.fun.make-rule-compile-common
@@ -582,26 +584,26 @@ sm.var.temp._should_make_targets := \
 
 ## Make rule for targets of the module
 ifeq ($(sm.var.temp._should_make_targets),true)
-$(if $($(sm.var.this).objects),,$(error smart: no objects for building '$(sm.this.name)'))
+  $(if $($(sm.var.this).objects),,$(error smart: no objects for building '$(sm.this.name)'))
 
-$(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
-$(sm.var.this).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type)))
+  $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
+  $(sm.var.this).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type)))
 
-$(call sm-check-defined,sm.var.action)
-$(call sm-check-defined,$(sm.var.this).lang)
-$(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
-$(call sm-check-defined,sm.fun.compute-flags-$(sm.var.action))
-$(call sm-check-defined,sm.fun.compute-intermediates-$(sm.var.action))
-$(call sm-check-defined,sm.fun.compute-libs-$(sm.var.action))
+  $(call sm-check-defined,sm.var.action)
+  $(call sm-check-defined,$(sm.var.this).lang)
+  $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
+  $(call sm-check-defined,sm.fun.compute-flags-$(sm.var.action))
+  $(call sm-check-defined,sm.fun.compute-intermediates-$(sm.var.action))
+  $(call sm-check-defined,sm.fun.compute-libs-$(sm.var.action))
 
-$(call sm.fun.compute-flags-$(sm.var.action))
-$(call sm.fun.compute-intermediates-$(sm.var.action))
-$(call sm.fun.compute-libs-$(sm.var.action))
+  $(call sm.fun.compute-flags-$(sm.var.action))
+  $(call sm.fun.compute-intermediates-$(sm.var.action))
+  $(call sm.fun.compute-libs-$(sm.var.action))
 
-$(call sm-check-defined,$(sm.var.this).$(sm.var.action).flags)
-$(call sm-check-defined,$(sm.var.this).$(sm.var.action).objects)
-$(call sm-check-defined,$(sm.var.this).$(sm.var.action).libs)
-$(call sm-check-not-empty,$(sm.var.this).lang)
+  $(call sm-check-defined,$(sm.var.this).$(sm.var.action).flags)
+  $(call sm-check-defined,$(sm.var.this).$(sm.var.action).objects)
+  $(call sm-check-defined,$(sm.var.this).$(sm.var.action).libs)
+  $(call sm-check-not-empty,$(sm.var.this).lang)
 
   sm.args.target := $($(sm.var.this).targets)
   sm.args.sources := $($(sm.var.this).objects)
