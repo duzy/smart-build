@@ -384,6 +384,13 @@ $(strip $(if $(call equal,$(sm.this.verbose),true),$2,\
 endef #sm.fun.make-rule-compile-common-command
 
 ##
+define sm.fun.compute-common-literal-target
+$(strip $(if $(call equal,$(sm.var.temp._literal_lang),$(sm.var.temp._lang))\
+  ,$(sm.out.doc)/$(notdir $(sm.var.temp._intermediate))$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang))
+  ,$(basename $(sm.var.temp._intermediate))$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.var.temp._literal_lang))))
+endef #sm.fun.compute-common-literal-target
+
+##
 define sm.fun.make-rule-compile-common
  $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
@@ -415,24 +422,28 @@ define sm.fun.make-rule-compile-common
    else
      #$$(info smart: rule duplicated for $(sm.args.target))
    endif
-  ),$(info ignored: $(sm.var.temp._lang), $(sm.var.temp._output_lang), $(sm.var.temp._literal_lang), $(sm.args.sources)))\
+  ))\
  $(if $(sm.var.temp._literal_lang),$(eval \
    ## If source can have literal(.tex) output...
    # TODO: should use sm.args.targets to including .tex, .idx, .scn files
-   sm.args.target := $(basename $(sm.var.temp._intermediate))$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.var.temp._literal_lang))
+   sm.args.target := $(sm.fun.compute-common-literal-target)
    sm.args.sources := $(sm.var.temp._source)
   )$(eval ## compilate rule for documentation sources(.tex files)
    #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
-   sm.this.sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
-   sm.this.sources.has.$(sm.var.temp._literal_lang) := true
-  ifeq ($(sm.global.has.rule.$(sm.args.target)),)
-   sm.global.has.rule.$(sm.args.target) := true
-   $(sm.args.target) : $(sm.args.sources)
+   ifneq ($(sm.var.temp._literal_lang),$(sm.var.temp._lang))
+     sm.this.sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
+     sm.this.sources.has.$(sm.var.temp._literal_lang) := true
+     ifeq ($(sm.global.has.rule.$(sm.args.target)),)
+     sm.global.has.rule.$(sm.args.target) := true
+     $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $(dir $(sm.args.target)) ]] || mkdir -p $(dir $(sm.args.target))
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),$(sm.tool.common.compile.literal.$(sm.var.temp._lang)))
-  else
-   #$$(info smart: rule duplicated for $(sm.args.target))
-  endif
+     else
+     #$$(info smart: rule duplicated for $(sm.args.target))
+     endif
+   else
+$$(info literal: $(sm.args.sources) -> $(sm.args.target))
+   endif
   )$(eval # recalculate target/sources
    sm.args.sources := $(sm.args.target)
    sm.args.target := $(basename $(sm.args.target)).dvi

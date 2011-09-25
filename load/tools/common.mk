@@ -41,8 +41,8 @@ sm.tool.common.intermediate.lang.noweb.LaTeX := LaTeX
 sm.tool.common.intermediate.lang.literal.web := TeX
 sm.tool.common.intermediate.lang.literal.cweb := TeX
 sm.tool.common.intermediate.lang.literal.noweb := TeX
-#sm.tool.common.intermediate.lang.literal.TeX := TeX
-#sm.tool.common.intermediate.lang.literal.LaTeX := LaTeX
+sm.tool.common.intermediate.lang.literal.TeX := TeX
+sm.tool.common.intermediate.lang.literal.LaTeX := LaTeX
 
 ## known intermediate suffixes list, empty if no intermediates
 sm.tool.common.intermediate.suffix.web := .p
