@@ -61,8 +61,8 @@ sm.tool.common.intermediate.suffix.noweb.c := .c
 sm.tool.common.intermediate.suffix.noweb.c++ := .cpp
 sm.tool.common.intermediate.suffix.noweb.TeX := .tex
 sm.tool.common.intermediate.suffix.noweb.LaTeX := .latex
-sm.tool.common.intermediate.suffix.TeX := .dvi
-sm.tool.common.intermediate.suffix.LaTeX := .dvi
+#sm.tool.common.intermediate.suffix.TeX := .dvi
+#sm.tool.common.intermediate.suffix.LaTeX := .dvi
 
 ##################################################
 

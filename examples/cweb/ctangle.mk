@@ -4,8 +4,7 @@ $(call sm-new-module, ctangle, exe, gcc)
 
 sm.this.verbose := false
 sm.this.lang := c
-sm.this.sources := ctangle.w common.w 
-#cwebman.tex
+sm.this.sources := ctangle.w common.w cwebman.tex
 
 $(sm-build-this)
 
