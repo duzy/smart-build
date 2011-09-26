@@ -168,18 +168,20 @@ $(if $(call equal,$(sm.this.type),shared),\
   $(eval $(sm-generate-implib.code.$(sm.os.name))))
 endef #sm-generate-implib
 
-## sm-copy-files - Copy headers to $(sm.out.inc)
-##	usage 1: $(call sm-copy-files, $(headers))
-##	usage 2: $(call sm-copy-files, $(headers), subdir)
+## sm-copy-files -- make rules for copying files
 define sm-copy-files
- $(if $1,\
-    $(eval sm.var.__copyfiles := $(strip $1)
-           sm.var.__copyfiles.to := $(strip $2)
-           include $(sm.dir.buildsys)/copyfiles.mk
-           sm.var.__copyfiles :=
-           sm.var.__copyfiles.to :=
-	),\
-    $(error smart: You must specify files for arg one))
+ $(eval \
+   sm.this.args.files := $(strip $1)
+   sm.this.args.location := $(strip $2)
+  )\
+ $(if $(sm.this.args.files),,$(error smart: files must be specified to be copied))\
+ $(if $(sm.this.args.location),,$(error smart: target location(directory) must be specified))\
+ $(eval sm.var.__copyfiles := $(sm.this.args.files)
+        sm.var.__copyfiles.to := $(sm.this.args.location)
+        include $(sm.dir.buildsys)/copyfiles.mk
+        sm.var.__copyfiles :=
+        sm.var.__copyfiles.to :=
+  )
 endef
 
 ## sm-copy-headers - Copy headers
