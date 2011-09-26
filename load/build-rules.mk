@@ -422,9 +422,9 @@ define sm.fun.make-rule-compile-common
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
             $(sm.tool.common.compile.$(sm.var.temp._literal_lang).dvi.private))
+	@[[ -f $$@ ]] || (echo "$(sm.var.temp._lang): no document output" && false)
       endif
-     )$(info $(sm.this.name): liter: $(sm.var.temp._source) -> $(sm.args.target))\
-   ))
+     )$(info $(sm.this.name): liter: $(sm.var.temp._source) -> $(sm.args.target))))
 endef #sm.fun.make-rule-compile-common
 
 ##

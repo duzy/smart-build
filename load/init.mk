@@ -33,7 +33,8 @@ sm.out.inc = $(sm.out)/include
 sm.out.obj = $(sm.out)/obj
 sm.out.tmp = $(sm.out)/temp
 sm.out.inter = $(sm.out)/intermediates
-sm.out.doc = out/$(sm.config.variant)/documents
+#sm.out.doc = out/$(sm.config.variant)/documents
+sm.out.doc = out/documents
 
 sm.dir.out = $(call sm-deprecated, sm.dir.out, sm.out)
 sm.dir.out.bin = $(call sm-deprecated, sm.dir.out.bin, sm.out.bin)
