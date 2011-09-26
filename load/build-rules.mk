@@ -95,11 +95,11 @@ $(strip $(eval sm.var.temp._pretty_list :=)\
   $(sm.var.temp._pretty_list))
 endef #sm.fun.make-pretty-list
 
-## eg. $(call sm.code.append-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
-define sm.code.append-items
+## eg. $(call sm.fun.append-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
+define sm.fun.append-items
 $(foreach sm.var.temp._item,$(strip $2),\
   $(eval $(strip $1) += $(strip $3)$(sm.var.temp._item:$(strip $3)%$(strip $4)=%)$(strip $4)))
-endef #sm.code.append-items
+endef #sm.fun.append-items
 
 ## eg. $(call sm.code.shift-flags-to-file,compile,options.c++)
 define sm.code.shift-flags-to-file-instant
@@ -151,7 +151,7 @@ $(if $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp.
        $(sm.this.defines.$(sm.var.temp._lang))\
        $(sm.this.compile.flags)\
        $(sm.this.compile.flags.$(sm.var.temp._lang)))
-    $$(call sm.code.append-items,\
+    $$(call sm.fun.append-items,\
        $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang),\
        $(sm.global.includes) $(sm.this.includes), -I)
     $(call sm.code.shift-flags-to-file,compile,$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
@@ -216,8 +216,8 @@ $(if $($(sm.var.this).link.libs.computed),,\
   $(eval \
     $(sm.var.this).link.libs.computed := true
     $(sm.var.this).link.libs :=
-    $$(call sm.code.append-items, $(sm.var.this).link.libs,$(sm.global.libdirs) $(sm.this.libdirs), -L)
-    $$(call sm.code.append-items, $(sm.var.this).link.libs,$(sm.global.libs) $(sm.this.libs), -l)
+    $$(call sm.fun.append-items, $(sm.var.this).link.libs,$(sm.global.libdirs) $(sm.this.libdirs), -L)
+    $$(call sm.fun.append-items, $(sm.var.this).link.libs,$(sm.global.libs) $(sm.this.libs), -l)
     $(call sm.code.shift-flags-to-file,link,libs)
    ))
 endef #sm.fun.compute-libs-link
