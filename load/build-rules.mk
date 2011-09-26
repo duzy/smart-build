@@ -410,7 +410,7 @@ define sm.fun.make-rule-compile-common
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
             $(sm.tool.common.compile.literal.$(sm.var.temp._lang)))
       endif
-     )$(info $(sm.this.name): inter: $(sm.var.temp._source) -> $(sm.args.target)))\
+     ))\
   $(if $(call equal,$(sm.var.temp._literal_lang),$(sm.var.temp._lang)),\
     $(eval \
       sm.args.sources := $(sm.var.temp._source)
@@ -426,7 +426,7 @@ define sm.fun.make-rule-compile-common
             $(sm.tool.common.compile.$(sm.var.temp._literal_lang).dvi.private))
 	@[[ -f $$@ ]] || (echo "ERROR: $(sm.var.temp._lang): no document output: $$@" && true)
       endif
-     )$(info $(sm.this.name): liter: $(sm.var.temp._source) -> $(sm.args.target))))
+     )))
 endef #sm.fun.make-rule-compile-common
 
 ##
