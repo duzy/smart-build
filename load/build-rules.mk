@@ -234,9 +234,9 @@ endef #sm.fun.compute-libs-link
 
 ## The output intermediate file's prefix
 sm.var.temp._intermediate_prefix := $(sm.this.dir:$(sm.top)%=%)
-
-## Fixes the prefix for 'out/debug/obj.'
 sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix:%.=%)
+sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix:/%=%)
+
 ifneq ($(sm.var.temp._intermediate_prefix),)
   sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix)/
 endif
@@ -303,10 +303,6 @@ endef #sm.fun.compute-module-targets-static
 
 ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
              $(call not-equal,$(MAKECMDGOALS),clean)),)
-## Make rule for source dependency
-##   eg. $(call sm.fun.make-rule-depend)
-##   eg. $(call sm.fun.make-rule-depend, external)
-##   eg. $(call sm.fun.make-rule-depend, intermediate)
 define sm.fun.make-rule-depend
   $(eval sm.var.temp._depend := $(sm.var.temp._intermediate:%.o=%$(sm.var.depend.suffixes)))\
   $(eval $(sm.var.this).depends += $(sm.var.temp._depend))\
@@ -315,8 +311,8 @@ define sm.fun.make-rule-depend
     sm.args.output := $(sm.var.temp._depend)
     sm.args.target := $(sm.var.temp._intermediate)
     sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
-    sm.args.flags.0 := $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
-    sm.args.flags.0 += $$(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
+    sm.args.flags.0 := $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+    sm.args.flags.0 += $(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
     sm.args.flags.1 :=
     sm.args.flags.2 :=
   )$(eval \
@@ -327,8 +323,6 @@ define sm.fun.make-rule-depend
 	$(if $(call equal,$(sm.this.verbose),true),,\
           $$(info smart: update $(sm.args.output))\
         $(sm.var.Q))$(sm.tool.$(sm.this.toolset).dependency.$(sm.args.lang))
-   else
-    #$$(info smart: rule duplicated for $(sm.args.output))
    endif
   )
 endef #sm.fun.make-rule-depend
@@ -349,8 +343,8 @@ define sm.fun.make-rule-compile
  $(call sm-check-defined,sm.fun.compute-flags-compile, smart: no callback for getting compile options of lang '$(sm.var.temp._lang)')\
  $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.$(strip $1)))\
  $(eval $(sm.var.this).objects += $(sm.var.temp._intermediate))\
- $(call sm.fun.make-rule-depend,$1)\
  $(call sm.fun.compute-flags-compile,$(sm.var.temp._lang))\
+ $(call sm.fun.make-rule-depend,$1)\
  $(eval \
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
