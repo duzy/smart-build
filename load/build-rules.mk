@@ -400,6 +400,9 @@ define sm.fun.make-rule-compile-common
       #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
       sm.this.sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
       sm.this.sources.has.$(sm.var.temp._literal_lang) := true
+      ifeq ($$(filter $(sm.var.temp._literal_lang),$$($(sm.var.toolset).langs) $$(sm.var.common.langs) $$(sm.var.common.langs.extra)),)
+        sm.var.common.langs.extra += $(sm.var.temp._literal_lang)
+      endif
       ifeq ($(sm.global.has.rule.$(sm.args.target)),)
         sm.global.has.rule.$(sm.args.target) := true
       $(sm.args.target) : $(sm.args.sources)
@@ -412,7 +415,6 @@ define sm.fun.make-rule-compile-common
     $(eval \
       sm.args.sources := $(sm.var.temp._source)
       sm.args.target := $(sm.out.doc)/$(notdir $(basename $(sm.var.temp._source))).dvi
-      #sm.args.target := $(basename $(sm.var.temp._source)).dvi
      )\
     $(eval # rules for producing .dvi/.pdf targets
       ifneq ($(sm.global.has.rule.$(sm.args.target)),true)
@@ -422,7 +424,7 @@ define sm.fun.make-rule-compile-common
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
             $(sm.tool.common.compile.$(sm.var.temp._literal_lang).dvi.private))
-	@[[ -f $$@ ]] || (echo "$(sm.var.temp._lang): no document output" && false)
+	@[[ -f $$@ ]] || (echo "ERROR: $(sm.var.temp._lang): no document output: $$@" && true)
       endif
      )$(info $(sm.this.name): liter: $(sm.var.temp._source) -> $(sm.args.target))))
 endef #sm.fun.make-rule-compile-common
@@ -490,11 +492,10 @@ $(strip $(eval \
      $$(foreach _,$(sm.tool.common.langs),\
          $$(if $$(filter $(suffix $(sm.var.temp._source)),$$(sm.tool.common.$$_.suffix)),\
                $$(eval sm.var.temp._is_strange_source :=)\
-               $$(eval sm.this.sources.common += $(sm.var.temp._source))\
-               $$(eval sm.this.sources.$$_ += $(sm.var.temp._source))\
                $$(eval sm.this.sources.has.$$_ := true)\
-               $$(if $$(filter $$_,$$(sm.var.common.langs)),,\
-                   $$(eval sm.var.common.langs += $$_))\
+               $$(if $$(filter $(sm.var.temp._source),$$(sm.this.sources.common)),,$$(eval sm.this.sources.common += $(sm.var.temp._source)))\
+               $$(if $$(filter $(sm.var.temp._source),$$(sm.this.sources.$$_)),,$$(eval sm.this.sources.$$_ += $(sm.var.temp._source)))\
+               $$(if $$(filter $$_,$$(sm.var.common.langs)),,$$(eval sm.var.common.langs += $$_))\
                $$(eval sm.var.common.lang$(suffix $(sm.var.temp._source)) := $$_)\
                $(null)))
    endif
@@ -503,6 +504,7 @@ endef #sm.fun.check-strange-and-compute-common-source
 
 ## Check strange sources and compute common sources.
 sm.var.common.langs :=
+sm.var.common.langs.extra :=
 sm.this.sources.common :=
 sm.this.sources.unknown :=
 $(foreach sm.var.temp._source,$(sm.this.sources) $(sm.this.sources.external),\
@@ -521,11 +523,15 @@ $(sm.var.this).sources.common := $(sm.this.sources.common)
 
 ## Export computed common sources of different language and make compile rules
 ## for common sources(files not handled by the toolset, e.g. .w, .nw, etc).
-$(foreach sm.var.temp._lang,$(sm.var.common.langs),\
+define sm.fun.make-common-compile-rules-for-langs
+$(foreach sm.var.temp._lang,$1,\
    $(if $(sm.tool.common.$(sm.var.temp._lang).suffix),\
       ,$(error smart: toolset $(sm.this.toolset)/$(sm.var.temp._lang) has no suffixes))\
    $(eval $(sm.var.this).sources.$(sm.var.temp._lang) := $(sm.this.sources.$(sm.var.temp._lang)))\
    $(sm.fun.make-rules-compile-common))
+endef #sm.fun.make-common-compile-rules-for-langs
+$(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs))
+$(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs.extra))
 
 ## Make compile rules for sources of each lang supported by the selected toolset.
 ## E.g. sm.this.sources.$(sm.var.temp._lang)
