@@ -129,7 +129,9 @@ sm.tool.common.compile.literal.noweb = $(eval sm.args.lang:=noweb)$(sm.tool.comm
 ## -> DVI output
 define sm.tool.common.compile.TeX.dvi.private
 cd $(dir $(word 1,$(sm.args.sources))) && \
-tex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources)))
+tex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources))) && \
+F=$$$$PWD/$(basename $(notdir $(word 1,$(sm.args.sources)))).dvi && \
+cd - && mv $$$$F $(dir $(sm.args.target))
 endef #sm.tool.common.compile.TeX.dvi.private
 
 ## -> PDF output

@@ -355,8 +355,7 @@ endef #sm.fun.make-rule-compile
 ##
 define sm.fun.make-rule-compile-common-command
 $(strip $(if $(call equal,$(sm.this.verbose),true),$2,\
-   $$(info $1: $(sm.this.name) += $$^ --> $$@)\
-   $(sm.var.Q)$2>/dev/null))
+   $$(info $1: $(sm.this.name) += $$^ --> $$@)$(sm.var.Q)($2)>/dev/null))
 endef #sm.fun.make-rule-compile-common-command
 
 ##
