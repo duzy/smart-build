@@ -11,10 +11,6 @@
 #  requires sm.this.lang to be specified.
 #  
 
-$(call sm-check-not-empty,sm.top)
-$(call sm-check-not-empty,sm.this.dir)
-$(call sm-check-not-empty,sm.this.name)
-$(call sm-check-not-empty,sm.this.type)
 $(call sm-check-not-empty,sm.this.toolset,smart: 'sm.this.toolset' for $(sm.this.name) unknown)
 
 sm.var.toolset := sm.tool.$(sm.this.toolset)
@@ -23,7 +19,7 @@ ifeq ($($(sm.var.toolset)),)
   include $(sm.dir.buildsys)/loadtool.mk
 endif
 
-ifeq ($($(sm.var.toolset)),)
+ifneq ($($(sm.var.toolset)),true)
   $(error smart: $(sm.var.toolset) is not defined)
 endif
 
@@ -32,34 +28,13 @@ ifeq ($(sm.this.suffix),)
   sm.this.suffix := $($(sm.var.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
 endif
 
-$(call sm-check-value, $(sm.var.toolset), true, smart: toolset '$(sm.this.toolset)' is undefined)
-
 ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects)),)
   $(error smart: no sources or objects for module '$(sm.this.name)')
 endif
 
-##################################################
-
 ifeq ($(sm.this.type),t)
  $(if $(sm.this.lang),,$(error smart: 'sm.this.lang' must be defined for tests module))
 endif
-
-define sm.code.check-variables
-ifneq ($$(sm.global.$1.options),)
-  $$(info smart: error in file $(sm.this.makefile))
-  $$(error smart: sm.global.$1.options is deprecated, use sm.global.$1.flags)
-endif
-ifneq ($$(sm.this.$1.options),)
-  $$(info smart: error in file $(sm.this.makefile))
-  $$(error smart: sm.this.$1.options is deprecated, use sm.this.$1.flags)
-endif
-ifneq ($$(sm.this.$1.options.infile),)
-  $$(info smart: error in file $(sm.this.makefile))
-  $$(error smart: sm.this.$1.options.infile is deprecated, use sm.this.$1.flags.infile)
-endif
-endef #sm.code.check-variables
-
-$(foreach _,compile archive link,$(eval $(call sm.code.check-variables,$_)))
 
 ##################################################
 
@@ -78,7 +53,7 @@ sm.fun.this := sm.fun.$(sm.this.name)
 
 $(sm.var.this).depend.suffixes := $(sm.var.depend.suffixes)
 
-##########
+##################################################
 
 ## Clear compile options for all langs
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
@@ -102,6 +77,8 @@ $(sm.var.this).link.libs :=
 $(sm.var.this).link.libs.computed :=
 
 $(sm.var.this).flag_files :=
+
+##################################################
 
 ## eg. $(call sm.code.add-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
 define sm.code.add-items
@@ -173,6 +150,7 @@ define sm.code.compute-flags-link
  $(call sm.code.shift-flags-to-file,link,options)
 endef #sm.code.compute-flags-link
 
+##
 define sm.code.compute-flags-archive
  $(sm.var.this).archive.flags.computed := true
  $(sm.var.this).archive.flags := \
@@ -181,12 +159,14 @@ define sm.code.compute-flags-archive
  $(call sm.code.shift-flags-to-file,archive,options)
 endef #sm.code.compute-flags-archive
 
+##
 define sm.code.compute-intermediates-link
  $(sm.var.this).link.objects.computed := true
  $(sm.var.this).link.objects := $($(sm.var.this).objects)
  $(call sm.code.shift-flags-to-file,link,objects)
 endef #sm.code.compute-intermediates-link
 
+##
 define sm.code.compute-intermediates-archive
  $(sm.var.this).archive.objects.computed := true
  $(sm.var.this).archive.objects := $($(sm.var.this).objects)
@@ -204,10 +184,7 @@ define sm.code.compute-libs-link
  $(call sm.code.shift-flags-to-file,link,libs)
 endef #sm.code.compute-libs-link
 
-$(call sm-check-defined,sm.code.compute-flags-compile, smart: 'sm.code.compute-flags-compile' not defined)
-$(call sm-check-defined,sm.code.compute-flags-archive, smart: 'sm.code.compute-flags-archive' not defined)
-$(call sm-check-defined,sm.code.compute-flags-link,    smart: 'sm.code.compute-flags-link' not defined)
-$(call sm-check-defined,sm.code.compute-libs-link,     smart: 'sm.code.compute-libs-link' not defined)
+####################
 
 define sm.fun.compute-flags-compile
 $(if $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1.computed),,\
@@ -317,7 +294,6 @@ endef #sm.fun.compute-module-targets-static
 
 ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
              $(call not-equal,$(MAKECMDGOALS),clean)),)
-## FIXME: $(sm.var.this).depends is always single!
 ## Make rule for source dependency
 ##   eg. $(call sm.fun.make-rule-depend)
 ##   eg. $(call sm.fun.make-rule-depend, external)
@@ -431,7 +407,7 @@ define sm.fun.make-rule-compile-common
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
             $(sm.tool.common.compile.literal.$(sm.var.temp._lang)))
       endif
-   )$(info $(sm.this.name): inter: $(sm.var.temp._source) -> $(sm.args.target)))\
+     )$(info $(sm.this.name): inter: $(sm.var.temp._source) -> $(sm.args.target)))\
   $(if $(call equal,$(sm.var.temp._literal_lang),$(sm.var.temp._lang)),\
     $(eval \
       sm.args.sources := $(sm.var.temp._source)
