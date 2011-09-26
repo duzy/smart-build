@@ -33,6 +33,7 @@ sm.this.type :=
 sm.this.toolset :=
 sm.this.targets :=
 sm.this.whole_archives :=
+sm.this.docs.format := .dvi
 
 $(foreach sm.var.temp._lang,$(sm.tool.common.langs),\
    $(eval sm.this.sources.$(sm.var.temp._lang) :=)\

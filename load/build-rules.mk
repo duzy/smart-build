@@ -53,6 +53,13 @@ sm.fun.this := sm.fun.$(sm.this.name)
 
 $(sm.var.this).depend.suffixes := $(sm.var.depend.suffixes)
 
+sm.args.docs_format := $(strip $(sm.this.docs.format))
+ifeq ($(sm.args.docs_format),)
+  sm.args.docs_format := .dvi
+endif
+
+sm.args.docs_format := .pdf
+
 ##################################################
 
 ## Clear compile options for all langs
@@ -352,7 +359,7 @@ define sm.fun.make-rule-compile
  )$(sm-rule-compile-$(sm.var.temp._lang))
 endef #sm.fun.make-rule-compile
 
-##
+## 
 define sm.fun.make-rule-compile-common-command
 $(strip $(if $(call equal,$(sm.this.verbose),true),$2,\
    $$(info $1: $(sm.this.name) += $$^ --> $$@)$(sm.var.Q)($2)>/dev/null))
@@ -413,16 +420,16 @@ define sm.fun.make-rule-compile-common
   $(if $(call equal,$(sm.var.temp._literal_lang),$(sm.var.temp._lang)),\
     $(eval \
       sm.args.sources := $(sm.var.temp._source)
-      sm.args.target := $(sm.out.doc)/$(notdir $(basename $(sm.var.temp._source))).dvi
+      sm.args.target := $(sm.out.doc)/$(notdir $(basename $(sm.var.temp._source)))$(sm.args.docs_format)
      )\
-    $(eval # rules for producing .dvi/.pdf targets
+    $(eval # rules for producing .dvi/.pdf(depends on sm.args.docs_format) files
       ifneq ($(sm.global.has.rule.$(sm.args.target)),true)
         sm.global.has.rule.$(sm.args.target) := true
         $(sm.var.this).documents += $(sm.args.target)
        $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
-            $(sm.tool.common.compile.$(sm.var.temp._literal_lang).dvi.private))
+            $(sm.tool.common.compile.$(sm.var.temp._literal_lang)))
 	@[[ -f $$@ ]] || (echo "ERROR: $(sm.var.temp._lang): no document output: $$@" && true)
       endif
      )))

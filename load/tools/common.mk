@@ -137,7 +137,9 @@ endef #sm.tool.common.compile.TeX.dvi.private
 ## -> PDF output
 define sm.tool.common.compile.TeX.pdf.private
 cd $(dir $(word 1,$(sm.args.sources))) && \
-pdftex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources)))
+pdftex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources))) && \
+F=$$$$PWD/$(basename $(notdir $(word 1,$(sm.args.sources)))).pdf && \
+cd - && mv $$$$F $(dir $(sm.args.target))
 endef #sm.tool.common.compile.TeX.pdf.private
 
 ##
@@ -154,7 +156,8 @@ cd $(dir $(word 1,$(sm.args.sources))) && \
 pdflatex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources)))
 endef #sm.tool.common.compile.LaTeX.pdf.private
 
-sm.tool.common.compile.TeX =
+sm.tool.common.compile.TeX = $(sm.tool.common.compile.TeX$(sm.args.docs_format).private)
+sm.tool.common.compile.LaTeX = $(sm.tool.common.compile.LaTeX$(sm.args.docs_format).private)
 
 ##################################################
 
