@@ -108,14 +108,17 @@ endef
 ## Load the build script for the specified module.
 ## NOTE: The build script should definitely defined a module using sm-new-module.
 define sm-load-module
-$(if $1,\
-  $(if $(wildcard $1),,$(error module build script '$1' missed!))\
-  $(eval $$(info smart: load '$1'..)
-    include $(sm.dir.buildsys)/preload.mk
-    include $1
-    -include $(sm.dir.buildsys)/postload.mk
-    ),\
-  $(error "Must specify the smart.mk file for the module."))
+ $(eval \
+   sm.this.args.smartfile := $(strip $1)
+  )\
+ $(if $(sm.this.args.smartfile),,$(error must specify the smart.mk file for the module))\
+ $(if $(wildcard $(sm.this.args.smartfile)),,$(error module build script '$(sm.this.args.smartfile)' missed))\
+ $(info smart: load '$(sm.this.args.smartfile)'..)\
+ $(eval \
+   include $(sm.dir.buildsys)/preload.mk
+   include $(sm.this.args.smartfile)
+   -include $(sm.dir.buildsys)/postload.mk
+  )
 endef
 
 ## Find level-one sub-modules.
