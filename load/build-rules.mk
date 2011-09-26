@@ -340,8 +340,8 @@ define sm.fun.make-rule-compile
  $(eval \
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
-   sm.args.flags.0 := $$(strip $$($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang)))
-   sm.args.flags.0 += $$(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
+   sm.args.flags.0 := $(strip $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang)))
+   sm.args.flags.0 += $(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
    sm.args.flags.1 :=
    sm.args.flags.2 :=
  )$(sm-rule-compile-$(sm.var.temp._lang))
