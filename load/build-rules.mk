@@ -89,10 +89,16 @@ $(sm.var.this).flag_files :=
 
 ##################################################
 
+define sm.fun.make-pretty-list
+$(strip $(eval sm.var.temp._pretty_list :=)\
+  $(foreach _,$1,$(eval sm.var.temp._pretty_list += $(strip $_)))\
+  $(sm.var.temp._pretty_list))
+endef #sm.fun.make-pretty-list
+
 ## eg. $(call sm.code.add-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
 define sm.code.add-items
- $(foreach sm.var.temp._item,$(strip $2),\
-     $(eval $(strip $1) += $(strip $3)$(sm.var.temp._item:$(strip $3)%$(strip $4)=%)$(strip $4)))
+$(foreach sm.var.temp._item,$(strip $2),\
+  $(eval $(strip $1) += $(strip $3)$(sm.var.temp._item:$(strip $3)%$(strip $4)=%)$(strip $4)))
 endef #sm.code.add-items
 
 ## eg. $(call sm.code.shift-flags-to-file,compile,options.c++)
@@ -124,110 +130,96 @@ $(if $(call is-true,$(sm.this.$1.flags.infile)),\
    $$(eval $$(call sm.code.shift-flags-to-file-r,$(strip $1),$(strip $2))))
 endef #sm.code.shift-flags-to-file
 
-## eg. $(call sm.code.compute-flags-compile,c++)
-define sm.code.compute-flags-compile
- $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1.computed := true
- $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1 :=\
-  $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
-  $(strip $($(sm.var.toolset).defines))\
-  $(strip $($(sm.var.toolset).defines.$1))\
-  $(strip $($(sm.var.toolset).compile.flags))\
-  $(strip $($(sm.var.toolset).compile.flags.$1))\
-  $(strip $(sm.global.defines))\
-  $(strip $(sm.global.defines.$1))\
-  $(strip $(sm.global.compile.flags))\
-  $(strip $(sm.global.compile.flags.$1))\
-  $(strip $(sm.this.defines))\
-  $(strip $(sm.this.defines.$1))\
-  $(strip $(sm.this.compile.flags))\
-  $(strip $(sm.this.compile.flags.$1))
- $$(call sm.code.add-items, $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1,\
-     $(sm.global.includes) $(sm.this.includes), -I)
- $(call sm.code.shift-flags-to-file,compile,$(sm.var.__module.compile_id).flags.$1)
-endef #sm.code.compute-flags-compile
-
-##
-define sm.code.compute-flags-link
- $(sm.var.this).link.flags.computed := true
- $(sm.var.this).link.flags :=\
-  $(strip $($(sm.var.toolset).link.flags))\
-  $(strip $(sm.global.link.flags))\
-  $(strip $(sm.this.link.flags))
- $(if $(call equal,$(sm.this.type),shared),\
-     $$(if $$(filter -shared,$$($(sm.var.this).link.flags)),,\
-        $$(eval $(sm.var.this).link.flags += -shared)))
- $(call sm.code.shift-flags-to-file,link,options)
-endef #sm.code.compute-flags-link
-
-##
-define sm.code.compute-flags-archive
- $(sm.var.this).archive.flags.computed := true
- $(sm.var.this).archive.flags := \
-  $(strip $(sm.global.archive.flags)) \
-  $(strip $(sm.this.archive.flags))
- $(call sm.code.shift-flags-to-file,archive,options)
-endef #sm.code.compute-flags-archive
-
-##
-define sm.code.compute-intermediates-link
- $(sm.var.this).link.objects.computed := true
- $(sm.var.this).link.objects := $($(sm.var.this).objects)
- $(call sm.code.shift-flags-to-file,link,objects)
-endef #sm.code.compute-intermediates-link
-
-##
-define sm.code.compute-intermediates-archive
- $(sm.var.this).archive.objects.computed := true
- $(sm.var.this).archive.objects := $($(sm.var.this).objects)
- $(call sm.code.shift-flags-to-file,archive,objects)
-endef #sm.code.compute-intermediates-archive
-
-##
-define sm.code.compute-libs-link
- $(sm.var.this).link.libs.computed := true
- $(sm.var.this).link.libs :=
- $$(call sm.code.add-items, $(sm.var.this).link.libs,\
-     $(sm.global.libdirs) $(sm.this.libdirs), -L)
- $$(call sm.code.add-items, $(sm.var.this).link.libs,\
-     $(sm.global.libs) $(sm.this.libs), -l)
- $(call sm.code.shift-flags-to-file,link,libs)
-endef #sm.code.compute-libs-link
-
 ####################
 
 define sm.fun.compute-flags-compile
-$(if $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$1.computed),,\
-   $(eval $(call sm.code.compute-flags-compile,$1)))
+$(if $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang).computed),,\
+  $(eval \
+    $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang).computed := true
+    $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang) := \
+     $(call sm.fun.make-pretty-list,\
+       $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
+       $($(sm.var.toolset).defines)\
+       $($(sm.var.toolset).defines.$(sm.var.temp._lang))\
+       $($(sm.var.toolset).compile.flags)\
+       $($(sm.var.toolset).compile.flags.$(sm.var.temp._lang))\
+       $(sm.global.defines)\
+       $(sm.global.defines.$(sm.var.temp._lang))\
+       $(sm.global.compile.flags)\
+       $(sm.global.compile.flags.$(sm.var.temp._lang))\
+       $(sm.this.defines)\
+       $(sm.this.defines.$(sm.var.temp._lang))\
+       $(sm.this.compile.flags)\
+       $(sm.this.compile.flags.$(sm.var.temp._lang)))
+    $$(call sm.code.add-items,\
+       $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang),\
+       $(sm.global.includes) $(sm.this.includes), -I)
+    $(call sm.code.shift-flags-to-file,compile,$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+   ))
 endef #sm.fun.compute-flags-compile
 
 define sm.fun.compute-flags-archive
- $(if $($(sm.var.this).archive.flags.computed),,\
-   $(eval $(call sm.code.compute-flags-archive)))
+$(if $($(sm.var.this).archive.flags.computed),,\
+  $(eval \
+    $(sm.var.this).archive.flags.computed := true
+    $(sm.var.this).archive.flags := \
+      $(call sm.fun.make-pretty-list,\
+        $(sm.global.archive.flags)\
+        $(sm.this.archive.flags))
+    $(call sm.code.shift-flags-to-file,archive,options)
+   ))
 endef #sm.fun.compute-flags-archive
 
 define sm.fun.compute-flags-link
- $(if $($(sm.var.this).link.flags.computed),,\
-   $(eval $(call sm.code.compute-flags-link)))
+$(if $($(sm.var.this).link.flags.computed),,\
+  $(eval \
+    $(sm.var.this).link.flags.computed := true
+    $(sm.var.this).link.flags :=\
+     $(call sm.fun.make-pretty-list,\
+       $($(sm.var.toolset).link.flags)\
+       $(sm.global.link.flags)\
+       $(sm.this.link.flags))
+    $(if $(call equal,$(sm.this.type),shared),\
+       $$(if $$(filter -shared,$$($(sm.var.this).link.flags)),,\
+          $$(eval $(sm.var.this).link.flags += -shared)))
+    $(call sm.code.shift-flags-to-file,link,options)
+   ))
 endef #sm.fun.compute-flags-link
 
 define sm.fun.compute-intermediates-archive
- $(if $($(sm.var.this).archive.objects.computed),,\
-   $(eval $(call sm.code.compute-intermediates-archive)))
+$(if $($(sm.var.this).archive.objects.computed),,\
+  $(eval \
+    $(sm.var.this).archive.objects.computed := true
+    $(sm.var.this).archive.objects := $($(sm.var.this).objects)
+    $(call sm.code.shift-flags-to-file,archive,objects)
+   ))
 endef #sm.fun.compute-intermediates-archive
 
 define sm.fun.compute-libs-archive
- $(eval $(sm.var.this).archive.libs.computed := true)\
- $(eval $(sm.var.this).archive.libs :=)
+$(eval \
+  $(sm.var.this).archive.libs.computed := true
+  $(sm.var.this).archive.libs :=
+ )
 endef #sm.fun.compute-libs-archive
 
 define sm.fun.compute-intermediates-link
- $(if $($(sm.var.this).link.objects.computed),,\
-   $(eval $(call sm.code.compute-intermediates-link)))
+$(if $($(sm.var.this).link.objects.computed),,\
+  $(eval \
+    $(sm.var.this).link.objects.computed := true
+    $(sm.var.this).link.objects := $($(sm.var.this).objects)
+    $(call sm.code.shift-flags-to-file,link,objects)
+   ))
 endef #sm.fun.compute-intermediates-link
 
 define sm.fun.compute-libs-link
- $(if $($(sm.var.this).link.libs.computed),,\
-   $(eval $(call sm.code.compute-libs-link)))
+$(if $($(sm.var.this).link.libs.computed),,\
+  $(eval \
+    $(sm.var.this).link.libs.computed := true
+    $(sm.var.this).link.libs :=
+    $$(call sm.code.add-items, $(sm.var.this).link.libs,$(sm.global.libdirs) $(sm.this.libdirs), -L)
+    $$(call sm.code.add-items, $(sm.var.this).link.libs,$(sm.global.libs) $(sm.this.libs), -l)
+    $(call sm.code.shift-flags-to-file,link,libs)
+   ))
 endef #sm.fun.compute-libs-link
 
 ##################################################
@@ -343,7 +335,7 @@ define sm.fun.make-rule-compile
  $(call sm-check-defined,sm.fun.compute-flags-compile, smart: no callback for getting compile options of lang '$(sm.var.temp._lang)')\
  $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.$(strip $1)))\
  $(eval $(sm.var.this).objects += $(sm.var.temp._intermediate))\
- $(call sm.fun.compute-flags-compile,$(sm.var.temp._lang))\
+ $(call sm.fun.compute-flags-compile)\
  $(call sm.fun.make-rule-depend,$1)\
  $(eval \
    sm.args.target := $(sm.var.temp._intermediate)
