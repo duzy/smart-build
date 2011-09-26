@@ -124,40 +124,37 @@ sm.tool.common.compile.literal.noweb = $(eval sm.args.lang:=noweb)$(sm.tool.comm
 
 ##################################################
 
+define sm.tool.common.compile.TeX-LaTeX.private
+cd $(dir $(word 1,$(sm.args.sources))) && \
+$1 -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources))) && \
+rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).log && \
+rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).toc && \
+F=$$$$PWD/$(basename $(notdir $(word 1,$(sm.args.sources)))).$2 && \
+cd - && mv $$$$F $(dir $(sm.args.target))
+endef #sm.tool.common.compile.TeX-LaTeX.private
+
 ##
 ## Plain TeX compilation commands
 ## -> DVI output
 define sm.tool.common.compile.TeX.dvi.private
-cd $(dir $(word 1,$(sm.args.sources))) && \
-tex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources))) && \
-rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).log && \
-rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).toc && \
-F=$$$$PWD/$(basename $(notdir $(word 1,$(sm.args.sources)))).dvi && \
-cd - && mv $$$$F $(dir $(sm.args.target))
+$(call sm.tool.common.compile.TeX-LaTeX.private,tex,dvi)
 endef #sm.tool.common.compile.TeX.dvi.private
 
 ## -> PDF output
 define sm.tool.common.compile.TeX.pdf.private
-cd $(dir $(word 1,$(sm.args.sources))) && \
-pdftex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources))) && \
-rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).log && \
-rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).toc && \
-F=$$$$PWD/$(basename $(notdir $(word 1,$(sm.args.sources)))).pdf && \
-cd - && mv $$$$F $(dir $(sm.args.target))
+$(call sm.tool.common.compile.TeX-LaTeX.private,pdftex,pdf)
 endef #sm.tool.common.compile.TeX.pdf.private
 
 ##
 ## LaTeX compilation commands
 ## -> DVI output
 define sm.tool.common.compile.LaTeX.dvi.private
-cd $(dir $(word 1,$(sm.args.sources))) && \
-latex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources)))
+$(call sm.tool.common.compile.TeX-LaTeX.private,latex,dvi)
 endef #sm.tool.common.compile.LaTeX.dvi.private
 
 ## -> PDF output
 define sm.tool.common.compile.LaTeX.pdf.private
-cd $(dir $(word 1,$(sm.args.sources))) && \
-pdflatex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources)))
+$(call sm.tool.common.compile.TeX-LaTeX.private,pdflatex,pdf)
 endef #sm.tool.common.compile.LaTeX.pdf.private
 
 sm.tool.common.compile.TeX = $(sm.tool.common.compile.TeX$(sm.args.docs_format).private)
