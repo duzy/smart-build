@@ -23,9 +23,11 @@ ifneq ($($(sm.var.toolset)),true)
   $(error smart: $(sm.var.toolset) is not defined)
 endif
 
-ifeq ($(sm.this.suffix),)
+ifneq ($(sm.this.toolset),common)
+ ifeq ($(sm.this.suffix),)
   $(call sm-check-defined,$(sm.var.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
   sm.this.suffix := $($(sm.var.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+ endif
 endif
 
 ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects)),)
@@ -574,8 +576,9 @@ sm.var.temp._should_make_targets := \
             $(call is-true,$(sm.var.__module.objects_only))\
         ),,true)
 
-## Make rule for targets of the module
-ifeq ($(sm.var.temp._should_make_targets),true)
+ifneq ($(sm.this.toolset),common)
+ ## Make rule for targets of the module
+ ifeq ($(sm.var.temp._should_make_targets),true)
   $(if $($(sm.var.this).objects),,$(error smart: no objects for building '$(sm.this.name)'))
 
   $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
@@ -609,7 +612,8 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   ifeq ($(strip $($(sm.var.this).targets)),)
     $(error smart: internal error: targets mis-computed)
   endif
-endif #sm.var.__module.objects_only
+ endif #$(sm.var.temp._should_make_targets) == true
+endif #$(sm.this.toolset) != common
 
 #-----------------------------------------------
 #-----------------------------------------------

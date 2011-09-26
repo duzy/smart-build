@@ -8,6 +8,7 @@
 #	2) the target file can be generated from the intermediate files.
 # 
 
+sm.tool.common := true
 
 ## common languages and their suffixes
 sm.tool.common.langs := web cweb noweb TeX

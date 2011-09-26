@@ -77,8 +77,11 @@ define sm-new-module
    ifeq ($$(sm.this.type),shared)
      sm.this.out_implib := $(sm.this.name)
    endif
+   ifeq ($$(sm.this.type),docs)
+     sm.this.args.toolset := common
+   endif
   )\
- $(if $(filter $(sm.this.type),$(sm.global.module_types)),\
+ $(if $(filter $(sm.this.type),$(sm.global.module_types)),,\
      $(error $(sm.this.type) is not valid module type(see: $(sm.global.module_types))))\
  $(if $(sm.this.args.toolset),\
    $(if $(call equal,$(sm.this.type),depends),\
@@ -90,19 +93,23 @@ define sm-new-module
      else
        sm.this.toolset := $(sm.this.args.toolset)
      endif
-     ifeq ($$(sm.tool.$$(sm.this.toolset)),)
-       include $(sm.dir.buildsys)/loadtool.mk
+     ifeq ($$(sm.this.toolset),common)
+       $$(warning TODO: common toolset...)
+     else
+       ifeq ($$(sm.tool.$$(sm.this.toolset)),)
+         include $(sm.dir.buildsys)/loadtool.mk
+       endif
+       ifeq ($$(sm.tool.$$(sm.this.toolset)),)
+         $$(error smart: sm.tool.$$(sm.this.toolset) is not defined)
+       endif
+       ifeq ($$(sm.this.suffix),)
+         $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+         sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+       endif
      endif
-     ifeq ($$(sm.tool.$$(sm.this.toolset)),)
-       $$(error smart: sm.tool.$$(sm.this.toolset) is not defined)
-     endif
-     ifeq ($$(sm.this.suffix),)
-       $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
-       sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
-     endif
-   ))\
- $(if $(filter $(sm.this.type),depends doc),\
-     ,$(if $(sm.this.toolset),,$(error smart: toolset is empty)))
+    ))\
+ $(if $(filter $(sm.this.type),depends docs),\
+     ,$(if $(sm.this.toolset),,$(error smart: toolset is not set)))
 endef
 
 ## Load the build script for the specified module.
@@ -184,8 +191,8 @@ define sm-copy-files
   )
 endef
 
-## sm-copy-headers - Copy headers
-# shortcuts for: $(call sm-copy-files, $1, $(sm.out.inc)/$2)
+## sm-copy-headers - copy headers into $(sm.out.inc)
+## It's a shortcut for: $(call sm-copy-files, $1, $(sm.out.inc)/$2)
 define sm-copy-headers
  $(call sm-check-not-empty, sm.out.inc)\
  $(call sm-copy-files,$1,$(sm.out.inc)/$(strip $2))
