@@ -54,48 +54,55 @@ endef
 # sm-new-module must be used before any 'include' commands, since
 # it invokes sm-module-dir and sm-this-makefile
 define sm-new-module
-$(if $1,$(if $(filter $1,$(sm.global.modules)),\
-     $(error Module of name '$1' already defined in $(sm.global.modules.$(strip $1))))\
-  $(eval sm.this.name := $(basename $(strip $1))
-         $$(if $$(sm.this.name),,$$(error The module name is empty))
-         sm.this.suffix := $(suffix $(strip $1))
-         sm.this.dir := $$(call sm-module-dir)
-         sm.this.gen_deps := true
-         sm.this.makefile := $$(call sm-this-makefile)
-         sm.global.modules += $(strip $1)
-         sm.global.modules.$(strip $1) := $$(sm.this.makefile))\
-  ,$(error Invalid usage of 'sm-new-module', module name required))\
-$(if $2,$(eval \
-  sm.this.type := $(call sm-module-type-name,$(strip $2))
-  $$(call sm-check-in-list,$$(sm.this.type),sm.global.module_types,only supports module of type '$(sm.global.module_types)')
-  ifeq ($$(sm.this.type),shared)
-    sm.this.out_implib := $(sm.this.name)
-  endif
-  ),)\
-$(if $3,\
-  $(if $(call equal,$(sm.this.type),depends),\
-      ,$(if $(wildcard $(sm.dir.buildsys)/tools/$(strip $3).mk),\
-           ,$(error smart: toolset $3 not unknown)))\
-  $(eval \
-  ifeq ($(origin toolset),command line)
-    sm.this.toolset := $(or $(toolset),$3)
-  else
-    sm.this.toolset := $3
-  endif
-  ifeq ($$(sm.tool.$$(sm.this.toolset)),)
-    include $(sm.dir.buildsys)/loadtool.mk
-  endif
-  ifeq ($$(sm.tool.$$(sm.this.toolset)),)
-    $$(error smart: sm.tool.$$(sm.this.toolset) is not defined)
-  endif
-  ifeq ($$(sm.this.suffix),)
-    $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
-    sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
-  endif
-  ))\
-$(if $(call equal,$(sm.this.type),depends),\
-    ,$(if $(sm.this.toolset),\
-         ,$(error smart: toolset is empty, $(sm.this.type))))
+ $(eval \
+   sm.this.args.name := $(strip $1)
+   sm.this.args.type := $(strip $2)
+   sm.this.args.toolset := $(strip $3)
+  )\
+ $(if $(sm.this.args.name),,$(error module name(as arg 1) required))\
+ $(if $(filter $(sm.this.args.name),$(sm.global.modules)),\
+     $(error module "$(sm.this.args.name)" already defined in $(sm.global.modules.$(sm.this.args.name))))\
+ $(eval \
+   sm.this.name := $(basename $(sm.this.args.name))
+   sm.this.suffix := $(suffix $(sm.this.args.name))
+   sm.this.dir := $$(call sm-module-dir)
+   sm.this.makefile := $$(call sm-this-makefile)
+   sm.this.gen_deps := true
+   sm.global.modules += $(sm.this.args.name)
+   sm.global.modules.$(sm.this.args.name) := $$(sm.this.makefile)
+  )\
+ $(if $(sm.this.name),,$(error module name is empty))\
+ $(eval \
+   sm.this.type := $(call sm-module-type-name,$(sm.this.args.type))
+   ifeq ($$(sm.this.type),shared)
+     sm.this.out_implib := $(sm.this.name)
+   endif
+  )\
+ $(if $(filter $(sm.this.type),$(sm.global.module_types)),\
+     $(error $(sm.this.type) is not valid module type(see: $(sm.global.module_types))))\
+ $(if $(sm.this.args.toolset),\
+   $(if $(call equal,$(sm.this.type),depends),\
+       ,$(if $(wildcard $(sm.dir.buildsys)/tools/$(sm.this.args.toolset).mk),\
+            ,$(error smart: toolset $(sm.this.args.toolset) not unknown)))\
+   $(eval \
+     ifeq ($(origin toolset),command line)
+       sm.this.toolset := $(or $(toolset),$(sm.this.args.toolset))
+     else
+       sm.this.toolset := $(sm.this.args.toolset)
+     endif
+     ifeq ($$(sm.tool.$$(sm.this.toolset)),)
+       include $(sm.dir.buildsys)/loadtool.mk
+     endif
+     ifeq ($$(sm.tool.$$(sm.this.toolset)),)
+       $$(error smart: sm.tool.$$(sm.this.toolset) is not defined)
+     endif
+     ifeq ($$(sm.this.suffix),)
+       $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+       sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+     endif
+   ))\
+ $(if $(filter $(sm.this.type),depends doc),\
+     ,$(if $(sm.this.toolset),,$(error smart: toolset is empty)))
 endef
 
 ## Load the build script for the specified module.

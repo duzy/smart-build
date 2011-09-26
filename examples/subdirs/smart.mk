@@ -1,8 +1,8 @@
 # -*- mode: makefile-gmake -*-
 
 this_dir := $(sm-this-dir)
-sm.this.dir := $(this_dir)
 
+#sm.this.dir := $(this_dir)
 #$(info $(sm.this.dir), before sm-load-subdirs)
 
 $(call sm-load-subdirs)

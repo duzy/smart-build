@@ -19,6 +19,7 @@ TODO: documentation for these:
       * sm.out.obj
       * sm.out.tmp
       * sm.global.module_types
+      * sm.global.modules
       * sm.global.defines
       * sm.global.defines.LANG
       * sm.global.compile.flags
