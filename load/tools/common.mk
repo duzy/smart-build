@@ -130,6 +130,8 @@ sm.tool.common.compile.literal.noweb = $(eval sm.args.lang:=noweb)$(sm.tool.comm
 define sm.tool.common.compile.TeX.dvi.private
 cd $(dir $(word 1,$(sm.args.sources))) && \
 tex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources))) && \
+rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).log && \
+rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).toc && \
 F=$$$$PWD/$(basename $(notdir $(word 1,$(sm.args.sources)))).dvi && \
 cd - && mv $$$$F $(dir $(sm.args.target))
 endef #sm.tool.common.compile.TeX.dvi.private
@@ -138,6 +140,8 @@ endef #sm.tool.common.compile.TeX.dvi.private
 define sm.tool.common.compile.TeX.pdf.private
 cd $(dir $(word 1,$(sm.args.sources))) && \
 pdftex -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources))) && \
+rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).log && \
+rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).toc && \
 F=$$$$PWD/$(basename $(notdir $(word 1,$(sm.args.sources)))).pdf && \
 cd - && mv $$$$F $(dir $(sm.args.target))
 endef #sm.tool.common.compile.TeX.pdf.private
