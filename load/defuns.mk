@@ -216,25 +216,34 @@ endef
 
 ## sm-build-this - Build the current module
 define sm-build-this
- $(if $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects),,\
-   $(if $(call not-equal,$(sm.this.type),depends),\
-     $(error no source or objects defined for '$(sm.this.name)')))\
- $(if $(sm.this.compile.options),$(error smart: deprecated: sm.this.compile.options))\
- $(if $(sm.this.compile.options.infile),$(error smart: deprecated: sm.this.compile.options.infile))\
- $(if $(sm.this.link.options),$(error smart: deprecated: sm.this.link.options))\
- $(if $(sm.this.link.options.infile),$(error smart: deprecated: sm.this.link.options.infile))\
- $(if $(sm.this.archive.options),$(error smart: deprecated: sm.this.archive.options))\
- $(if $(sm.this.archive.options.infile),$(error smart: deprecated: sm.this.archive.options.infile))\
- $(if $(sm.this.name),,$(error sm.this.name is empty))\
- $(if $(call not-equal,$(sm.this.type),depends),\
-   $(if $(sm.this.toolset),,$(error sm.this.toolset is empty)))\
- $(if $(filter $(strip $(sm.this.type)),t tests),\
-     $(if $(sm.this.lang),,$(error sm.this.lang must be defined for tests module)))\
- $(eval \
-    sm.global.goals += goal-$(sm.this.name)
-    sm.var.__module.compile_id := 0
-    include $(sm.dir.buildsys)/build-this.mk)\
- $(if $(sm.this.sources.unknown),$(error smart: strange sources: $(strip $(sm.this.sources.unknown))))
+$(eval \
+  ifeq ($(sm.this.name),)
+    $$(error sm.this.name is empty)
+  endif
+  ######
+  ifneq ($(sm.this.type),depends)
+    ifeq ($(sm.this.toolset),)
+      $$(error sm.this.toolset is empty)
+    endif
+    ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects)),)
+      $$(error no source or objects defined for '$(sm.this.name)')
+    endif
+  endif
+  ######
+  ifneq ($(filter $(strip $(sm.this.type)),t tests),)
+    ifeq ($(sm.this.lang),)
+      $$(error sm.this.lang must be defined for tests module)
+    endif
+  endif
+  ##########
+  sm.global.goals += goal-$(sm.this.name)
+  sm.var.__module.compile_id := 0
+  include $(sm.dir.buildsys)/build-this.mk
+  ##########
+  ifneq ($$(strip $$(sm.this.sources.unknown)),)
+    $$(error smart: strange sources: $$(strip $$(sm.this.sources.unknown)))
+  endif
+ )
 endef #sm-build-this
 
 ## sm-build-depends  - Makefile code for sm-build-depends
