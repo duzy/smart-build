@@ -46,8 +46,8 @@ $(if $(sm.this.name),$(call sm-this-dir),\
 endef
 
 define sm-module-type-name
-  $(if $(call equal,$1,dynamic),shared,\
-     $(if $(call equal,$1,executable),exe,\
+$(if $(call equal,$1,dynamic),shared,\
+    $(if $(call equal,$1,executable),exe,\
         $(if $(call equal,$1,tests),t,$1)))
 endef
 
