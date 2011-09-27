@@ -193,18 +193,26 @@ endef #sm-generate-implib
 
 ## sm-copy-files -- make rules for copying files
 define sm-copy-files
- $(eval \
-   sm.this.args.files := $(strip $1)
-   sm.this.args.location := $(strip $2)
-  )\
- $(if $(sm.this.args.files),,$(error smart: files must be specified to be copied))\
- $(if $(sm.this.args.location),,$(error smart: target location(directory) must be specified))\
- $(eval sm.var.__copyfiles := $(sm.this.args.files)
-        sm.var.__copyfiles.to := $(sm.this.args.location)
-        include $(sm.dir.buildsys)/copyfiles.mk
-        sm.var.__copyfiles :=
-        sm.var.__copyfiles.to :=
-  )
+$(eval \
+  sm.this.args.files := $(strip $1)
+  sm.this.args.location := $(strip $2)
+ )\
+$(eval \
+  ######
+  ifeq ($(sm.this.args.files),)
+    $$(error smart: files must be specified to be copied)
+  endif
+  ######
+  ifeq ($(sm.this.args.location),)
+    $$(error smart: target location(directory) must be specified)
+  endif
+  ##########
+  sm.var.__copyfiles := $(sm.this.args.files)
+  sm.var.__copyfiles.to := $(sm.this.args.location)
+  include $(sm.dir.buildsys)/copyfiles.mk
+  sm.var.__copyfiles :=
+  sm.var.__copyfiles.to :=
+ )
 endef
 
 ## sm-copy-headers - copy headers into $(sm.out.inc)
@@ -239,9 +247,10 @@ $(eval \
   sm.global.goals += goal-$(sm.this.name)
   sm.var.__module.compile_id := 0
   include $(sm.dir.buildsys)/build-this.mk
-  ##########
-  ifneq ($$(strip $$(sm.this.sources.unknown)),)
-    $$(error smart: strange sources: $$(strip $$(sm.this.sources.unknown)))
+ )\
+$(eval \
+  ifneq ($(strip $(sm.this.sources.unknown)),)
+    $$(error smart: strange sources: $(strip $(sm.this.sources.unknown)))
   endif
  )
 endef #sm-build-this
