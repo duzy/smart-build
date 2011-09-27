@@ -126,7 +126,23 @@ define sm-load-module
    include $(sm.this.args.smartfile)
    -include $(sm.dir.buildsys)/postload.mk
   )
-endef
+endef #sm-load-module
+
+##
+define sm-use-module
+ $(eval \
+   sm.this.args.name := $(strip $1)
+  )\
+ $(warning TODO: load and use module $(sm.this.args.name) from sm.global.module_path)
+endef #sm-use-module
+
+##
+define sm-import-module
+ $(eval \
+   sm.this.args.name := $(strip $1)
+  )\
+ $(warning TODO: load and use module $(sm.this.args.name) from sm.global.module_path)
+endef #sm-import-module
 
 ## Find level-one sub-modules.
 define sm-find-sub-modules
