@@ -115,17 +115,25 @@ endef
 ## Load the build script for the specified module.
 ## NOTE: The build script should definitely defined a module using sm-new-module.
 define sm-load-module
- $(eval \
+$(eval \
    sm.this.args.smartfile := $(strip $1)
-  )\
- $(if $(sm.this.args.smartfile),,$(error must specify the smart.mk file for the module))\
- $(if $(wildcard $(sm.this.args.smartfile)),,$(error module build script '$(sm.this.args.smartfile)' missed))\
- $(info smart: load '$(sm.this.args.smartfile)'..)\
- $(eval \
-   include $(sm.dir.buildsys)/preload.mk
-   include $(sm.this.args.smartfile)
-   -include $(sm.dir.buildsys)/postload.mk
-  )
+ )\
+$(info smart: load '$(sm.this.args.smartfile)'..)\
+$(eval \
+  ######
+  ifeq ($(sm.this.args.smartfile),)
+    $$(error must specify the smart.mk file for the module)
+  endif
+  ######
+  ifeq ($(wildcard $(sm.this.args.smartfile)),)
+    $$(error module build script '$(sm.this.args.smartfile)' missed)
+  endif
+  ######
+  ##########
+  include $(sm.dir.buildsys)/preload.mk
+  include $(sm.this.args.smartfile)
+  -include $(sm.dir.buildsys)/postload.mk
+ )
 endef #sm-load-module
 
 ##
@@ -150,14 +158,14 @@ $(wildcard $(strip $1)/*/smart.mk)
 endef
 
 define sm-compute-compile-id
- $(eval \
-    ifeq ($(sm.var.__module.compile_count),)
-      sm.var.__module.compile_count := $(strip $1)
-    else
-      sm.var.__module.compile_count := \
-        $(shell expr $(sm.var.__module.compile_count) + $(strip $1))
-    endif
-  )$(sm.var.__module.compile_count)
+$(eval \
+  ifeq ($(sm.var.__module.compile_count),)
+    sm.var.__module.compile_count := $(strip $1)
+  else
+    sm.var.__module.compile_count := \
+      $(shell expr $(sm.var.__module.compile_count) + $(strip $1))
+  endif
+ )$(sm.var.__module.compile_count)
 endef #sm-compute-compile-id
 
 ## Generate compilation rules for sources
