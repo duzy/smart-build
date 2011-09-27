@@ -94,7 +94,7 @@ define sm-new-module
        sm.this.toolset := $(sm.this.args.toolset)
      endif
      ifeq ($$(sm.this.toolset),common)
-       $$(warning TODO: common toolset...)
+       #$$(warning TODO: common toolset...)
      else
        ifeq ($$(sm.tool.$$(sm.this.toolset)),)
          include $(sm.dir.buildsys)/loadtool.mk
