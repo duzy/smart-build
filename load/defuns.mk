@@ -315,29 +315,29 @@ check-exists = $(call sm-deprecated, check-exists, sm-check-target-exists)
 sm-check-exists = $(call sm-deprecated, sm-check-exists, sm-check-target-exists)
 define sm-check-target-exists
 $(if $(wildcard $(strip $1)),,$(error $(or $(strip $2),target '$(strip $1)' is not ready)))
-endef
+endef #sm-check-target-exists
 
 define sm-check-directory
 $(if $(shell [[ -d $1 ]] && echo true),,\
   $(error $(or $(strip $2),directory '$(strip 1)' is not ready)))
-endef
+endef #sm-check-directory
 
 define sm-check-file
 $(if $(shell [[ -d $1 ]] && echo true),,\
   $(error $(or $(strip $2),file '$(strip 1)' is not ready)))
-endef
+endef #sm-check-file
 
 ## Ensure not empty of var, eg. $(call sm-check-not-empty, sm.top)
 define sm-check-not-empty
 $(if $(strip $1),,$(error sm-check-not-empty accept a var-name))\
 $(if $($(strip $1)),,$(error $(or $(strip $2),$(strip $1) is empty)))
-endef
+endef #sm-check-not-empty
 
 ## Ensure empty of var, eg. $(call sm-check-empty, sm.var.blah)
 define sm-check-empty
 $(if $(strip $1),,$(error sm-check-not-empty accept a var-name))\
 $(if $($(strip $1)),$(error $(or $(strip $2),$(strip $1) is not empty)))
-endef
+endef #sm-check-empty
 
 ## eg. $(call sm-check-value, sm.top, foo/bar)
 define sm-check-value
@@ -357,7 +357,7 @@ endef #sm-check-equal
 define sm-check-not-equal
 $(if $(call equal,$(strip $1),$(strip $2)),\
   $(error $(or $(strip $3),smart: '$(strip $1)' == '$(strip $2)')))
-endef #sm-check-equal
+endef #sm-check-not-equal
 
 ## eg. $(call sm-check-origin, sm.top, file)
 define sm-check-origin
