@@ -80,8 +80,8 @@ endif
 
 ifneq ($($(sm._var_.this).toolset),common)
   ifeq ($($(sm._var_.this).suffix),)
-    $(call sm-check-defined,$(sm.var.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
-    $(sm._var_.this).suffix := $($(sm.var.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+    $(call sm-check-defined,$(sm.var.toolset).target.suffix.$(sm.os.name).$($(sm._var_.this).type))
+    $(sm._var_.this).suffix := $($(sm.var.toolset).target.suffix.$(sm.os.name).$($(sm._var_.this).type))
   endif
 endif
 
@@ -92,7 +92,7 @@ ifeq ($(strip \
   $(error smart: no sources or intermediates for module '$(sm.this.name)')
 endif
 
-ifeq ($(sm.this.type),t)
+ifeq ($($(sm._var_.this).type),t)
  $(if $(sm.this.lang),,$(error smart: 'sm.this.lang' must be defined for "tests" module))
 endif
 
@@ -169,7 +169,7 @@ $(eval \
   ifeq ($($(sm.var.temp._fvar_name).computed),)
     $(sm.var.temp._fvar_name).computed := true
     $(sm.var.temp._fvar_name) := $(call sm.fun.make-pretty-list,\
-       $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
+       $(if $(call equal,$($(sm._var_.this).type),t),-x$(sm.this.lang))\
        $($(sm.var.toolset).defines)\
        $($(sm.var.toolset).defines.$(sm.var.temp._lang))\
        $($(sm.var.toolset).compile.flags)\
@@ -210,7 +210,7 @@ $(eval \
        $($(sm.var.toolset).link.flags)\
        $(sm.global.link.flags)\
        $(sm.this.link.flags))
-    ifeq ($(sm.this.type),shared)
+    ifeq ($($(sm._var_.this).type),shared)
       $$(if $$(filter -shared,$$($(sm._var_.this).link.flags)),,\
           $$(eval $(sm._var_.this).link.flags += -shared))
     endif
@@ -589,7 +589,7 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
          $(eval $(sm._var_.this).lang := $(sm.var.temp._lang))))
 
 ## Make object rules for .t sources file
-ifeq ($(sm.this.type),t)
+ifeq ($($(sm._var_.this).type),t)
   # set sm.var.temp._lang, used by sm.fun.make-rule-compile
   sm.var.temp._lang := $(sm.this.lang)
   sm.this.sources.$(sm.var.temp._lang).t := $(filter %.t,$(sm.this.sources))
@@ -621,7 +621,7 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   $(call sm-check-defined,sm.fun.compute-flags-$($(sm._var_.this).action))
   $(call sm-check-defined,sm.fun.compute-intermediates-$($(sm._var_.this).action))
   $(call sm-check-defined,sm.fun.compute-libs-$($(sm._var_.this).action))
-  $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
+  $(call sm-check-defined,sm.fun.compute-module-targets-$($(sm._var_.this).type))
 
   $(call sm-check-defined,sm-rule-$($(sm._var_.this).action)-$($(sm._var_.this).lang))
   $(call sm-check-defined,$(sm._var_.this).$($(sm._var_.this).action).flags)
@@ -629,7 +629,7 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   $(call sm-check-defined,$(sm._var_.this).$($(sm._var_.this).action).libs)
   $(call sm-check-not-empty,$(sm._var_.this).lang)
 
-  $(sm._var_.this).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type)))
+  $(sm._var_.this).targets := $(strip $(call sm.fun.compute-module-targets-$($(sm._var_.this).type)))
 
   $(sm.fun.compute-flags-$($(sm._var_.this).action))
   $(sm.fun.compute-intermediates-$($(sm._var_.this).action))
@@ -700,7 +700,7 @@ else
   endif
 endif
 
-ifeq ($(sm.this.type),t)
+ifeq ($($(sm._var_.this).type),t)
   define sm.code.make-test-rules
     sm.global.tests += test-$(sm.this.name)
     test-$(sm.this.name): $($(sm._var_.this).targets)
