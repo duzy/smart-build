@@ -37,9 +37,15 @@ ifeq ($($(sm._var_.this).name),)
   $(sm._var_.this).name := $(sm.this.name)
   $(sm._var_.this).type := $(sm.this.type)
   $(sm._var_.this).toolset := $(sm.this.toolset)
+  $(sm._var_.this).suffix := $(sm.this.suffix)
+  $(sm._var_.this).sources := $(sm.this.sources)
+  $(sm._var_.this).sources.external := $(sm.this.sources.external)
+  $(sm._var_.this).intermediates := $(sm.this.intermediates)
+  $(sm._var_.this).depends := $(sm.this.depends)
   $(sm._var_.this).action := $(sm.var.action.$(sm.this.type))
   $(sm._var_.this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
   $(sm._var_.this).user_defined_targets := $(strip $(sm.this.targets))
+
   $(sm._var_.this).out.tmp := $(sm.out.tmp)/$(sm.this.name)
 
   $(sm._var_.this)._intermediate_prefix := $(sm.this.dir:$(sm.top)%=%)
@@ -72,13 +78,16 @@ ifneq ($($(sm.var.toolset)),true)
 endif
 
 ifneq ($($(sm._var_.this).toolset),common)
-  ifeq ($(sm.this.suffix),)
+  ifeq ($($(sm._var_.this).suffix),)
     $(call sm-check-defined,$(sm.var.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
-    sm.this.suffix := $($(sm.var.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+    $(sm._var_.this).suffix := $($(sm.var.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
   endif
 endif
 
-ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.intermediates)),)
+ifeq ($(strip \
+         $(sm.this.sources)\
+         $(sm.this.sources.external)\
+         $(sm.this.intermediates)),)
   $(error smart: no sources or intermediates for module '$(sm.this.name)')
 endif
 
@@ -284,19 +293,19 @@ endef #sm.fun.compute-source.external
 ##
 ## binary module to be built
 define sm.fun.compute-module-targets-exe
-$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
+$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$($(sm._var_.this).suffix)
 endef #sm.fun.compute-module-targets-exe
 
 define sm.fun.compute-module-targets-t
-$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
+$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$($(sm._var_.this).suffix)
 endef #sm.fun.compute-module-targets-t
 
 define sm.fun.compute-module-targets-shared
-$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$(sm.this.suffix)
+$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$($(sm._var_.this).suffix)
 endef #sm.fun.compute-module-targets-shared
 
 define sm.fun.compute-module-targets-static
-$(call sm-relative-path,$(sm.out.lib))/lib$(sm.this.name:lib%=%)$(sm.this.suffix)
+$(call sm-relative-path,$(sm.out.lib))/lib$(sm.this.name:lib%=%)$($(sm._var_.this).suffix)
 endef #sm.fun.compute-module-targets-static
 
 ##################################################
@@ -471,19 +480,18 @@ endef #sm.fun.make-rules-compile-common
 
 $(sm._var_.this).targets :=
 
-ifeq ($($(sm._var_.this)._compile_count),)
-  ## in case that only sm-build-this (no sm-compile-sources) is called
-  $(sm._var_.this)._compile_count := 1
-endif # $($(sm._var_.this)._compile_count) is empty
-
-## If first time building this...
-ifeq ($($(sm._var_.this)._compile_count),1)
-  ## clear these vars only once (see sm-compile-sources)
-  $(sm._var_.this).sources :=
-  $(sm._var_.this).sources.unknown :=
-  $(sm._var_.this).intermediates := $(sm.this.intermediates)
-  $(sm._var_.this).depends :=
-endif
+# ifeq ($($(sm._var_.this)._compile_count),)
+#   ## in case that only sm-build-this (no sm-compile-sources) is called
+#   $(sm._var_.this)._compile_count := 1
+# endif # $($(sm._var_.this)._compile_count) is empty
+# ## If first time building this...
+# ifeq ($($(sm._var_.this)._compile_count),1)
+#   ## clear these vars only once (see sm-compile-sources)
+#   $(sm._var_.this).sources :=
+#   $(sm._var_.this).sources.unknown :=
+#   $(sm._var_.this).intermediates := $(sm.this.intermediates)
+#   $(sm._var_.this).depends :=
+# endif
 
 ##
 define sm.fun.compute-sources-by-lang
@@ -645,6 +653,12 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   sm.args.flags.1 := $($(sm._var_.this).$($(sm._var_.this).action).libs)
 
   $(sm-rule-$($(sm._var_.this).action)-$($(sm._var_.this).lang))
+
+  ifeq ($(call is-true,$(sm.this.compile.flags.infile)),true)
+    $(sm.args.target) : \
+       $($(sm._var_.this).out.tmp)/link.flags \
+       $($(sm._var_.this).out.tmp)/link.libs
+  endif
 
   ifeq ($(strip $($(sm._var_.this).targets)),)
     $(error smart: internal error: targets mis-computed)

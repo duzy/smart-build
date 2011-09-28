@@ -11,6 +11,6 @@ $(foreach v,$(sm.var.__copyfiles),\
    $(eval sm.this.depends.copyfiles += $(sm.var.temp._d)/$(notdir $v))\
    $(eval $(sm.var.temp._d)/$(notdir $v) : \
        $(call sm-relative-path,$(sm.this.dir)/$v) ; \
-       @( echo file: $$@ )\
+       @( echo smart: copy: $$@ )\
        && ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@))\
        && ($(CP) -u $$< $$@)))
