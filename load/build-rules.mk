@@ -41,6 +41,7 @@ ifeq ($($(sm._var_.this).name),)
   $(sm._var_.this).suffix := $(sm.this.suffix)
   $(sm._var_.this).sources := $(sm.this.sources)
   $(sm._var_.this).sources.external := $(sm.this.sources.external)
+  $(sm._var_.this).sources.common := $(sm.this.sources.common)
   $(sm._var_.this).intermediates := $(sm.this.intermediates)
   $(sm._var_.this).depends := $(sm.this.depends)
   $(sm._var_.this).docs.format := $(sm.this.docs.format)
@@ -59,6 +60,12 @@ ifeq ($($(sm._var_.this).name),)
 
   # BUG: wrong if more than one sm-build-this occurs in a smart.mk
   #$(warning $(sm.this.name): $($(sm._var_.this)._intermediate_prefix))
+else
+  ## sources must always be reset for sm-compile-sources
+  $(sm._var_.this).sources := $(sm.this.sources)
+  $(sm._var_.this).sources.external := $(sm.this.sources.external)
+  $(sm._var_.this).sources.common := $(sm.this.sources.common)
+  $(sm._var_.this).intermediates := $(sm.this.intermediates)
 endif # $(sm._var_.this).name == ""
 
 #-----------------------------------------------
@@ -402,8 +409,8 @@ define sm.fun.make-rule-compile-common
    sm.args.sources := $(sm.var.temp._source)
   )$(eval \
    ## If $(sm.var.temp._source) is possible to be transformed into another lang.
-   sm.this.sources.$(sm.var.temp._output_lang) += $(sm.args.target)
-   sm.this.sources.has.$(sm.var.temp._output_lang) := true
+   $(sm._var_.this).sources.$(sm.var.temp._output_lang) += $(sm.args.target)
+   $(sm._var_.this).sources.has.$(sm.var.temp._output_lang) := true
    ## Make rule for generating intermediate file (e.g. cweb to c compilation)
    ifeq ($(sm.global.has.rule.$(sm.args.target)),)
      sm.global.has.rule.$(sm.args.target) := true
@@ -422,8 +429,8 @@ define sm.fun.make-rule-compile-common
       sm.args.sources := $(sm.var.temp._source)
      )$(eval ## compilate rule for documentation sources(.tex files)
       #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
-      sm.this.sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
-      sm.this.sources.has.$(sm.var.temp._literal_lang) := true
+      $(sm._var_.this).sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
+      $(sm._var_.this).sources.has.$(sm.var.temp._literal_lang) := true
       ifeq ($$(filter $(sm.var.temp._literal_lang),$$($(sm.var.toolset).langs) $$(sm.var.common.langs) $$(sm.var.common.langs.extra)),)
         sm.var.common.langs.extra += $(sm.var.temp._literal_lang)
       endif
@@ -461,20 +468,20 @@ endef #sm.fun.make-rule-compile-common
 define sm.fun.make-rules-compile
 $(if $(sm.var.temp._lang),,$(error smart: internal: sm.var.temp._lang is empty))\
 $(eval \
- ifeq ($$(sm.this.sources.has.$(sm.var.temp._lang)),true)
-  $$(foreach sm.var.temp._source,$$(sm.this.sources.$(sm.var.temp._lang)),$$(call sm.fun.make-rule-compile))
-  $$(foreach sm.var.temp._source,$$(sm.this.sources.external.$(sm.var.temp._lang)),$$(call sm.fun.make-rule-compile,external))
+ ifeq ($$($(sm._var_.this).sources.has.$(sm.var.temp._lang)),true)
+  $$(foreach sm.var.temp._source,$$($(sm._var_.this).sources.$(sm.var.temp._lang)),$$(call sm.fun.make-rule-compile))
+  $$(foreach sm.var.temp._source,$$($(sm._var_.this).sources.external.$(sm.var.temp._lang)),$$(call sm.fun.make-rule-compile,external))
  endif
  $(null))
 endef #sm.fun.make-rules-compile
 
 ## Same as sm.fun.make-rules-compile, but the common source file like 'foo.w'
 ## may generate output like 'out/common/foo.cpp', this will be then appended
-## to sm.this.sources.c++ which will then be used by sm.fun.make-rules-compile.
+## to $(sm._var_.this).sources.c++ which will then be used by sm.fun.make-rules-compile.
 define sm.fun.make-rules-compile-common
 $(if $(sm.var.temp._lang),,$(error smart: internal: $$(sm.var.temp._lang) is empty))\
-$(if $(sm.this.sources.has.$(sm.var.temp._lang)),\
-    $(foreach sm.var.temp._source,$(sm.this.sources.$(sm.var.temp._lang)),\
+$(if $($(sm._var_.this).sources.has.$(sm.var.temp._lang)),\
+    $(foreach sm.var.temp._source,$($(sm._var_.this).sources.$(sm.var.temp._lang)),\
        $(call sm.fun.make-rule-compile-common)))
 endef #sm.fun.make-rules-compile-common
 
@@ -486,9 +493,14 @@ $(sm._var_.this).targets :=
 define sm.fun.compute-sources-by-lang
 $(eval \
   sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
-  sm.this.sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$(sm.this.sources))
-  sm.this.sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$(sm.this.sources.external))
-  sm.this.sources.has.$(sm.var.temp._lang)      := $$(if $$(sm.this.sources.$(sm.var.temp._lang))$$(sm.this.sources.external.$(sm.var.temp._lang)),true)
+  $(sm._var_.this).sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._var_.this).sources))
+  $(sm._var_.this).sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._var_.this).sources.external))
+  $(sm._var_.this).sources.has.$(sm.var.temp._lang)      := $$(if $$($(sm._var_.this).sources.$(sm.var.temp._lang))$$($(sm._var_.this).sources.external.$(sm.var.temp._lang)),true)
+
+  ## make alias to sm.this.sources.LANGs
+  sm.this.sources.$(sm.var.temp._lang) = $($(sm._var_.this).sources.$(sm.var.temp._lang))
+  sm.this.sources.external.$(sm.var.temp._lang) = $($(sm._var_.this).sources.external.$(sm.var.temp._lang))
+  sm.this.sources.has.$(sm.var.temp._lang) = $($(sm._var_.this).sources.has.$(sm.var.temp._lang))
  )
 endef #sm.fun.compute-sources-for-lang
 
@@ -513,14 +525,14 @@ $(foreach _,$(sm.var.temp._check_common_langs),\
    $(if $(filter $(suffix $(sm.var.temp._source)),$(sm.tool.common.$_.suffix)),\
        $(eval \
          sm.var.temp._is_strange_source :=
-         sm.this.sources.has.$_ := true
+         $(sm._var_.this).sources.has.$_ := true
          ######
-         ifeq ($(filter $(sm.var.temp._source),$(sm.this.sources.common)),)
-           sm.this.sources.common += $(sm.var.temp._source)
+         ifeq ($(filter $(sm.var.temp._source),$($(sm._var_.this).sources.common)),)
+           $(sm._var_.this).sources.common += $(sm.var.temp._source)
          endif
          ######
-         ifeq ($(filter $(sm.var.temp._source),$(sm.this.sources.$_)),)
-           sm.this.sources.$_ += $(sm.var.temp._source)
+         ifeq ($(filter $(sm.var.temp._source),$($(sm._var_.this).sources.$_)),)
+           $(sm._var_.this).sources.$_ += $(sm.var.temp._source)
          endif
          ######
          ifeq ($(filter $_,$(sm.var.common.langs)),)
@@ -531,7 +543,7 @@ $(foreach _,$(sm.var.temp._check_common_langs),\
 $(eval \
   ifeq ($(sm.var.temp._is_strange_source),true)
     $$(warning warning: "$(sm.var.temp._source)" is unsupported by toolset "$($(sm._var_.this).toolset)")
-    sm.this.sources.unknown += $(sm.var.temp._source)
+    $(sm._var_.this).sources.unknown += $(sm.var.temp._source)
   endif
  )
 endef #sm.fun.check-strange-and-compute-common-source
@@ -542,7 +554,7 @@ define sm.fun.make-common-compile-rules-for-langs
 $(foreach sm.var.temp._lang,$1,\
    $(if $(sm.tool.common.$(sm.var.temp._lang).suffix),\
       ,$(error smart: toolset $($(sm._var_.this).toolset)/$(sm.var.temp._lang) has no suffixes))\
-   $(eval $(sm._var_.this).sources.$(sm.var.temp._lang) := $(sm.this.sources.$(sm.var.temp._lang)))\
+   $(eval sm.this.sources.$(sm.var.temp._lang) = $($(sm._var_.this).sources.$(sm.var.temp._lang)))\
    $(call sm.fun.compute-flags-compile)\
    $(sm.fun.make-rules-compile-common))
 endef #sm.fun.make-common-compile-rules-for-langs
@@ -559,17 +571,13 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
 ## Check strange sources and compute common sources.
 sm.var.common.langs :=
 sm.var.common.langs.extra :=
-sm.this.sources.common :=
-sm.this.sources.unknown :=
-$(foreach sm.var.temp._source, $(sm.this.sources) $(sm.this.sources.external),\
+$(sm._var_.this).sources.common :=
+$(sm._var_.this).sources.unknown :=
+$(foreach sm.var.temp._source, $($(sm._var_.this).sources) $($(sm._var_.this).sources.external),\
     $(sm.fun.check-strange-and-compute-common-source))
 
 ## Export computed common sources.
-sm.this.sources.common := $(strip $(sm.this.sources.common))
-$(sm._var_.this).sources.common := $(sm.this.sources.common)
-
-## (FIXME: this may be no sense!).
-$(sm._var_.this).sources.unknown := $(sm.this.sources.unknown)
+$(sm._var_.this).sources.common := $(strip $($(sm._var_.this).sources.common))
 
 ## Export computed common sources of different language and make compile rules
 ## for common sources(files not handled by the toolset, e.g. .w, .nw, etc).
@@ -577,15 +585,15 @@ $(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs))
 $(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs.extra))
 
 ## Make compile rules for sources of each lang supported by the selected toolset.
-## E.g. sm.this.sources.$(sm.var.temp._lang)
+## E.g. $(sm._var_.this).sources.$(sm.var.temp._lang)
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(if $($(sm.var.toolset).$(sm.var.temp._lang).suffix),\
       ,$(error smart: toolset $($(sm._var_.this).toolset)/$(sm.var.temp._lang) has no suffixes))\
-  $(eval $(sm._var_.this).sources.$(sm.var.temp._lang) := $(sm.this.sources.$(sm.var.temp._lang)))\
+  $(eval sm.this.sources.$(sm.var.temp._lang) = $($(sm._var_.this).sources.$(sm.var.temp._lang)))\
   $(call sm.fun.compute-flags-compile)\
   $(sm.fun.make-rules-compile)\
   $(if $(and $(call equal,$(strip $($(sm._var_.this).lang)),),\
-             $(sm.this.sources.has.$(sm.var.temp._lang))),\
+             $($(sm._var_.this).sources.has.$(sm.var.temp._lang))),\
          $(info smart: language choosed as "$(sm.var.temp._lang)" for "$(sm.this.name)")\
          $(eval $(sm._var_.this).lang := $(sm.var.temp._lang))))
 
@@ -593,20 +601,26 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
 ifeq ($($(sm._var_.this).type),t)
   # set sm.var.temp._lang, used by sm.fun.make-rule-compile
   sm.var.temp._lang := $($(sm._var_.this).lang)
-  sm.this.sources.$(sm.var.temp._lang).t := $(filter %.t,$(sm.this.sources))
-  sm.this.sources.external.$(sm.var.temp._lang).t := $(filter %.t,$(sm.this.sources.external))
-  sm.this.sources.has.$(sm.var.temp._lang).t := $(if $(sm.this.sources.$(sm.var.temp._lang).t)$(sm.this.sources.external.$(sm.var.temp._lang).t),true)
-  ifeq ($(or $(sm.this.sources.has.$(sm.var.temp._lang)),$(sm.this.sources.has.$(sm.var.temp._lang).t)),true)
-    $(foreach sm.var.temp._source,$(sm.this.sources.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile))
-    $(foreach sm.var.temp._source,$(sm.this.sources.external.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile,external))
+
+  $(sm._var_.this).sources.$(sm.var.temp._lang).t := $(filter %.t,$($(sm._var_.this).sources))
+  $(sm._var_.this).sources.external.$(sm.var.temp._lang).t := $(filter %.t,$($(sm._var_.this).sources.external))
+  $(sm._var_.this).sources.has.$(sm.var.temp._lang).t := $(if $($(sm._var_.this).sources.$(sm.var.temp._lang).t)$($(sm._var_.this).sources.external.$(sm.var.temp._lang).t),true)
+
+  ifeq ($(or $($(sm._var_.this).sources.has.$(sm.var.temp._lang)),$($(sm._var_.this).sources.has.$(sm.var.temp._lang).t)),true)
+    $(foreach sm.var.temp._source,$($(sm._var_.this).sources.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile))
+    $(foreach sm.var.temp._source,$($(sm._var_.this).sources.external.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile,external))
     ifeq ($($(sm._var_.this).lang),)
       $(sm._var_.this).lang := $($(sm._var_.this).lang)
     endif
   endif
+
+  sm.this.sources.$(sm.var.temp._lang).t = $($(sm._var_.this).sources.$(sm.var.temp._lang).t)
+  sm.this.sources.external.$(sm.var.temp._lang).t = $($(sm._var_.this).sources.external.$(sm.var.temp._lang).t)
+  sm.this.sources.has.$(sm.var.temp._lang).t = $($(sm._var_.this).sources.has.$(sm.var.temp._lang).t)
 endif
 
 sm.var.temp._should_make_targets := \
-  $(if $(or $(call not-equal,$(strip $(sm.this.sources.unknown)),),\
+  $(if $(or $(call not-equal,$(strip $($(sm._var_.this).sources.unknown)),),\
             $(call equal,$(strip $($(sm._var_.this).intermediates)),),\
             $(call is-true,$($(sm._var_.this)._intermediates_only))\
         ),,true)
@@ -675,6 +689,8 @@ sm.this.inters = $(sm.this.intermediates)
 sm.this.depends = $($(sm._var_.this).depends)
 sm.this.targets = $($(sm._var_.this).targets)
 sm.this.documents = $($(sm._var_.this).documents)
+sm.this.sources.common = $($(sm._var_.this).sources.common)
+sm.this.sources.unknown = $($(sm._var_.this).sources.unknown)
 
 ##################################################
 ##################################################
