@@ -85,8 +85,8 @@ define sm-new-module
    endif
    ifeq ($$(sm.this.type),docs)
      sm.this.args.toolset := common
-     sm.this.docs.format := .pdf
    endif
+   sm.this.docs.format := .pdf
   )\
  $(if $(filter $(sm.this.type),$(sm.global.module_types)),,\
      $(error $(sm.this.type) is not valid module type(see: $(sm.global.module_types))))\

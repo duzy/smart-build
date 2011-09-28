@@ -42,6 +42,7 @@ ifeq ($($(sm._var_.this).name),)
   $(sm._var_.this).sources.external := $(sm.this.sources.external)
   $(sm._var_.this).intermediates := $(sm.this.intermediates)
   $(sm._var_.this).depends := $(sm.this.depends)
+  $(sm._var_.this).docs.format := $(sm.this.docs.format)
   $(sm._var_.this).action := $(sm.var.action.$(sm.this.type))
   $(sm._var_.this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
   $(sm._var_.this).user_defined_targets := $(strip $(sm.this.targets))
@@ -95,7 +96,7 @@ ifeq ($(sm.this.type),t)
  $(if $(sm.this.lang),,$(error smart: 'sm.this.lang' must be defined for "tests" module))
 endif
 
-sm.args.docs_format := $(strip $(sm.this.docs.format))
+sm.args.docs_format := $(strip $($(sm._var_.this).docs.format))
 ifeq ($(sm.args.docs_format),)
   sm.args.docs_format := .dvi
 endif
