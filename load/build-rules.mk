@@ -652,13 +652,20 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   sm.args.flags.0 := $($(sm._var_.this).$($(sm._var_.this).action).flags)
   sm.args.flags.1 := $($(sm._var_.this).$($(sm._var_.this).action).libs)
 
-  $(sm-rule-$($(sm._var_.this).action)-$($(sm._var_.this).lang))
+  ifeq ($(call is-true,$(sm.this.$($(sm._var_.this).action).flags.infile)),true)
+    sm.var.temp._flag_files := \
+       $($(sm._var_.this).out.tmp)/$($(sm._var_.this).action).flags \
+       $($(sm._var_.this).out.tmp)/$($(sm._var_.this).action).intermediates
 
-  ifeq ($(call is-true,$(sm.this.compile.flags.infile)),true)
-    $(sm.args.target) : \
-       $($(sm._var_.this).out.tmp)/link.flags \
-       $($(sm._var_.this).out.tmp)/link.libs
+    ifeq ($($(sm._var_.this).action),link)
+      sm.var.temp._flag_files += \
+       $($(sm._var_.this).out.tmp)/$($(sm._var_.this).action).libs
+    endif
+
+    $(sm.args.target) : $(sm.var.temp._flag_files)
   endif
+
+  $(sm-rule-$($(sm._var_.this).action)-$($(sm._var_.this).lang))
 
   ifeq ($(strip $($(sm._var_.this).targets)),)
     $(error smart: internal error: targets mis-computed)
