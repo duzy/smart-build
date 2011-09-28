@@ -166,7 +166,7 @@ $(if $($(sm.var.this).archive.flags.computed),,\
       $(call sm.fun.make-pretty-list,\
         $(sm.global.archive.flags)\
         $(sm.this.archive.flags))
-    $(call sm.code.shift-flags-to-file,archive,options)
+    $(call sm.code.shift-flags-to-file,archive,flags)
    ))
 endef #sm.fun.compute-flags-archive
 
@@ -174,15 +174,15 @@ define sm.fun.compute-flags-link
 $(if $($(sm.var.this).link.flags.computed),,\
   $(eval \
     $(sm.var.this).link.flags.computed := true
-    $(sm.var.this).link.flags :=\
-     $(call sm.fun.make-pretty-list,\
+    $(sm.var.this).link.flags := $(call sm.fun.make-pretty-list,\
        $($(sm.var.toolset).link.flags)\
        $(sm.global.link.flags)\
        $(sm.this.link.flags))
-    $(if $(call equal,$(sm.this.type),shared),\
-       $$(if $$(filter -shared,$$($(sm.var.this).link.flags)),,\
-          $$(eval $(sm.var.this).link.flags += -shared)))
-    $(call sm.code.shift-flags-to-file,link,options)
+    ifeq ($(sm.this.type),shared)
+      $$(if $$(filter -shared,$$($(sm.var.this).link.flags)),,\
+          $$(eval $(sm.var.this).link.flags += -shared))
+    endif
+    $(call sm.code.shift-flags-to-file,link,flags)
    ))
 endef #sm.fun.compute-flags-link
 
@@ -592,8 +592,8 @@ sm.var.temp._should_make_targets := \
         ),,true)
 
 ifneq ($(sm.this.toolset),common)
+ifeq ($(sm.var.temp._should_make_targets),true)
  ## Make rule for targets of the module
- ifeq ($(sm.var.temp._should_make_targets),true)
   $(if $($(sm.var.this).objects),,$(error smart: no objects for building '$(sm.this.name)'))
 
   $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
@@ -606,28 +606,27 @@ ifneq ($(sm.this.toolset),common)
   $(call sm-check-defined,sm.fun.compute-intermediates-$(sm.var.action))
   $(call sm-check-defined,sm.fun.compute-libs-$(sm.var.action))
 
-  $(call sm.fun.compute-flags-$(sm.var.action))
-  $(call sm.fun.compute-intermediates-$(sm.var.action))
-  $(call sm.fun.compute-libs-$(sm.var.action))
-
+  $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
   $(call sm-check-defined,$(sm.var.this).$(sm.var.action).flags)
   $(call sm-check-defined,$(sm.var.this).$(sm.var.action).objects)
   $(call sm-check-defined,$(sm.var.this).$(sm.var.action).libs)
   $(call sm-check-not-empty,$(sm.var.this).lang)
 
+  $(sm.fun.compute-flags-$(sm.var.action))
+  $(sm.fun.compute-intermediates-$(sm.var.action))
+  $(sm.fun.compute-libs-$(sm.var.action))
+
   sm.args.target := $($(sm.var.this).targets)
   sm.args.sources := $($(sm.var.this).objects)
-  sm.args.flags.0 = $(if $(call is-true,$(sm.this.$(sm.var.action).flags.infile)),\
-     ,$$($(sm.var.this).$(sm.var.action).flags))
-  sm.args.flags.1 = $$($(sm.var.this).$(sm.var.action).libs)
+  sm.args.flags.0 := $($(sm.var.this).$(sm.var.action).flags)
+  sm.args.flags.1 := $($(sm.var.this).$(sm.var.action).libs)
 
-  $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
   $(sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
 
   ifeq ($(strip $($(sm.var.this).targets)),)
     $(error smart: internal error: targets mis-computed)
   endif
- endif #$(sm.var.temp._should_make_targets) == true
+endif #$(sm.var.temp._should_make_targets) == true
 endif #$(sm.this.toolset) != common
 
 #-----------------------------------------------
@@ -641,10 +640,9 @@ sm.this.objects = $($(sm.var.this).objects)
 sm.this.depends = $($(sm.var.this).depends)
 sm.this.documents = $($(sm.var.this).documents)
 
-#$(info $(sm.var.this).objects: $($(sm.var.this).objects))
-#$(info $(sm.var.this).depends: $($(sm.var.this).depends))
-
 ##################################################
+##################################################
+
 ifeq ($(sm.var.temp._should_make_targets),true)
 
 ifeq ($(strip $($(sm.var.this).objects)),)
@@ -670,8 +668,8 @@ endif
 
 ifeq ($(sm.this.type),t)
   define sm.code.make-test-rules
-  sm.global.tests += test-$(sm.this.name)
-  test-$(sm.this.name): $($(sm.var.this).targets)
+    sm.global.tests += test-$(sm.this.name)
+    test-$(sm.this.name): $($(sm.var.this).targets)
 	@echo test: $(sm.this.name) - $$< && $$<
   endef #sm.code.make-test-rules
   $(eval $(sm.code.make-test-rules))
@@ -709,4 +707,6 @@ endef #sm.code.clean-rules
 $(eval $(sm.code.clean-rules))
 
 endif # sm.var.temp._should_make_targets == true
+
+##################################################
 ##################################################
