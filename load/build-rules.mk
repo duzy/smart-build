@@ -34,17 +34,29 @@ sm.var.depend.suffixes.t := .t.d
 
 ## for sm.this.using: recursive loading
 ifeq ($($(sm._var_.this).name),)
+  $(sm._var_.this).dir := $(sm.this.dir)
   $(sm._var_.this).name := $(sm.this.name)
   $(sm._var_.this).type := $(sm.this.type)
   $(sm._var_.this).lang := $(sm.this.lang)
   $(sm._var_.this).toolset := $(sm.this.toolset)
   $(sm._var_.this).suffix := $(sm.this.suffix)
+  $(sm._var_.this).makefile := $(sm.this.makefile)
   $(sm._var_.this).sources := $(sm.this.sources)
   $(sm._var_.this).sources.external := $(sm.this.sources.external)
   $(sm._var_.this).sources.common := $(sm.this.sources.common)
   $(sm._var_.this).intermediates := $(sm.this.intermediates)
   $(sm._var_.this).depends := $(sm.this.depends)
   $(sm._var_.this).docs.format := $(sm.this.docs.format)
+  $(sm._var_.this).defines := $(sm.this.defines)
+  $(sm._var_.this).includes := $(sm.this.includes)
+  $(sm._var_.this).compile.flags := $(sm.this.compile.flags)
+  $(sm._var_.this).compile.flags.infile := $(sm.this.compile.flags.infile)
+  $(sm._var_.this).archive.flags := $(sm.this.archive.flags)
+  $(sm._var_.this).archive.flags.infile := $(sm.this.archive.flags.infile)
+  $(sm._var_.this).link.flags := $(sm.this.link.flags)
+  $(sm._var_.this).link.flags.infile := $(sm.this.link.flags.infile)
+  $(sm._var_.this).libdirs := $(sm.this.libdirs)
+  $(sm._var_.this).libs := $(sm.this.libs)
   $(sm._var_.this).action := $(sm.var.action.$(sm.this.type))
   $(sm._var_.this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
   $(sm._var_.this).user_defined_targets := $(strip $(sm.this.targets))
@@ -97,7 +109,7 @@ ifeq ($(strip \
          $($(sm._var_.this).sources)\
          $($(sm._var_.this).sources.external)\
          $($(sm._var_.this).intermediates)),)
-  $(error smart: no sources or intermediates for module '$(sm.this.name)')
+  $(error smart: no sources or intermediates for module '$($(sm._var_.this).name)')
 endif
 
 ifeq ($($(sm._var_.this).type),t)
@@ -152,11 +164,11 @@ endef #sm.fun.append-items
 ##
 ## eg. $(call sm.code.shift-flags-to-file,compile,flags.c++)
 define sm.code.shift-flags-to-file-r
- ifeq ($(call is-true,$(sm.this.$1.flags.infile)),true)
+ ifeq ($(call is-true,$($(sm._var_.this).$1.flags.infile)),true)
   $(sm._var_.this).$1.$2.flat := $$(subst \",\\\",$$($(sm._var_.this).$1.$2))
   $(sm._var_.this).$1.$2 := @$($(sm._var_.this).out.tmp)/$1.$2
   $(sm._var_.this).flag_files += $($(sm._var_.this).out.tmp)/$1.$2
-  $($(sm._var_.this).out.tmp)/$1.$2: $(sm.this.makefile)
+  $($(sm._var_.this).out.tmp)/$1.$2: $($(sm._var_.this).makefile)
 	@$$(info smart: flag file: $$@)
 	@mkdir -p $($(sm._var_.this).out.tmp)
 	@echo $$($(sm._var_.this).$1.$2.flat) > $$@
@@ -186,12 +198,12 @@ $(eval \
        $(sm.global.defines.$(sm.var.temp._lang))\
        $(sm.global.compile.flags)\
        $(sm.global.compile.flags.$(sm.var.temp._lang))\
-       $(sm.this.defines)\
-       $(sm.this.defines.$(sm.var.temp._lang))\
-       $(sm.this.compile.flags)\
-       $(sm.this.compile.flags.$(sm.var.temp._lang)))
+       $($(sm._var_.this).defines)\
+       $($(sm._var_.this).defines.$(sm.var.temp._lang))\
+       $($(sm._var_.this).compile.flags)\
+       $($(sm._var_.this).compile.flags.$(sm.var.temp._lang)))
     $$(call sm.fun.append-items,$(sm.var.temp._fvar_name),\
-       $(sm.global.includes) $(sm.this.includes), -I)
+       $(sm.global.includes) $($(sm._var_.this).includes), -I)
     $(call sm.code.shift-flags-to-file,compile,$($(sm._var_.this)._cnum).flags.$(sm.var.temp._lang))
   endif
  )
@@ -204,7 +216,7 @@ $(eval \
     $(sm._var_.this).archive.flags := \
       $(call sm.fun.make-pretty-list,\
         $(sm.global.archive.flags)\
-        $(sm.this.archive.flags))
+        $($(sm._var_.this).archive.flags))
     $(call sm.code.shift-flags-to-file,archive,flags)
   endif
  )
@@ -217,7 +229,7 @@ $(eval \
     $(sm._var_.this).link.flags := $(call sm.fun.make-pretty-list,\
        $($(sm.var.toolset).link.flags)\
        $(sm.global.link.flags)\
-       $(sm.this.link.flags))
+       $($(sm._var_.this).link.flags))
     ifeq ($($(sm._var_.this).type),shared)
       $$(if $$(filter -shared,$$($(sm._var_.this).link.flags)),,\
           $$(eval $(sm._var_.this).link.flags += -shared))
@@ -259,8 +271,8 @@ $(eval \
   ifeq ($($(sm._var_.this).link.libs.computed),)
     $(sm._var_.this).link.libs.computed := true
     $(sm._var_.this).link.libs :=
-    $$(call sm.fun.append-items, $(sm._var_.this).link.libs,$(sm.global.libdirs) $(sm.this.libdirs), -L)
-    $$(call sm.fun.append-items, $(sm._var_.this).link.libs,$(sm.global.libs) $(sm.this.libs), -l)
+    $$(call sm.fun.append-items, $(sm._var_.this).link.libs,$(sm.global.libdirs) $($(sm._var_.this).libdirs), -L)
+    $$(call sm.fun.append-items, $(sm._var_.this).link.libs,$(sm.global.libs) $($(sm._var_.this).libs), -l)
     $(call sm.code.shift-flags-to-file,link,libs)
   endif
  )
@@ -290,7 +302,7 @@ endef #sm.fun.compute-intermediate.common
 ##
 ## source file of relative location
 define sm.fun.compute-source.
-$(call sm-relative-path,$(sm.this.dir)/$(strip $1))
+$(call sm-relative-path,$($(sm._var_.this).dir)/$(strip $1))
 endef #sm.fun.compute-source.
 
 ##
@@ -302,19 +314,19 @@ endef #sm.fun.compute-source.external
 ##
 ## binary module to be built
 define sm.fun.compute-module-targets-exe
-$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$($(sm._var_.this).suffix)
+$(call sm-relative-path,$(sm.out.bin))/$($(sm._var_.this).name)$($(sm._var_.this).suffix)
 endef #sm.fun.compute-module-targets-exe
 
 define sm.fun.compute-module-targets-t
-$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$($(sm._var_.this).suffix)
+$(call sm-relative-path,$(sm.out.bin))/$($(sm._var_.this).name)$($(sm._var_.this).suffix)
 endef #sm.fun.compute-module-targets-t
 
 define sm.fun.compute-module-targets-shared
-$(call sm-relative-path,$(sm.out.bin))/$(sm.this.name)$($(sm._var_.this).suffix)
+$(call sm-relative-path,$(sm.out.bin))/$($(sm._var_.this).name)$($(sm._var_.this).suffix)
 endef #sm.fun.compute-module-targets-shared
 
 define sm.fun.compute-module-targets-static
-$(call sm-relative-path,$(sm.out.lib))/lib$(sm.this.name:lib%=%)$($(sm._var_.this).suffix)
+$(call sm-relative-path,$(sm.out.lib))/lib$($(sm._var_.this).name:lib%=%)$($(sm._var_.this).suffix)
 endef #sm.fun.compute-module-targets-static
 
 ##################################################
@@ -387,7 +399,7 @@ endef #sm.fun.make-rule-compile
 ## 
 define sm.fun.make-rule-compile-common-command
 $(strip $(if $(call equal,$(sm.this.verbose),true),$2,\
-   $$(info $1: $(sm.this.name) += $$^ --> $$@)$(sm.var.Q)($2)>/dev/null))
+   $$(info $1: $($(sm._var_.this).name) += $$^ --> $$@)$(sm.var.Q)($2)>/dev/null))
 endef #sm.fun.make-rule-compile-common-command
 
 ##
@@ -594,7 +606,7 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(sm.fun.make-rules-compile)\
   $(if $(and $(call equal,$(strip $($(sm._var_.this).lang)),),\
              $($(sm._var_.this).sources.has.$(sm.var.temp._lang))),\
-         $(info smart: language choosed as "$(sm.var.temp._lang)" for "$(sm.this.name)")\
+         $(info smart: language choosed as "$(sm.var.temp._lang)" for "$($(sm._var_.this).name)")\
          $(eval $(sm._var_.this).lang := $(sm.var.temp._lang))))
 
 ## Make object rules for .t sources file
@@ -628,7 +640,7 @@ sm.var.temp._should_make_targets := \
 ifneq ($($(sm._var_.this).toolset),common)
 ifeq ($(sm.var.temp._should_make_targets),true)
  ## Make rule for targets of the module
-  $(if $($(sm._var_.this).intermediates),,$(error smart: no intermediates for building '$(sm.this.name)'))
+  $(if $($(sm._var_.this).intermediates),,$(error smart: no intermediates for building '$($(sm._var_.this).name)'))
 
   $(call sm-check-defined,$(sm._var_.this).action)
   $(call sm-check-defined,$(sm._var_.this).lang)
@@ -702,26 +714,26 @@ ifeq ($(strip $($(sm._var_.this).intermediates)),)
 endif
 
 ifeq ($(MAKECMDGOALS),clean)
-  goal-$(sm.this.name) : ; @true
-  doc-$(sm.this.name) : ; @true
+  goal-$($(sm._var_.this).name) : ; @true
+  doc-$($(sm._var_.this).name) : ; @true
 else
-  goal-$(sm.this.name) : \
+  goal-$($(sm._var_.this).name) : \
     $(sm.this.depends) \
     $(sm.this.depends.copyfiles) \
     $($(sm._var_.this).targets)
 
   ifneq ($($(sm._var_.this).documents),)
-    doc-$(sm.this.name) : $($(sm._var_.this).documents)
+    doc-$($(sm._var_.this).name) : $($(sm._var_.this).documents)
   else
-    doc-$(sm.this.name) : ; @echo smart: No documents for $(sm.this.name).
+    doc-$($(sm._var_.this).name) : ; @echo smart: No documents for $($(sm._var_.this).name).
   endif
 endif
 
 ifeq ($($(sm._var_.this).type),t)
   define sm.code.make-test-rules
-    sm.global.tests += test-$(sm.this.name)
-    test-$(sm.this.name): $($(sm._var_.this).targets)
-	@echo test: $(sm.this.name) - $$< && $$<
+    sm.global.tests += test-$($(sm._var_.this).name)
+    test-$($(sm._var_.this).name): $($(sm._var_.this).targets)
+	@echo test: $($(sm._var_.this).name) - $$< && $$<
   endef #sm.code.make-test-rules
   $(eval $(sm.code.make-test-rules))
 endif
@@ -729,29 +741,29 @@ endif
 $(call sm-check-not-empty, sm.tool.common.rm)
 $(call sm-check-not-empty, sm.tool.common.rmdir)
 
-clean-$(sm.this.name): \
-  clean-$(sm.this.name)-flags \
-  clean-$(sm.this.name)-targets \
-  clean-$(sm.this.name)-intermediates \
-  clean-$(sm.this.name)-depends \
+clean-$($(sm._var_.this).name): \
+  clean-$($(sm._var_.this).name)-flags \
+  clean-$($(sm._var_.this).name)-targets \
+  clean-$($(sm._var_.this).name)-intermediates \
+  clean-$($(sm._var_.this).name)-depends \
   $(sm.this.clean-steps)
 	@echo "'$(@:clean-%=%)' is cleaned."
 
 define sm.code.clean-rules
 sm.rules.phony.* += \
-    clean-$(sm.this.name) \
-    clean-$(sm.this.name)-flags \
-    clean-$(sm.this.name)-targets \
-    clean-$(sm.this.name)-intermediates \
-    clean-$(sm.this.name)-depends \
+    clean-$($(sm._var_.this).name) \
+    clean-$($(sm._var_.this).name)-flags \
+    clean-$($(sm._var_.this).name)-targets \
+    clean-$($(sm._var_.this).name)-intermediates \
+    clean-$($(sm._var_.this).name)-depends \
     $(sm.this.clean-steps)
-clean-$(sm.this.name)-flags:
+clean-$($(sm._var_.this).name)-flags:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm._var_.this).targets))@)$$(call sm.tool.common.rm,$$($(sm._var_.this).flag_files))
-clean-$(sm.this.name)-targets:
+clean-$($(sm._var_.this).name)-targets:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm._var_.this).targets))@)$$(call sm.tool.common.rm,$$($(sm._var_.this).targets))
-clean-$(sm.this.name)-intermediates:
+clean-$($(sm._var_.this).name)-intermediates:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm._var_.this).intermediates))@)$$(call sm.tool.common.rm,$$($(sm._var_.this).intermediates))
-clean-$(sm.this.name)-depends:
+clean-$($(sm._var_.this).name)-depends:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm._var_.this).depends))@)$$(call sm.tool.common.rm,$$($(sm._var_.this).depends))
 endef #sm.code.clean-rules
 
