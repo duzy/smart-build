@@ -80,7 +80,6 @@ ifneq ($(sm.global.goals),)
   $(call sm-check-not-empty, sm.out.bin)
   $(call sm-check-not-empty, sm.out.lib)
   $(call sm-check-not-empty, sm.out.inc)
-  $(call sm-check-not-empty, sm.out.obj)
   $(call sm-check-not-empty, sm.out.tmp)
   $(call sm-check-not-empty, sm.out.inter)
 
@@ -89,9 +88,9 @@ ifneq ($(sm.global.goals),)
   $(sm.out.bin) \
   $(sm.out.lib) \
   $(sm.out.inc) \
-  $(sm.out.obj) \
   $(sm.out.tmp) \
   $(sm.out.inter) \
+  $(sm.out.doc) \
   :; $(call sm-util-mkdir,$@) @true
 
 else

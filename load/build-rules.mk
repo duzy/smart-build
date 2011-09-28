@@ -14,7 +14,6 @@
 $(call sm-check-not-empty,sm.this.toolset,smart: 'sm.this.toolset' for $(sm.this.name) unknown)
 
 sm.var.toolset := sm.tool.$(sm.this.toolset)
-
 ifeq ($($(sm.var.toolset)),)
   include $(sm.dir.buildsys)/loadtool.mk
 endif
@@ -38,6 +37,11 @@ ifeq ($(sm.this.type),t)
  $(if $(sm.this.lang),,$(error smart: 'sm.this.lang' must be defined for "tests" module))
 endif
 
+sm.args.docs_format := $(strip $(sm.this.docs.format))
+ifeq ($(sm.args.docs_format),)
+  sm.args.docs_format := .dvi
+endif
+
 ##################################################
 
 sm.var.action.static := archive
@@ -55,10 +59,15 @@ sm.fun.this := sm.fun.$(sm.this.name)
 
 $(sm.var.this).depend.suffixes := $(sm.var.depend.suffixes)
 
-sm.args.docs_format := $(strip $(sm.this.docs.format))
-ifeq ($(sm.args.docs_format),)
-  sm.args.docs_format := .dvi
+sm.var.temp._intermediate_prefix := $(sm.this.dir:$(sm.top)%=%)
+sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix:%.=%)
+sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix:/%=%)
+ifneq ($(sm.var.temp._intermediate_prefix),)
+  sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix)/
 endif
+
+# BUG: wrong if more than one sm-build-this occurs in a smart.mk
+#$(warning $(sm.this.name): $(sm.var.temp._intermediate_prefix))
 
 ##################################################
 
@@ -230,18 +239,6 @@ endef #sm.fun.compute-libs-link
 
 ##################################################
 
-## The output intermediate file's prefix
-sm.var.temp._intermediate_prefix := $(sm.this.dir:$(sm.top)%=%)
-sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix:%.=%)
-sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix:/%=%)
-
-ifneq ($(sm.var.temp._intermediate_prefix),)
-  sm.var.temp._intermediate_prefix := $(sm.var.temp._intermediate_prefix)/
-endif
-
-# BUG: wrong if more than one sm-build-this occurs in a smart.mk
-#$(warning $(sm.this.name): $(sm.var.temp._intermediate_prefix))
-
 ## Compute the intermediate name without suffix.
 define sm.fun.compute-intermediate-name
 $(sm.var.temp._intermediate_prefix)$(basename $(subst ..,_,$(call sm-relative-path,$(sm.var.temp._source))))
@@ -250,7 +247,7 @@ endef #sm.fun.compute-intermediate-name
 ##
 ##
 define sm.fun.compute-intermediate.
-$(sm.out.obj)/$(sm.fun.compute-intermediate-name)$(sm.tool.$(sm.this.toolset).intermediate.suffix.$(sm.var.temp._lang))
+$(sm.out.inter)/$(sm.fun.compute-intermediate-name)$(sm.tool.$(sm.this.toolset).intermediate.suffix.$(sm.var.temp._lang))
 endef #sm.fun.compute-intermediate.
 
 define sm.fun.compute-intermediate.external
@@ -258,7 +255,7 @@ $(sm.fun.compute-intermediate.)
 endef #sm.fun.compute-intermediate.external
 
 define sm.fun.compute-intermediate.common
-$(sm.out.inter)/$(sm.fun.compute-intermediate-name)$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.this.lang))
+$(sm.out.inter)/common/$(sm.fun.compute-intermediate-name)$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.this.lang))
 endef #sm.fun.compute-intermediate.common
 
 ##
@@ -292,12 +289,6 @@ $(call sm-relative-path,$(sm.out.lib))/lib$(sm.this.name:lib%=%)$(sm.this.suffix
 endef #sm.fun.compute-module-targets-static
 
 ##################################################
-
-# TODO: smart conditional
-# $(cond
-#   (foo $(var-1))
-#   (bar $(var-2))
-#   (car $(var-3)))
 
 ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
              $(call not-equal,$(MAKECMDGOALS),clean)),)
@@ -535,6 +526,15 @@ $(foreach sm.var.temp._lang,$1,\
    $(call sm.fun.compute-flags-compile)\
    $(sm.fun.make-rules-compile-common))
 endef #sm.fun.make-common-compile-rules-for-langs
+
+##################################################
+
+#-----------------------------------------------
+#-----------------------------------------------
+
+ifneq ($(sm.this.using),)
+  $(warning using: $(sm.this.using))
+endif
 
 #-----------------------------------------------
 #-----------------------------------------------

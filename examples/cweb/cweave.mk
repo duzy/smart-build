@@ -8,7 +8,8 @@ sm.this.sources := cweave.w common.w prod.w
 
 $(sm-build-this)
 
-$(call sm-check-equal,$(strip $(sm.this.intermediates)),$(sm.out.obj)/$(sm.out.inter)/cweave.o $(sm.out.obj)/$(sm.out.inter)/common.o $(sm.out.obj)/$(sm.out.inter)/prod.o)
+prefix := $(sm.out.inter)/common
+$(call sm-check-equal,$(strip $(sm.this.intermediates)),$(sm.out.inter)/$(prefix)/cweave.o $(sm.out.inter)/$(prefix)/common.o $(sm.out.inter)/$(prefix)/prod.o)
 $(call sm-check-equal,$(sm.this.intermediates),$(sm.this.inters))
-$(call sm-check-equal,$(strip $(sm.this.sources.c)),$(sm.out.inter)/cweave.c $(sm.out.inter)/common.c $(sm.out.inter)/prod.c)
-$(call sm-check-equal,$(strip $(sm.var.cweave.sources.c)),$(sm.out.inter)/cweave.c $(sm.out.inter)/common.c $(sm.out.inter)/prod.c)
+$(call sm-check-equal,$(strip $(sm.this.sources.c)),$(prefix)/cweave.c $(prefix)/common.c $(prefix)/prod.c)
+$(call sm-check-equal,$(strip $(sm.var.cweave.sources.c)),$(prefix)/cweave.c $(prefix)/common.c $(prefix)/prod.c)

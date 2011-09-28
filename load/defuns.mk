@@ -2,6 +2,12 @@
 #	Copyright(c) 2009, by Zhan Xin-ming, duzy@duzy.info
 #
 
+# TODO: smart conditional
+# $(cond
+#   (foo $(var-1))
+#   (bar $(var-2))
+#   (car $(var-3)))
+
 #####
 # Logic
 #####

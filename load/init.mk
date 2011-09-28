@@ -30,10 +30,10 @@ sm.out = out/$(if $(sm.this.toolset),$(sm.this.toolset)/)$(sm.config.variant)
 sm.out.bin = $(sm.out)/bin
 sm.out.lib = $(sm.out)/lib
 sm.out.inc = $(sm.out)/include
-sm.out.obj = $(sm.out)/obj
+sm.out.obj = $(call sm-deprecated, sm.out.obj, sm.out.inter)
 sm.out.tmp = $(sm.out)/temp
 sm.out.inter = $(sm.out)/intermediates
-#sm.out.doc = out/$(sm.config.variant)/documents
+sm.out.inter.literal = $(sm.out.inter)/literal
 sm.out.doc = out/documents
 
 sm.dir.out = $(call sm-deprecated, sm.dir.out, sm.out)
