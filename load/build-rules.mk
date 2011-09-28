@@ -87,6 +87,7 @@ $(sm.var.this).flag_files :=
 
 ##################################################
 
+## make list of only one space separated items
 define sm.fun.make-pretty-list
 $(strip $(eval sm.var.temp._pretty_list :=)\
   $(foreach _,$1,$(eval sm.var.temp._pretty_list += $(strip $_)))\
@@ -131,11 +132,13 @@ endef #sm.code.shift-flags-to-file
 ####################
 
 define sm.fun.compute-flags-compile
-$(if $($(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang).computed),,\
+$(eval \
+  sm.var.temp._fvar_name := $(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang)
+ )\
+$(if $($(sm.var.temp._fvar_name).computed),,\
   $(eval \
-    $(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang).computed := true
-    $(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang) := \
-     $(call sm.fun.make-pretty-list,\
+    $(sm.var.temp._fvar_name).computed := true
+    $(sm.var.temp._fvar_name) := $(call sm.fun.make-pretty-list,\
        $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
        $($(sm.var.toolset).defines)\
        $($(sm.var.toolset).defines.$(sm.var.temp._lang))\
@@ -149,8 +152,7 @@ $(if $($(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp.
        $(sm.this.defines.$(sm.var.temp._lang))\
        $(sm.this.compile.flags)\
        $(sm.this.compile.flags.$(sm.var.temp._lang)))
-    $$(call sm.fun.append-items,\
-       $(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang),\
+    $$(call sm.fun.append-items,$(sm.var.temp._fvar_name),\
        $(sm.global.includes) $(sm.this.includes), -I)
     $(call sm.code.shift-flags-to-file,compile,$(sm.var._module_compile_num).flags.$(sm.var.temp._lang))
    ))
@@ -340,7 +342,8 @@ define sm.fun.make-rule-compile
    sm.args.flags.0 += $(sm.this.compile.flags-$(sm.var.temp._source))
    sm.args.flags.1 :=
    sm.args.flags.2 :=
- )$(sm-rule-compile-$(sm.var.temp._lang))
+   $$(sm-rule-compile-$(sm.var.temp._lang))
+ )
 endef #sm.fun.make-rule-compile
 
 ## 
