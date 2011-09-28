@@ -282,8 +282,8 @@ $(eval \
   include $(sm.dir.buildsys)/build-this.mk
  )\
 $(eval \
-  ifneq ($(strip $(sm.this.sources.unknown)),)
-    $$(error smart: strange sources: $(strip $(sm.this.sources.unknown)))
+  ifneq ($(strip $($(sm._var_.this).sources.unknown)),)
+    $$(error smart: strange sources: $(strip $($(sm._var_.this).sources.unknown)))
   endif
  )
 endef #sm-build-this
