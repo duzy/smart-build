@@ -421,7 +421,7 @@ define sm.fun.make-rule-compile
    sm.args.flags.1 :=
    sm.args.flags.2 :=
 
-   ifeq ($(call is-true,$(sm.this.compile.flags.infile)),true)
+   ifeq ($(call is-true,$($(sm._var_.this).compile.flags.infile)),true)
      $(sm.args.target) : $($(sm._var_.this).out.tmp)/compile.$($(sm._var_.this)._cnum).flags.$(sm.var.temp._lang)
    endif
 
@@ -431,7 +431,7 @@ endef #sm.fun.make-rule-compile
 
 ## 
 define sm.fun.make-rule-compile-common-command
-$(strip $(if $(call equal,$(sm.this.verbose),true),$2,\
+$(strip $(if $(call equal,$($(sm._var_.this).verbose),true),$2,\
    $$(info $1: $($(sm._var_.this).name) += $$^ --> $$@)$(sm.var.Q)($2)>/dev/null))
 endef #sm.fun.make-rule-compile-common-command
 
@@ -584,7 +584,7 @@ define sm.fun.make-common-compile-rules-for-langs
 $(foreach sm.var.temp._lang,$1,\
    $(if $(sm.tool.common.$(sm.var.temp._lang).suffix),\
       ,$(error smart: toolset $($(sm._var_.this).toolset)/$(sm.var.temp._lang) has no suffixes))\
-   $(eval sm.this.sources.$(sm.var.temp._lang) = $($(sm._var_.this).sources.$(sm.var.temp._lang)))\
+   $(eval $(sm._var_.this).sources.$(sm.var.temp._lang) = $($(sm._var_.this).sources.$(sm.var.temp._lang)))\
    $(call sm.fun.compute-flags-compile)\
    $(sm.fun.make-rules-compile-common))
 endef #sm.fun.make-common-compile-rules-for-langs
@@ -615,7 +615,7 @@ $(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs.extra))
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(if $($(sm.var.toolset).$(sm.var.temp._lang).suffix),\
       ,$(error smart: toolset $($(sm._var_.this).toolset)/$(sm.var.temp._lang) has no suffixes))\
-  $(eval sm.this.sources.$(sm.var.temp._lang) = $($(sm._var_.this).sources.$(sm.var.temp._lang)))\
+  $(eval $(sm._var_.this).sources.$(sm.var.temp._lang) = $($(sm._var_.this).sources.$(sm.var.temp._lang)))\
   $(call sm.fun.compute-flags-compile)\
   $(sm.fun.make-rules-compile)\
   $(if $(and $(call equal,$(strip $($(sm._var_.this).lang)),),\
