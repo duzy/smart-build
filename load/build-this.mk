@@ -9,12 +9,12 @@
 #				: the dependences must exists first.
 #				
 
-ifeq ($(sm._var_.this),)
-  $(error smart: internal: sm._var_.this is empty)
+ifeq ($(sm._this),)
+  $(error smart: internal: sm._this is empty)
 endif
 
-ifeq ($(sm._fun_.this),)
-  $(error smart: internal: sm._fun_.this is empty)b
+ifeq ($(sm._this.fun),)
+  $(error smart: internal: sm._this.fun is empty)
 endif
 
 ## check origin of 'sm-check-origin' itself
@@ -40,7 +40,7 @@ ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
     endif
 
     # this duplicats in 'sm-build-this'
-    #$(sm._var_.this)._cnum := 0
+    #$(sm._this)._cnum := 0
 
     include $(sm.dir.buildsys)/build-rules.mk
   endif

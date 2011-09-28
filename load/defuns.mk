@@ -57,6 +57,31 @@ $(if $(call equal,$1,dynamic),shared,\
         $(if $(call equal,$1,tests),t,$1)))
 endef
 
+sm.module.properties := \
+    .dir \
+    .name \
+    .type \
+    .lang \
+    .toolset \
+    .using \
+    .suffix \
+    .verbose \
+    .gen_deps \
+    .sources \
+    .sources.external \
+    .sources.common \
+    .intermediates \
+
+define sm-clone-module
+$(eval \
+  sm.this.args.src := $(strip $1)
+  sm.this.args.dst := $(strip $2)
+ )\
+$(foreach sm.this.temp._,$(sm.module.properties),\
+  $(eval $(sm.this.args.dst)$(sm.this.temp._) := $($(sm.this.args.src)$(sm.this.temp._)))\
+  $(info $(sm.this.args.dst)$(sm.this.temp._): $($(sm.this.args.dst)$(sm.this.temp._))))
+endef #sm-clone-module
+
 # sm-new-module must be used before any 'include' commands, since
 # it invokes sm-module-dir and sm-this-makefile
 define sm-new-module
@@ -156,14 +181,15 @@ define sm-use-module
    sm.this.args.modir := $(strip $1)
    sm.this.temp._using := $$(wildcard $$(sm.this.args.modir)/smart.mk)
   )$(info smart: using $(sm.this.args.modir)..)\
+ $(call sm-clone-module,sm.this,sm.var.foo)\
  $(call sm-load-module,$(sm.this.temp._using))\
  $(info smart: module "$(sm.result.module.name)" used)\
  $(eval \
    $$(warning TODO: restore the previous module context)
    sm.this.name := foo
-   sm._fun_.this := sm.fun.$$(sm.this.name)
-   sm._var_.this := sm.var.$$(sm.this.name)
-  )
+   sm._this.fun := sm.fun.$$(sm.this.name)
+   sm._this := sm.var.$$(sm.this.name)
+  )$(call sm-clone-module,sm.var.foo,sm.this)
 endef #sm-use-module
 
 ##
@@ -182,16 +208,16 @@ endef
 ##
 define sm-compute-compile-num
 $(eval \
-  ifeq ($(sm._var_.this),)
-    $$(error smart: internal: sm._var_.this is empty)
+  ifeq ($(sm._this),)
+    $$(error smart: internal: sm._this is empty)
   endif
-  ifeq ($($(sm._var_.this)._compile_count),)
-    $(sm._var_.this)._compile_count := $(strip $1)
+  ifeq ($($(sm._this)._compile_count),)
+    $(sm._this)._compile_count := $(strip $1)
   else
-    sm._cc := $(shell expr $($(sm._var_.this)._compile_count) + $(strip $1))
-    $(sm._var_.this)._compile_count := $$(sm._cc)
+    sm._cc := $(shell expr $($(sm._this)._compile_count) + $(strip $1))
+    $(sm._this)._compile_count := $$(sm._cc)
   endif
- )$($(sm._var_.this)._compile_count)
+ )$($(sm._this)._compile_count)
 endef #sm-compute-compile-num
 
 ## Generate compilation rules for sources
@@ -205,15 +231,15 @@ define sm-compile-sources
       ifeq ($(sm.this.name),)
         $$(error smart: internal: sm.this.name is empty)
       endif
-      sm._fun_.this := sm.fun.$(sm.this.name)
-      sm._var_.this := sm.var.$(sm.this.name)
+      sm._this.fun := sm.fun.$(sm.this.name)
+      sm._this := sm.var.$(sm.this.name)
      )\
     $(eval \
-      $(sm._var_.this)._cnum := $(call sm-compute-compile-num,1)
-      $(sm._var_.this)._should_compute_sources := true
-      $(sm._var_.this)._intermediates_only := true
+      $(sm._this)._cnum := $(call sm-compute-compile-num,1)
+      $(sm._this)._should_compute_sources := true
+      $(sm._this)._intermediates_only := true
       include $(sm.dir.buildsys)/build-rules.mk
-      $(sm._var_.this)._intermediates_only :=)\
+      $(sm._this)._intermediates_only :=)\
    ,$(error smart: No sources defined))
 endef #sm-compile-sources
 
@@ -289,15 +315,15 @@ $(eval \
   endif
   ##########
   sm.global.goals += goal-$(sm.this.name)
-  sm._fun_.this := sm.fun.$(sm.this.name)
-  sm._var_.this := sm.var.$(sm.this.name)
-  $$(sm._var_.this)._cnum := 0
-  $$(sm._var_.this)._should_compute_sources := true
+  sm._this.fun := sm.fun.$(sm.this.name)
+  sm._this := sm.var.$(sm.this.name)
+  $$(sm._this)._cnum := 0
+  $$(sm._this)._should_compute_sources := true
   include $(sm.dir.buildsys)/build-this.mk
  )\
 $(eval \
-  ifneq ($(strip $($(sm._var_.this).sources.unknown)),)
-    $$(error smart: strange sources: $(strip $($(sm._var_.this).sources.unknown)))
+  ifneq ($(strip $($(sm._this).sources.unknown)),)
+    $$(error smart: strange sources: $(strip $($(sm._this).sources.unknown)))
   endif
  )
 endef #sm-build-this

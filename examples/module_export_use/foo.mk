@@ -2,6 +2,7 @@
 
 $(call sm-new-module, foo, exe, gcc)
 
+sm.this.verbose := true
 sm.this.sources := foo.cpp
 
 ## FIXME: sm.this.using not works because of this:
