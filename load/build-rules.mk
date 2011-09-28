@@ -135,8 +135,8 @@ define sm.fun.compute-flags-compile
 $(eval \
   sm.var.temp._fvar_name := $(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang)
  )\
-$(if $($(sm.var.temp._fvar_name).computed),,\
-  $(eval \
+$(eval \
+  ifeq ($($(sm.var.temp._fvar_name).computed),)
     $(sm.var.temp._fvar_name).computed := true
     $(sm.var.temp._fvar_name) := $(call sm.fun.make-pretty-list,\
        $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
@@ -155,24 +155,26 @@ $(if $($(sm.var.temp._fvar_name).computed),,\
     $$(call sm.fun.append-items,$(sm.var.temp._fvar_name),\
        $(sm.global.includes) $(sm.this.includes), -I)
     $(call sm.code.shift-flags-to-file,compile,$(sm.var._module_compile_num).flags.$(sm.var.temp._lang))
-   ))
+  endif
+ )
 endef #sm.fun.compute-flags-compile
 
 define sm.fun.compute-flags-archive
-$(if $($(sm.var.this).archive.flags.computed),,\
-  $(eval \
+$(eval \
+  ifeq ($($(sm.var.this).archive.flags.computed),)
     $(sm.var.this).archive.flags.computed := true
     $(sm.var.this).archive.flags := \
       $(call sm.fun.make-pretty-list,\
         $(sm.global.archive.flags)\
         $(sm.this.archive.flags))
     $(call sm.code.shift-flags-to-file,archive,flags)
-   ))
+  endif
+ )
 endef #sm.fun.compute-flags-archive
 
 define sm.fun.compute-flags-link
-$(if $($(sm.var.this).link.flags.computed),,\
-  $(eval \
+$(eval \
+  ifeq ($($(sm.var.this).link.flags.computed),)
     $(sm.var.this).link.flags.computed := true
     $(sm.var.this).link.flags := $(call sm.fun.make-pretty-list,\
        $($(sm.var.toolset).link.flags)\
@@ -183,16 +185,18 @@ $(if $($(sm.var.this).link.flags.computed),,\
           $$(eval $(sm.var.this).link.flags += -shared))
     endif
     $(call sm.code.shift-flags-to-file,link,flags)
-   ))
+  endif
+ )
 endef #sm.fun.compute-flags-link
 
 define sm.fun.compute-intermediates-archive
-$(if $($(sm.var.this).archive.objects.computed),,\
-  $(eval \
+$(eval \
+  ifeq ($($(sm.var.this).archive.objects.computed),)
     $(sm.var.this).archive.objects.computed := true
     $(sm.var.this).archive.objects := $($(sm.var.this).objects)
     $(call sm.code.shift-flags-to-file,archive,objects)
-   ))
+  endif
+ )
 endef #sm.fun.compute-intermediates-archive
 
 define sm.fun.compute-libs-archive
@@ -203,23 +207,25 @@ $(eval \
 endef #sm.fun.compute-libs-archive
 
 define sm.fun.compute-intermediates-link
-$(if $($(sm.var.this).link.objects.computed),,\
-  $(eval \
+$(eval \
+  ifeq ($($(sm.var.this).link.objects.computed),)
     $(sm.var.this).link.objects.computed := true
     $(sm.var.this).link.objects := $($(sm.var.this).objects)
     $(call sm.code.shift-flags-to-file,link,objects)
-   ))
+  endif
+ )
 endef #sm.fun.compute-intermediates-link
 
 define sm.fun.compute-libs-link
-$(if $($(sm.var.this).link.libs.computed),,\
-  $(eval \
+$(eval \
+  ifeq ($($(sm.var.this).link.libs.computed),)
     $(sm.var.this).link.libs.computed := true
     $(sm.var.this).link.libs :=
     $$(call sm.fun.append-items, $(sm.var.this).link.libs,$(sm.global.libdirs) $(sm.this.libdirs), -L)
     $$(call sm.fun.append-items, $(sm.var.this).link.libs,$(sm.global.libs) $(sm.this.libs), -l)
     $(call sm.code.shift-flags-to-file,link,libs)
-   ))
+  endif
+ )
 endef #sm.fun.compute-libs-link
 
 ##################################################
