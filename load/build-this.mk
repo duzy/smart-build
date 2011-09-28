@@ -32,7 +32,7 @@ ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
     endif
 
     # this duplicats in 'sm-build-this'
-    sm.var.__module.compile_id := 0
+    sm.var._module_compile_num := 0
 
     include $(sm.dir.buildsys)/build-rules.mk
   endif

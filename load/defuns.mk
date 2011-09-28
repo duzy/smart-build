@@ -79,6 +79,7 @@ define sm-new-module
    endif
    ifeq ($$(sm.this.type),docs)
      sm.this.args.toolset := common
+     sm.this.docs.format := .pdf
    endif
   )\
  $(if $(filter $(sm.this.type),$(sm.global.module_types)),,\
@@ -112,7 +113,8 @@ define sm-new-module
      ,$(if $(sm.this.toolset),,$(error smart: toolset is not set)))
 endef
 
-## Load the build script for the specified module.
+## Load the build script for the specified module, and returns the module name
+## via sm.result.module_name variable .
 ## NOTE: The build script should definitely defined a module using sm-new-module.
 define sm-load-module
 $(eval \
@@ -128,11 +130,11 @@ $(eval \
   ifeq ($(wildcard $(sm.this.args.smartfile)),)
     $$(error module build script '$(sm.this.args.smartfile)' missed)
   endif
-  ######
   ##########
   include $(sm.dir.buildsys)/preload.mk
   include $(sm.this.args.smartfile)
   -include $(sm.dir.buildsys)/postload.mk
+  ##########
  )
 endef #sm-load-module
 
@@ -175,7 +177,7 @@ define sm-compile-sources
     $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.out)/$(sm.log.filename),true))\
     $(info smart: objects for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
     $(eval sm.var.__module.objects_only := true
-           sm.var.__module.compile_id := $(call sm-compute-compile-id,1)
+           sm.var._module_compile_num := $(call sm-compute-compile-id,1)
            include $(sm.dir.buildsys)/build-rules.mk
            sm.var.__module.objects_only :=)\
    ,$(error smart: No sources defined))
@@ -253,7 +255,7 @@ $(eval \
   endif
   ##########
   sm.global.goals += goal-$(sm.this.name)
-  sm.var.__module.compile_id := 0
+  sm.var._module_compile_num := 0
   include $(sm.dir.buildsys)/build-this.mk
  )\
 $(eval \

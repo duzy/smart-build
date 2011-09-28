@@ -35,7 +35,7 @@ ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects)),)
 endif
 
 ifeq ($(sm.this.type),t)
- $(if $(sm.this.lang),,$(error smart: 'sm.this.lang' must be defined for tests module))
+ $(if $(sm.this.lang),,$(error smart: 'sm.this.lang' must be defined for "tests" module))
 endif
 
 ##################################################
@@ -60,14 +60,12 @@ ifeq ($(sm.args.docs_format),)
   sm.args.docs_format := .dvi
 endif
 
-sm.args.docs_format := .pdf
-
 ##################################################
 
 ## Clear compile options for all langs
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
-  $(eval $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang) := )\
-  $(eval $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang).computed := ))
+  $(eval $(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang) := )\
+  $(eval $(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang).computed := ))
 
 ## unset sm.var.temp._lang, the name may be used later
 sm.var.temp._lang :=
@@ -133,10 +131,10 @@ endef #sm.code.shift-flags-to-file
 ####################
 
 define sm.fun.compute-flags-compile
-$(if $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang).computed),,\
+$(if $($(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang).computed),,\
   $(eval \
-    $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang).computed := true
-    $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang) := \
+    $(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang).computed := true
+    $(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang) := \
      $(call sm.fun.make-pretty-list,\
        $(if $(call equal,$(sm.this.type),t),-x$(sm.this.lang))\
        $($(sm.var.toolset).defines)\
@@ -152,9 +150,9 @@ $(if $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp.
        $(sm.this.compile.flags)\
        $(sm.this.compile.flags.$(sm.var.temp._lang)))
     $$(call sm.fun.append-items,\
-       $(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang),\
+       $(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang),\
        $(sm.global.includes) $(sm.this.includes), -I)
-    $(call sm.code.shift-flags-to-file,compile,$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+    $(call sm.code.shift-flags-to-file,compile,$(sm.var._module_compile_num).flags.$(sm.var.temp._lang))
    ))
 endef #sm.fun.compute-flags-compile
 
@@ -303,7 +301,7 @@ define sm.fun.make-rule-depend
     sm.args.output := $(sm.var.temp._depend)
     sm.args.target := $(sm.var.temp._intermediate)
     sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
-    sm.args.flags.0 := $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang))
+    sm.args.flags.0 := $($(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang))
     sm.args.flags.0 += $(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
     sm.args.flags.1 :=
     sm.args.flags.2 :=
@@ -338,8 +336,8 @@ define sm.fun.make-rule-compile
  $(eval \
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
-   sm.args.flags.0 := $(strip $($(sm.var.this).compile.$(sm.var.__module.compile_id).flags.$(sm.var.temp._lang)))
-   sm.args.flags.0 += $(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
+   sm.args.flags.0 := $($(sm.var.this).compile.$(sm.var._module_compile_num).flags.$(sm.var.temp._lang))
+   sm.args.flags.0 += $(sm.this.compile.flags-$(sm.var.temp._source))
    sm.args.flags.1 :=
    sm.args.flags.2 :=
  )$(sm-rule-compile-$(sm.var.temp._lang))
@@ -566,7 +564,7 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(sm.fun.make-rules-compile)\
   $(if $(and $(call equal,$(strip $($(sm.var.this).lang)),),\
              $(sm.this.sources.has.$(sm.var.temp._lang))),\
-         $(info smart: language choosed as "$(sm.var.temp._lang)")\
+         $(info smart: language choosed as "$(sm.var.temp._lang)" for "$(sm.this.name)")\
          $(eval $(sm.var.this).lang := $(sm.var.temp._lang))))
 
 ## Make object rules for .t sources file
@@ -596,21 +594,21 @@ ifeq ($(sm.var.temp._should_make_targets),true)
  ## Make rule for targets of the module
   $(if $($(sm.var.this).objects),,$(error smart: no objects for building '$(sm.this.name)'))
 
-  $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
-  $(sm.var.this).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type)))
-
   $(call sm-check-defined,sm.var.action)
   $(call sm-check-defined,$(sm.var.this).lang)
   $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
   $(call sm-check-defined,sm.fun.compute-flags-$(sm.var.action))
   $(call sm-check-defined,sm.fun.compute-intermediates-$(sm.var.action))
   $(call sm-check-defined,sm.fun.compute-libs-$(sm.var.action))
+  $(call sm-check-defined,sm.fun.compute-module-targets-$(sm.this.type))
 
   $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
   $(call sm-check-defined,$(sm.var.this).$(sm.var.action).flags)
   $(call sm-check-defined,$(sm.var.this).$(sm.var.action).objects)
   $(call sm-check-defined,$(sm.var.this).$(sm.var.action).libs)
   $(call sm-check-not-empty,$(sm.var.this).lang)
+
+  $(sm.var.this).targets := $(strip $(call sm.fun.compute-module-targets-$(sm.this.type)))
 
   $(sm.fun.compute-flags-$(sm.var.action))
   $(sm.fun.compute-intermediates-$(sm.var.action))
