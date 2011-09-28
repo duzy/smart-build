@@ -1,5 +1,7 @@
 #
 
+$(info test: using: foobar/bar/smart.mk loaded)
+
 $(call sm-new-module, bar, shared, gcc)
 
 sm.this.sources := bar.cpp

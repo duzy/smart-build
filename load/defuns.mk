@@ -139,17 +139,31 @@ $(eval \
   ##########
   include $(sm.dir.buildsys)/preload.mk
   include $(sm.this.args.smartfile)
+  sm.result.module.name := $$(sm.this.name)
   -include $(sm.dir.buildsys)/postload.mk
   ##########
  )
 endef #sm-load-module
 
 ##
+## This is a alternative option for sm.this.using.
+##
+## The sm.this.using alt is now failed because of this error:
+## foobar/bar/smart.mk:13: *** prerequisites cannot be defined in command scripts
+## 
 define sm-use-module
  $(eval \
-   sm.this.args.name := $(strip $1)
-  )\
- $(warning TODO: load and use module $(sm.this.args.name) from sm.global.module_path)
+   sm.this.args.modir := $(strip $1)
+   sm.this.temp._using := $$(wildcard $$(sm.this.args.modir)/smart.mk)
+  )$(info smart: using $(sm.this.args.modir)..)\
+ $(call sm-load-module,$(sm.this.temp._using))\
+ $(info smart: module "$(sm.result.module.name)" used)\
+ $(eval \
+   $$(warning TODO: restore the previous module context)
+   sm.this.name := foo
+   sm._fun_.this := sm.fun.$$(sm.this.name)
+   sm._var_.this := sm.var.$$(sm.this.name)
+  )
 endef #sm-use-module
 
 ##

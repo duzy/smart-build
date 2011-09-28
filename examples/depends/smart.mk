@@ -6,9 +6,9 @@ sm.this.verbose := true
 sm.this.sources := foo.cpp
 sm.this.compile.flags := -fPIC
 sm.this.link.flags := -fPIC
-sm.this.depends := foo.txt
+sm.this.depends := $(sm.out)/foo.txt
 
-foo.txt: ; echo foo > $@
+$(sm.out)/foo.txt: ; mkdir -p $(@D) && echo foo > $@
 
 $(sm-generate-implib)
 $(sm-build-this)

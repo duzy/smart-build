@@ -38,6 +38,7 @@ ifeq ($($(sm._var_.this).name),)
   $(sm._var_.this).name := $(sm.this.name)
   $(sm._var_.this).type := $(sm.this.type)
   $(sm._var_.this).lang := $(sm.this.lang)
+  $(sm._var_.this).using := $(sm.this.using)
   $(sm._var_.this).toolset := $(sm.this.toolset)
   $(sm._var_.this).suffix := $(sm.this.suffix)
   $(sm._var_.this).verbose := $(sm.this.verbose)
@@ -76,6 +77,9 @@ ifeq ($($(sm._var_.this).name),)
   #$(warning $(sm.this.name): $($(sm._var_.this)._intermediate_prefix))
 endif # $(sm._var_.this).name == ""
 
+##
+## $(sm._var_.this)._should_compute_sources will be "true" on each
+## sm-build-this and sm-compile-sources calling.
 ifeq ($($(sm._var_.this)._should_compute_sources),true)
 define sm.fun.compute-sources-by-lang
 $(eval \
@@ -116,9 +120,26 @@ endif # $(sm._var_.this)._should_compute_sources == true
 #-----------------------------------------------
 #-----------------------------------------------
 
-ifneq ($(sm.this.using),)
-  $(warning using: $(sm.this.using))
-endif
+ifneq ($($(sm._var_.this).using),)
+  $(warning sm.this.using is not working!)
+
+  define sm.fun.using-module
+    $(info smart: using $(sm.var.temp._modir))\
+    $(if $(filter $(sm.var.temp._modir),$(sm.global.using.loaded)),,\
+        $(eval \
+          sm.global.using.loaded += $(sm.var.temp._modir)
+          sm.var.temp._using := $(wildcard $(sm.var.temp._modir)/smart.mk)
+          sm.rules.phony.* += using-$$(sm.var.temp._using)
+          goal-$($(sm._var_.this).name) : using-$$(sm.var.temp._using)
+          using-$$(sm.var.temp._using): ; \
+            $$(info smart: using $$@)\
+	    $$(call sm-load-module,$$(sm.var.temp._using))\
+            echo using: $$@ -> $$(info $(sm.result.module.name))
+         ))
+  endef #sm.fun.using-module
+
+  $(foreach sm.var.temp._modir,$($(sm._var_.this).using),$(sm.fun.using-module))
+endif # $(sm._var_.this).using != ""
 
 ##################################################
 
@@ -732,8 +753,8 @@ ifeq ($(MAKECMDGOALS),clean)
   doc-$($(sm._var_.this).name) : ; @true
 else
   goal-$($(sm._var_.this).name) : \
-    $(sm.this.depends) \
-    $(sm.this.depends.copyfiles) \
+    $($(sm._var_.this).depends) \
+    $($(sm._var_.this).depends.copyfiles) \
     $($(sm._var_.this).targets)
 
   ifneq ($($(sm._var_.this).documents),)
