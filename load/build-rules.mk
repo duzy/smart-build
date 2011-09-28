@@ -36,6 +36,7 @@ sm.var.depend.suffixes.t := .t.d
 ifeq ($($(sm._var_.this).name),)
   $(sm._var_.this).name := $(sm.this.name)
   $(sm._var_.this).type := $(sm.this.type)
+  $(sm._var_.this).lang := $(sm.this.lang)
   $(sm._var_.this).toolset := $(sm.this.toolset)
   $(sm._var_.this).suffix := $(sm.this.suffix)
   $(sm._var_.this).sources := $(sm.this.sources)
@@ -93,7 +94,7 @@ ifeq ($(strip \
 endif
 
 ifeq ($($(sm._var_.this).type),t)
- $(if $(sm.this.lang),,$(error smart: 'sm.this.lang' must be defined for "tests" module))
+ $(if $($(sm._var_.this).lang),,$(error smart: '$(sm._var_.this).lang' must be defined for "tests" module))
 endif
 
 sm.args.docs_format := $(strip $($(sm._var_.this).docs.format))
@@ -169,7 +170,7 @@ $(eval \
   ifeq ($($(sm.var.temp._fvar_name).computed),)
     $(sm.var.temp._fvar_name).computed := true
     $(sm.var.temp._fvar_name) := $(call sm.fun.make-pretty-list,\
-       $(if $(call equal,$($(sm._var_.this).type),t),-x$(sm.this.lang))\
+       $(if $(call equal,$($(sm._var_.this).type),t),-x$($(sm._var_.this).lang))\
        $($(sm.var.toolset).defines)\
        $($(sm.var.toolset).defines.$(sm.var.temp._lang))\
        $($(sm.var.toolset).compile.flags)\
@@ -276,7 +277,7 @@ $(sm.fun.compute-intermediate.)
 endef #sm.fun.compute-intermediate.external
 
 define sm.fun.compute-intermediate.common
-$(sm.out.inter)/common/$(sm.fun.compute-intermediate-name)$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.this.lang))
+$(sm.out.inter)/common/$(sm.fun.compute-intermediate-name)$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$($(sm._var_.this).lang))
 endef #sm.fun.compute-intermediate.common
 
 ##
@@ -388,7 +389,7 @@ define sm.fun.make-rule-compile-common
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
  $(eval ## Compute output file and literal output languages\
    ## target output file language, e.g. Parscal, C, C++, TeX, etc.
-   sm.var.temp._output_lang := $(sm.tool.common.intermediate.lang.$(sm.var.temp._lang).$(sm.this.lang))
+   sm.var.temp._output_lang := $(sm.tool.common.intermediate.lang.$(sm.var.temp._lang).$($(sm._var_.this).lang))
    ## literal output file language, e.g. TeX, LaTeX, etc.
    sm.var.temp._literal_lang := $(sm.tool.common.intermediate.lang.literal.$(sm.var.temp._lang))
   )\
@@ -396,7 +397,7 @@ define sm.fun.make-rule-compile-common
  $(if $(and $(call not-equal,$(sm.var.temp._literal_lang),$(sm.var.temp._lang)),
             $(sm.var.temp._output_lang)),$(eval \
    ## args for sm.tool.common.compile.*
-   sm.args.lang = $(sm.this.lang)
+   sm.args.lang = $($(sm._var_.this).lang)
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(sm.var.temp._source)
   )$(eval \
@@ -591,7 +592,7 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
 ## Make object rules for .t sources file
 ifeq ($($(sm._var_.this).type),t)
   # set sm.var.temp._lang, used by sm.fun.make-rule-compile
-  sm.var.temp._lang := $(sm.this.lang)
+  sm.var.temp._lang := $($(sm._var_.this).lang)
   sm.this.sources.$(sm.var.temp._lang).t := $(filter %.t,$(sm.this.sources))
   sm.this.sources.external.$(sm.var.temp._lang).t := $(filter %.t,$(sm.this.sources.external))
   sm.this.sources.has.$(sm.var.temp._lang).t := $(if $(sm.this.sources.$(sm.var.temp._lang).t)$(sm.this.sources.external.$(sm.var.temp._lang).t),true)
@@ -599,7 +600,7 @@ ifeq ($($(sm._var_.this).type),t)
     $(foreach sm.var.temp._source,$(sm.this.sources.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile))
     $(foreach sm.var.temp._source,$(sm.this.sources.external.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile,external))
     ifeq ($($(sm._var_.this).lang),)
-      $(sm._var_.this).lang := $(sm.this.lang)
+      $(sm._var_.this).lang := $($(sm._var_.this).lang)
     endif
   endif
 endif
