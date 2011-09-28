@@ -196,11 +196,12 @@ define sm-compile-sources
      )\
     $(eval \
       $(sm._var_.this)._cnum := $(call sm-compute-compile-num,1)
+      $(sm._var_.this)._should_compute_sources := true
       $(sm._var_.this)._intermediates_only := true
       include $(sm.dir.buildsys)/build-rules.mk
       $(sm._var_.this)._intermediates_only :=)\
    ,$(error smart: No sources defined))
-endef
+endef #sm-compile-sources
 
 ## sm-generate-implib - Generate import library for shared objects.
 define sm.code.generate-implib-win32
@@ -277,6 +278,7 @@ $(eval \
   sm._fun_.this := sm.fun.$(sm.this.name)
   sm._var_.this := sm.var.$(sm.this.name)
   $$(sm._var_.this)._cnum := 0
+  $$(sm._var_.this)._should_compute_sources := true
   include $(sm.dir.buildsys)/build-this.mk
  )\
 $(eval \

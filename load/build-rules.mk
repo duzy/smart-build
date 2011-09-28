@@ -40,11 +40,12 @@ ifeq ($($(sm._var_.this).name),)
   $(sm._var_.this).lang := $(sm.this.lang)
   $(sm._var_.this).toolset := $(sm.this.toolset)
   $(sm._var_.this).suffix := $(sm.this.suffix)
+  $(sm._var_.this).verbose := $(sm.this.verbose)
   $(sm._var_.this).makefile := $(sm.this.makefile)
-  $(sm._var_.this).sources := $(sm.this.sources)
-  $(sm._var_.this).sources.external := $(sm.this.sources.external)
-  $(sm._var_.this).sources.common := $(sm.this.sources.common)
-  $(sm._var_.this).intermediates := $(sm.this.intermediates)
+  # $(sm._var_.this).sources := $(sm.this.sources)
+  # $(sm._var_.this).sources.external := $(sm.this.sources.external)
+  # $(sm._var_.this).sources.common := $(sm.this.sources.common)
+  # $(sm._var_.this).intermediates := $(sm.this.intermediates)
   $(sm._var_.this).depends := $(sm.this.depends)
   $(sm._var_.this).docs.format := $(sm.this.docs.format)
   $(sm._var_.this).defines := $(sm.this.defines)
@@ -57,6 +58,7 @@ ifeq ($($(sm._var_.this).name),)
   $(sm._var_.this).link.flags.infile := $(sm.this.link.flags.infile)
   $(sm._var_.this).libdirs := $(sm.this.libdirs)
   $(sm._var_.this).libs := $(sm.this.libs)
+  $(sm._var_.this).gen_deps := $(sm.this.gen_deps)
   $(sm._var_.this).action := $(sm.var.action.$(sm.this.type))
   $(sm._var_.this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
   $(sm._var_.this).user_defined_targets := $(strip $(sm.this.targets))
@@ -72,13 +74,44 @@ ifeq ($($(sm._var_.this).name),)
 
   # BUG: wrong if more than one sm-build-this occurs in a smart.mk
   #$(warning $(sm.this.name): $($(sm._var_.this)._intermediate_prefix))
-else
+endif # $(sm._var_.this).name == ""
+
+ifeq ($($(sm._var_.this)._should_compute_sources),true)
+define sm.fun.compute-sources-by-lang
+$(eval \
+  sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
+  $(sm._var_.this).sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._var_.this).sources))
+  $(sm._var_.this).sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._var_.this).sources.external))
+  $(sm._var_.this).sources.has.$(sm.var.temp._lang)      := $$(if $$($(sm._var_.this).sources.$(sm.var.temp._lang))$$($(sm._var_.this).sources.external.$(sm.var.temp._lang)),true)
+
+  ## make alias to sm.this.sources.LANGs
+  sm.this.sources.$(sm.var.temp._lang) = $$($(sm._var_.this).sources.$(sm.var.temp._lang))
+  sm.this.sources.external.$(sm.var.temp._lang) = $$($(sm._var_.this).sources.external.$(sm.var.temp._lang))
+  sm.this.sources.has.$(sm.var.temp._lang) = $$($(sm._var_.this).sources.has.$(sm.var.temp._lang))
+ )
+endef #sm.fun.compute-sources-for-lang
+
+define sm.fun.compute-per-source-flags
+$(foreach sm.var.temp._source,\
+     $(sm.this.sources.$(sm.var.temp._lang))\
+     $(sm.this.sources.external.$(sm.var.temp._lang)),\
+  $(eval $(sm._var_.this).compile.flags-$(sm.var.temp._source) := $(sm.this.compile.flags-$(sm.var.temp._source))))
+endef #sm.fun.compute-per-source-flags
+
   ## sources must always be reset for sm-compile-sources
   $(sm._var_.this).sources := $(sm.this.sources)
   $(sm._var_.this).sources.external := $(sm.this.sources.external)
   $(sm._var_.this).sources.common := $(sm.this.sources.common)
   $(sm._var_.this).intermediates := $(sm.this.intermediates)
-endif # $(sm._var_.this).name == ""
+
+  ## Compute sources of each language supported by the toolset.
+  sm.var.toolset := sm.tool.$($(sm._var_.this).toolset)
+  $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+    $(sm.fun.compute-sources-by-lang)\
+    $(sm.fun.compute-per-source-flags))
+
+  $(sm._var_.this)._should_compute_sources :=
+endif # $(sm._var_.this)._should_compute_sources == true
 
 #-----------------------------------------------
 #-----------------------------------------------
@@ -331,7 +364,7 @@ endef #sm.fun.compute-module-targets-static
 
 ##################################################
 
-ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
+ifneq ($(and $(call is-true,$($(sm._var_.this).gen_deps)),\
              $(call not-equal,$(MAKECMDGOALS),clean)),)
 define sm.fun.make-rule-depend
   $(eval sm.var.temp._depend := $(sm.var.temp._intermediate:%.o=%$($(sm._var_.this).depend.suffixes)))\
@@ -339,7 +372,7 @@ define sm.fun.make-rule-depend
     -include $(sm.var.temp._depend)
     $(sm._var_.this).depends += $(sm.var.temp._depend)
 
-    ifeq ($(call is-true,$(sm.this.compile.flags.infile)),true)
+    ifeq ($(call is-true,$($(sm._var_.this).compile.flags.infile)),true)
       sm.var.temp._flag_file := $($(sm._var_.this).out.tmp)/compile.$($(sm._var_.this)._cnum).flags.$(sm.var.temp._lang)
     else
       sm.var.temp._flag_file :=
@@ -349,7 +382,7 @@ define sm.fun.make-rule-depend
     sm.args.target := $(sm.var.temp._intermediate)
     sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
     sm.args.flags.0 := $($(sm._var_.this).compile.$($(sm._var_.this)._cnum).flags.$(sm.var.temp._lang))
-    sm.args.flags.0 += $(strip $(sm.this.compile.flags-$(sm.var.temp._source)))
+    sm.args.flags.0 += $(strip $($(sm._var_.this).compile.flags-$(sm.var.temp._source)))
     sm.args.flags.1 :=
     sm.args.flags.2 :=
   )$(eval \
@@ -357,7 +390,7 @@ define sm.fun.make-rule-depend
     sm.global.has.rule.$(sm.args.output) := true
     $(sm.args.output) : $(sm.var.temp._flag_file) $(sm.args.sources)
 	$$(call sm-util-mkdir,$$(@D))
-	$(if $(call equal,$(sm.this.verbose),true),,\
+	$(if $(call equal,$($(sm._var_.this).verbose),true),,\
           $$(info smart: update $(sm.args.output))\
           $(sm.var.Q))$(sm.tool.$($(sm._var_.this).toolset).dependency.$(sm.args.lang))
    endif
@@ -365,7 +398,7 @@ define sm.fun.make-rule-depend
 endef #sm.fun.make-rule-depend
 else
   sm.fun.make-rule-depend :=
-endif #if sm.this.gen_deps && MAKECMDGOALS != clean
+endif #if $(sm._var_.this).gen_deps && MAKECMDGOALS != clean
 
 ## Make rule for building object
 ##   eg. $(call sm.fun.make-rule-compile)
@@ -384,7 +417,7 @@ define sm.fun.make-rule-compile
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
    sm.args.flags.0 := $($(sm._var_.this).compile.$($(sm._var_.this)._cnum).flags.$(sm.var.temp._lang))
-   sm.args.flags.0 += $(sm.this.compile.flags-$(sm.var.temp._source))
+   sm.args.flags.0 += $($(sm._var_.this).compile.flags-$(sm.var.temp._source))
    sm.args.flags.1 :=
    sm.args.flags.2 :=
 
@@ -502,21 +535,6 @@ endef #sm.fun.make-rules-compile-common
 $(sm._var_.this).targets :=
 
 ##
-define sm.fun.compute-sources-by-lang
-$(eval \
-  sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
-  $(sm._var_.this).sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._var_.this).sources))
-  $(sm._var_.this).sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._var_.this).sources.external))
-  $(sm._var_.this).sources.has.$(sm.var.temp._lang)      := $$(if $$($(sm._var_.this).sources.$(sm.var.temp._lang))$$($(sm._var_.this).sources.external.$(sm.var.temp._lang)),true)
-
-  ## make alias to sm.this.sources.LANGs
-  sm.this.sources.$(sm.var.temp._lang) = $($(sm._var_.this).sources.$(sm.var.temp._lang))
-  sm.this.sources.external.$(sm.var.temp._lang) = $($(sm._var_.this).sources.external.$(sm.var.temp._lang))
-  sm.this.sources.has.$(sm.var.temp._lang) = $($(sm._var_.this).sources.has.$(sm.var.temp._lang))
- )
-endef #sm.fun.compute-sources-for-lang
-
-##
 ##
 define sm.fun.check-strange-and-compute-common-source
 $(eval \
@@ -575,10 +593,6 @@ endef #sm.fun.make-common-compile-rules-for-langs
 
 #-----------------------------------------------
 #-----------------------------------------------
-
-## Compute sources of each language supported by the toolset.
-$(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
-    $(sm.fun.compute-sources-by-lang))
 
 ## Check strange sources and compute common sources.
 sm.var.common.langs :=
