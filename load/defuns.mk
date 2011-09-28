@@ -184,6 +184,7 @@ endef #sm-compute-compile-num
 sm-generate-objects = $(call sm-deprecated, sm-generate-objects, sm-compile-sources)
 define sm-compile-sources
  $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
+    $(info smart: intermediates for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
     $(eval \
       _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.out)/$(sm.log.filename),true)
 
@@ -193,12 +194,11 @@ define sm-compile-sources
       sm._fun_.this := sm.fun.$(sm.this.name)
       sm._var_.this := sm.var.$(sm.this.name)
      )\
-    $(info smart: intermediates for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
     $(eval \
-      sm.var.__module.intermediates_only := true
       $(sm._var_.this)._cnum := $(call sm-compute-compile-num,1)
+      $(sm._var_.this)._intermediates_only := true
       include $(sm.dir.buildsys)/build-rules.mk
-      sm.var.__module.intermediates_only :=)\
+      $(sm._var_.this)._intermediates_only :=)\
    ,$(error smart: No sources defined))
 endef
 

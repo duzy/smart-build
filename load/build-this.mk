@@ -13,6 +13,10 @@ ifeq ($(sm._var_.this),)
   $(error smart: internal: sm._var_.this is empty)
 endif
 
+ifeq ($(sm._fun_.this),)
+  $(error smart: internal: sm._fun_.this is empty)b
+endif
+
 ## check origin of 'sm-check-origin' itself
 ifneq ($(origin sm-check-origin),file)
   $(error smart: Please load 'build/main.mk' first)
@@ -36,7 +40,7 @@ ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
     endif
 
     # this duplicats in 'sm-build-this'
-    $(sm._var_.this)._cnum := 0
+    #$(sm._var_.this)._cnum := 0
 
     include $(sm.dir.buildsys)/build-rules.mk
   endif

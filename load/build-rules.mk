@@ -32,21 +32,26 @@ sm.var.depend.suffixes.shared := .d
 sm.var.depend.suffixes.exe := .d
 sm.var.depend.suffixes.t := .t.d
 
-$(sm._var_.this).type := $(sm.this.type)
-$(sm._var_.this).toolset := $(sm.this.toolset)
-$(sm._var_.this).action := $(sm.var.action.$(sm.this.type))
-$(sm._var_.this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
-$(sm._var_.this).user_defined_targets := $(strip $(sm.this.targets))
+## for sm.this.using: recursive loading
+ifeq ($($(sm._var_.this).name),)
+  $(sm._var_.this).name := $(sm.this.name)
+  $(sm._var_.this).type := $(sm.this.type)
+  $(sm._var_.this).toolset := $(sm.this.toolset)
+  $(sm._var_.this).action := $(sm.var.action.$(sm.this.type))
+  $(sm._var_.this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
+  $(sm._var_.this).user_defined_targets := $(strip $(sm.this.targets))
+  $(sm._var_.this).out.tmp := $(sm.out.tmp)/$(sm.this.name)
 
-$(sm._var_.this)._intermediate_prefix := $(sm.this.dir:$(sm.top)%=%)
-$(sm._var_.this)._intermediate_prefix := $($(sm._var_.this)._intermediate_prefix:%.=%)
-$(sm._var_.this)._intermediate_prefix := $($(sm._var_.this)._intermediate_prefix:/%=%)
-ifneq ($($(sm._var_.this)._intermediate_prefix),)
-  $(sm._var_.this)._intermediate_prefix := $($(sm._var_.this)._intermediate_prefix)/
-endif
+  $(sm._var_.this)._intermediate_prefix := $(sm.this.dir:$(sm.top)%=%)
+  $(sm._var_.this)._intermediate_prefix := $($(sm._var_.this)._intermediate_prefix:%.=%)
+  $(sm._var_.this)._intermediate_prefix := $($(sm._var_.this)._intermediate_prefix:/%=%)
+  ifneq ($($(sm._var_.this)._intermediate_prefix),)
+    $(sm._var_.this)._intermediate_prefix := $($(sm._var_.this)._intermediate_prefix)/
+  endif
 
-# BUG: wrong if more than one sm-build-this occurs in a smart.mk
-#$(warning $(sm.this.name): $($(sm._var_.this)._intermediate_prefix))
+  # BUG: wrong if more than one sm-build-this occurs in a smart.mk
+  #$(warning $(sm.this.name): $($(sm._var_.this)._intermediate_prefix))
+endif # $(sm._var_.this).name == ""
 
 #-----------------------------------------------
 #-----------------------------------------------
@@ -126,33 +131,22 @@ $(foreach sm.var.temp._item,$(strip $2),\
   $(eval $(strip $1) += $(strip $3)$(sm.var.temp._item:$(strip $3)%$(strip $4)=%)$(strip $4)))
 endef #sm.fun.append-items
 
-## eg. $(call sm.code.shift-flags-to-file,compile,options.c++)
-define sm.code.shift-flags-to-file-instant
-$(if $1,,$(error smart: 'sm.code.shift-flags-to-file' action type in arg 1 is empty))\
-$(if $2,,$(error smart: 'sm.code.shift-flags-to-file' needs options type in arg 2))\
-$(if $(call is-true,$(sm.this.$1.flags.infile)),\
-     $$(call sm-util-mkdir,$(sm.out.tmp)/$(sm.this.name))\
-     $$(eval $(sm._var_.this).$1.$2 := $$(subst \",\\\",$$($(sm._var_.this).$1.$2)))\
-     $$(shell echo $$($(sm._var_.this).$1.$2) > $(sm.out.tmp)/$(sm.this.name)/$1.$2)\
-     $$(eval $(sm._var_.this).$1.$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.$2))
-endef #sm.code.shift-flags-to-file-instant
-
 ##
+## eg. $(call sm.code.shift-flags-to-file,compile,flags.c++)
 define sm.code.shift-flags-to-file-r
+ ifeq ($(call is-true,$(sm.this.$1.flags.infile)),true)
   $(sm._var_.this).$1.$2.flat := $$(subst \",\\\",$$($(sm._var_.this).$1.$2))
-  $(sm._var_.this).$1.$2 := @$(sm.out.tmp)/$(sm.this.name)/$1.$2
-  $(sm._var_.this).flag_files += $(sm.out.tmp)/$(sm.this.name)/$1.$2
-  $(sm.out.tmp)/$(sm.this.name)/$1.$2: $(sm.this.makefile)
-	@$$(info flags: $$@)
-	@mkdir -p $(sm.out.tmp)/$(sm.this.name)
+  $(sm._var_.this).$1.$2 := @$($(sm._var_.this).out.tmp)/$1.$2
+  $(sm._var_.this).flag_files += $($(sm._var_.this).out.tmp)/$1.$2
+  $($(sm._var_.this).out.tmp)/$1.$2: $(sm.this.makefile)
+	@$$(info smart: flag file: $$@)
+	@mkdir -p $($(sm._var_.this).out.tmp)
 	@echo $$($(sm._var_.this).$1.$2.flat) > $$@
+ endif
 endef #sm.code.shift-flags-to-file-r
-## eg. $(call sm.code.shift-flags-to-file,compile,options.c++)
+##
 define sm.code.shift-flags-to-file
-$(if $1,,$(error smart: 'sm.code.shift-flags-to-file' action type in arg 1 is empty))\
-$(if $2,,$(error smart: 'sm.code.shift-flags-to-file' needs options type in arg 2))\
-$(if $(call is-true,$(sm.this.$1.flags.infile)),\
-   $$(eval $$(call sm.code.shift-flags-to-file-r,$(strip $1),$(strip $2))))
+$$(eval $$(call sm.code.shift-flags-to-file-r,$(strip $1),$(strip $2)))
 endef #sm.code.shift-flags-to-file
 
 ####################
@@ -311,9 +305,16 @@ ifneq ($(and $(call is-true,$(sm.this.gen_deps)),\
              $(call not-equal,$(MAKECMDGOALS),clean)),)
 define sm.fun.make-rule-depend
   $(eval sm.var.temp._depend := $(sm.var.temp._intermediate:%.o=%$($(sm._var_.this).depend.suffixes)))\
-  $(eval $(sm._var_.this).depends += $(sm.var.temp._depend))\
   $(eval \
     -include $(sm.var.temp._depend)
+    $(sm._var_.this).depends += $(sm.var.temp._depend)
+
+    ifeq ($(call is-true,$(sm.this.compile.flags.infile)),true)
+      sm.var.temp._flag_file := $($(sm._var_.this).out.tmp)/compile.$($(sm._var_.this)._cnum).flags.$(sm.var.temp._lang)
+    else
+      sm.var.temp._flag_file :=
+    endif
+
     sm.args.output := $(sm.var.temp._depend)
     sm.args.target := $(sm.var.temp._intermediate)
     sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
@@ -324,11 +325,11 @@ define sm.fun.make-rule-depend
   )$(eval \
    ifeq ($(sm.global.has.rule.$(sm.args.output)),)
     sm.global.has.rule.$(sm.args.output) := true
-    $(sm.args.output) : $(sm.args.sources)
+    $(sm.args.output) : $(sm.var.temp._flag_file) $(sm.args.sources)
 	$$(call sm-util-mkdir,$$(@D))
 	$(if $(call equal,$(sm.this.verbose),true),,\
           $$(info smart: update $(sm.args.output))\
-        $(sm.var.Q))$(sm.tool.$($(sm._var_.this).toolset).dependency.$(sm.args.lang))
+          $(sm.var.Q))$(sm.tool.$($(sm._var_.this).toolset).dependency.$(sm.args.lang))
    endif
   )
 endef #sm.fun.make-rule-depend
@@ -356,6 +357,11 @@ define sm.fun.make-rule-compile
    sm.args.flags.0 += $(sm.this.compile.flags-$(sm.var.temp._source))
    sm.args.flags.1 :=
    sm.args.flags.2 :=
+
+   ifeq ($(call is-true,$(sm.this.compile.flags.infile)),true)
+     $(sm.args.target) : $($(sm._var_.this).out.tmp)/compile.$($(sm._var_.this)._cnum).flags.$(sm.var.temp._lang)
+   endif
+
    $$(sm-rule-compile-$(sm.var.temp._lang))
  )
 endef #sm.fun.make-rule-compile
@@ -605,7 +611,7 @@ endif
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $(sm.this.sources.unknown)),),\
             $(call equal,$(strip $($(sm._var_.this).intermediates)),),\
-            $(call is-true,$(sm.var.__module.intermediates_only))\
+            $(call is-true,$($(sm._var_.this)._intermediates_only))\
         ),,true)
 
 ifneq ($($(sm._var_.this).toolset),common)
@@ -672,7 +678,6 @@ ifeq ($(MAKECMDGOALS),clean)
   doc-$(sm.this.name) : ; @true
 else
   goal-$(sm.this.name) : \
-    $($(sm._var_.this).flag_files) \
     $(sm.this.depends) \
     $(sm.this.depends.copyfiles) \
     $($(sm._var_.this).targets)
