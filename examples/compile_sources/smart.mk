@@ -12,7 +12,8 @@ $(call sm-check-equal,$(sm.this.type),exe)
 #$(call sm-check-equal,$(sm.this.suffix),$(if $(sm.os.name.win32),.exe))
 
 ## Turn on verbose to make command lines visible
-#sm.this.verbose := true
+sm.this.verbose := true
+sm.this.compile.flags.infile := true
 
 ## The include search path (for compiler's -I switch), each item of this will
 ## be translated into a -I switch for the compiler by the toolset.

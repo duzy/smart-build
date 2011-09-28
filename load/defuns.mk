@@ -165,27 +165,40 @@ define sm-find-sub-modules
 $(wildcard $(strip $1)/*/smart.mk)
 endef
 
-define sm-compute-compile-id
+##
+define sm-compute-compile-num
 $(eval \
-  ifeq ($(sm.var.__module.compile_count),)
-    sm.var.__module.compile_count := $(strip $1)
-  else
-    sm.var.__module.compile_count := \
-      $(shell expr $(sm.var.__module.compile_count) + $(strip $1))
+  ifeq ($(sm._var_.this),)
+    $$(error smart: internal: sm._var_.this is empty)
   endif
- )$(sm.var.__module.compile_count)
-endef #sm-compute-compile-id
+  ifeq ($($(sm._var_.this)._compile_count),)
+    $(sm._var_.this)._compile_count := $(strip $1)
+  else
+    sm._cc := $(shell expr $($(sm._var_.this)._compile_count) + $(strip $1))
+    $(sm._var_.this)._compile_count := $$(sm._cc)
+  endif
+ )$($(sm._var_.this)._compile_count)
+endef #sm-compute-compile-num
 
 ## Generate compilation rules for sources
 sm-generate-objects = $(call sm-deprecated, sm-generate-objects, sm-compile-sources)
 define sm-compile-sources
  $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
-    $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.out)/$(sm.log.filename),true))\
+    $(eval \
+      _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.out)/$(sm.log.filename),true)
+
+      ifeq ($(sm.this.name),)
+        $$(error smart: internal: sm.this.name is empty)
+      endif
+      sm._fun_.this := sm.fun.$(sm.this.name)
+      sm._var_.this := sm.var.$(sm.this.name)
+     )\
     $(info smart: intermediates for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
-    $(eval sm.var.__module.intermediates_only := true
-           sm.var._module_compile_num := $(call sm-compute-compile-id,1)
-           include $(sm.dir.buildsys)/build-rules.mk
-           sm.var.__module.intermediates_only :=)\
+    $(eval \
+      sm.var.__module.intermediates_only := true
+      $(sm._var_.this)._cnum := $(call sm-compute-compile-num,1)
+      include $(sm.dir.buildsys)/build-rules.mk
+      sm.var.__module.intermediates_only :=)\
    ,$(error smart: No sources defined))
 endef
 
@@ -261,7 +274,9 @@ $(eval \
   endif
   ##########
   sm.global.goals += goal-$(sm.this.name)
-  sm.var._module_compile_num := 0
+  sm._fun_.this := sm.fun.$(sm.this.name)
+  sm._var_.this := sm.var.$(sm.this.name)
+  $$(sm._var_.this)._cnum := 0
   include $(sm.dir.buildsys)/build-this.mk
  )\
 $(eval \
