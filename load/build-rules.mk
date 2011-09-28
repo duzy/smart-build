@@ -85,9 +85,9 @@ ifneq ($($(sm._var_.this).toolset),common)
 endif
 
 ifeq ($(strip \
-         $(sm.this.sources)\
-         $(sm.this.sources.external)\
-         $(sm.this.intermediates)),)
+         $($(sm._var_.this).sources)\
+         $($(sm._var_.this).sources.external)\
+         $($(sm._var_.this).intermediates)),)
   $(error smart: no sources or intermediates for module '$(sm.this.name)')
 endif
 
@@ -480,19 +480,6 @@ endef #sm.fun.make-rules-compile-common
 
 $(sm._var_.this).targets :=
 
-# ifeq ($($(sm._var_.this)._compile_count),)
-#   ## in case that only sm-build-this (no sm-compile-sources) is called
-#   $(sm._var_.this)._compile_count := 1
-# endif # $($(sm._var_.this)._compile_count) is empty
-# ## If first time building this...
-# ifeq ($($(sm._var_.this)._compile_count),1)
-#   ## clear these vars only once (see sm-compile-sources)
-#   $(sm._var_.this).sources :=
-#   $(sm._var_.this).sources.unknown :=
-#   $(sm._var_.this).intermediates := $(sm.this.intermediates)
-#   $(sm._var_.this).depends :=
-# endif
-
 ##
 define sm.fun.compute-sources-by-lang
 $(eval \
@@ -661,6 +648,8 @@ ifeq ($(sm.var.temp._should_make_targets),true)
       sm.var.temp._flag_files += \
        $($(sm._var_.this).out.tmp)/$($(sm._var_.this).action).libs
     endif
+
+    $(warning TODO: apply sm.this.intermediates.infile)
 
     $(sm.args.target) : $(sm.var.temp._flag_files)
   endif
