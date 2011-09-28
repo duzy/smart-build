@@ -175,11 +175,11 @@ sm-generate-objects = $(call sm-deprecated, sm-generate-objects, sm-compile-sour
 define sm-compile-sources
  $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
     $(eval _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.out)/$(sm.log.filename),true))\
-    $(info smart: objects for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
-    $(eval sm.var.__module.objects_only := true
+    $(info smart: intermediates for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
+    $(eval sm.var.__module.intermediates_only := true
            sm.var._module_compile_num := $(call sm-compute-compile-id,1)
            include $(sm.dir.buildsys)/build-rules.mk
-           sm.var.__module.objects_only :=)\
+           sm.var.__module.intermediates_only :=)\
    ,$(error smart: No sources defined))
 endef
 
@@ -243,8 +243,8 @@ $(eval \
     ifeq ($(sm.this.toolset),)
       $$(error sm.this.toolset is empty)
     endif
-    ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects)),)
-      $$(error no source or objects defined for '$(sm.this.name)')
+    ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.intermediates)),)
+      $$(error no source or intermediates defined for '$(sm.this.name)')
     endif
   endif
   ######

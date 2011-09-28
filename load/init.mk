@@ -21,7 +21,7 @@ endif
 ## alias
 sm.dir.top = $(call sm-deprecated, sm.dir.top, sm.top)
 
-## The output dirs for objects.
+## The output dirs for intermediates.
 ## These will always be converted into sm.top related path, this will restrict
 ## the command line arguments length.
 #sm.out = $(if $(sm.this.toolset),,$(error smart: sm.this.toolset not set)\

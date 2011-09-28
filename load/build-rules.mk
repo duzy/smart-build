@@ -30,8 +30,8 @@ ifneq ($(sm.this.toolset),common)
  endif
 endif
 
-ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.objects)),)
-  $(error smart: no sources or objects for module '$(sm.this.name)')
+ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.intermediates)),)
+  $(error smart: no sources or intermediates for module '$(sm.this.name)')
 endif
 
 ifeq ($(sm.this.type),t)
@@ -72,14 +72,14 @@ sm.var.temp._lang :=
 
 $(sm.var.this).archive.flags :=
 $(sm.var.this).archive.flags.computed :=
-$(sm.var.this).archive.objects =
-$(sm.var.this).archive.objects.computed :=
+$(sm.var.this).archive.intermediates =
+$(sm.var.this).archive.intermediates.computed :=
 $(sm.var.this).archive.libs :=
 $(sm.var.this).archive.libs.computed :=
 $(sm.var.this).link.flags :=
 $(sm.var.this).link.flags.computed :=
-$(sm.var.this).link.objects =
-$(sm.var.this).link.objects.computed :=
+$(sm.var.this).link.intermediates =
+$(sm.var.this).link.intermediates.computed :=
 $(sm.var.this).link.libs :=
 $(sm.var.this).link.libs.computed :=
 
@@ -191,10 +191,10 @@ endef #sm.fun.compute-flags-link
 
 define sm.fun.compute-intermediates-archive
 $(eval \
-  ifeq ($($(sm.var.this).archive.objects.computed),)
-    $(sm.var.this).archive.objects.computed := true
-    $(sm.var.this).archive.objects := $($(sm.var.this).objects)
-    $(call sm.code.shift-flags-to-file,archive,objects)
+  ifeq ($($(sm.var.this).archive.intermediates.computed),)
+    $(sm.var.this).archive.intermediates.computed := true
+    $(sm.var.this).archive.intermediates := $($(sm.var.this).intermediates)
+    $(call sm.code.shift-flags-to-file,archive,intermediates)
   endif
  )
 endef #sm.fun.compute-intermediates-archive
@@ -208,10 +208,10 @@ endef #sm.fun.compute-libs-archive
 
 define sm.fun.compute-intermediates-link
 $(eval \
-  ifeq ($($(sm.var.this).link.objects.computed),)
-    $(sm.var.this).link.objects.computed := true
-    $(sm.var.this).link.objects := $($(sm.var.this).objects)
-    $(call sm.code.shift-flags-to-file,link,objects)
+  ifeq ($($(sm.var.this).link.intermediates.computed),)
+    $(sm.var.this).link.intermediates.computed := true
+    $(sm.var.this).link.intermediates := $($(sm.var.this).intermediates)
+    $(call sm.code.shift-flags-to-file,link,intermediates)
   endif
  )
 endef #sm.fun.compute-intermediates-link
@@ -337,9 +337,9 @@ define sm.fun.make-rule-compile
  $(if $(sm.var.temp._source),,$(error smart: internal: $$(sm.var.temp._source) is empty))\
  $(if $1,$(call sm-check-equal,$(strip $1),external,smart: arg \#3 must be 'external' if specified))\
  $(call sm-check-defined,sm.fun.compute-source.$(strip $1), smart: I donot know how to compute sources of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
- $(call sm-check-defined,sm.fun.compute-intermediate.$(strip $1), smart: I donot how to compute objects of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
+ $(call sm-check-defined,sm.fun.compute-intermediate.$(strip $1), smart: I donot how to compute intermediates of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
   $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.$(strip $1)))\
- $(eval $(sm.var.this).objects += $(sm.var.temp._intermediate))\
+ $(eval $(sm.var.this).intermediates += $(sm.var.temp._intermediate))\
  $(call sm.fun.make-rule-depend,$1)\
  $(eval \
    sm.args.target := $(sm.var.temp._intermediate)
@@ -467,7 +467,7 @@ ifeq ($(sm.var.__module.compile_count),1)
   ## clear these vars only once (see sm-compile-sources)
   $(sm.var.this).sources :=
   $(sm.var.this).sources.unknown :=
-  $(sm.var.this).objects := $(sm.this.objects)
+  $(sm.var.this).intermediates := $(sm.this.intermediates)
   $(sm.var.this).depends :=
 endif
 
@@ -594,14 +594,14 @@ endif
 
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $(sm.this.sources.unknown)),),\
-            $(call equal,$(strip $($(sm.var.this).objects)),),\
-            $(call is-true,$(sm.var.__module.objects_only))\
+            $(call equal,$(strip $($(sm.var.this).intermediates)),),\
+            $(call is-true,$(sm.var.__module.intermediates_only))\
         ),,true)
 
 ifneq ($(sm.this.toolset),common)
 ifeq ($(sm.var.temp._should_make_targets),true)
  ## Make rule for targets of the module
-  $(if $($(sm.var.this).objects),,$(error smart: no objects for building '$(sm.this.name)'))
+  $(if $($(sm.var.this).intermediates),,$(error smart: no intermediates for building '$(sm.this.name)'))
 
   $(call sm-check-defined,sm.var.action)
   $(call sm-check-defined,$(sm.var.this).lang)
@@ -613,7 +613,7 @@ ifeq ($(sm.var.temp._should_make_targets),true)
 
   $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm.var.this).lang))
   $(call sm-check-defined,$(sm.var.this).$(sm.var.action).flags)
-  $(call sm-check-defined,$(sm.var.this).$(sm.var.action).objects)
+  $(call sm-check-defined,$(sm.var.this).$(sm.var.action).intermediates)
   $(call sm-check-defined,$(sm.var.this).$(sm.var.action).libs)
   $(call sm-check-not-empty,$(sm.var.this).lang)
 
@@ -624,7 +624,7 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   $(sm.fun.compute-libs-$(sm.var.action))
 
   sm.args.target := $($(sm.var.this).targets)
-  sm.args.sources := $($(sm.var.this).objects)
+  sm.args.sources := $($(sm.var.this).intermediates)
   sm.args.flags.0 := $($(sm.var.this).$(sm.var.action).flags)
   sm.args.flags.1 := $($(sm.var.this).$(sm.var.action).libs)
 
@@ -642,9 +642,11 @@ endif #$(sm.this.toolset) != common
 $(sm.var.this).user_defined_targets := $(strip $(sm.this.targets))
 $(sm.var.this).module_targets := $($(sm.var.this).targets)
 $(sm.var.this).targets += $($(sm.var.this).user_defined_targets)
-sm.this.targets = $($(sm.var.this).targets)
-sm.this.objects = $($(sm.var.this).objects)
+$(sm.var.this).inters = $($(sm.var.this).intermediates)
+sm.this.intermediates = $($(sm.var.this).intermediates)
+sm.this.inters = $(sm.this.intermediates)
 sm.this.depends = $($(sm.var.this).depends)
+sm.this.targets = $($(sm.var.this).targets)
 sm.this.documents = $($(sm.var.this).documents)
 
 ##################################################
@@ -652,8 +654,8 @@ sm.this.documents = $($(sm.var.this).documents)
 
 ifeq ($(sm.var.temp._should_make_targets),true)
 
-ifeq ($(strip $($(sm.var.this).objects)),)
-  $(warning smart: no objects)
+ifeq ($(strip $($(sm.var.this).intermediates)),)
+  $(warning smart: no intermediates)
 endif
 
 ifeq ($(MAKECMDGOALS),clean)
@@ -688,7 +690,7 @@ $(call sm-check-not-empty, sm.tool.common.rmdir)
 clean-$(sm.this.name): \
   clean-$(sm.this.name)-flags \
   clean-$(sm.this.name)-targets \
-  clean-$(sm.this.name)-objects \
+  clean-$(sm.this.name)-intermediates \
   clean-$(sm.this.name)-depends \
   $(sm.this.clean-steps)
 	@echo "'$(@:clean-%=%)' is cleaned."
@@ -698,15 +700,15 @@ sm.rules.phony.* += \
     clean-$(sm.this.name) \
     clean-$(sm.this.name)-flags \
     clean-$(sm.this.name)-targets \
-    clean-$(sm.this.name)-objects \
+    clean-$(sm.this.name)-intermediates \
     clean-$(sm.this.name)-depends \
     $(sm.this.clean-steps)
 clean-$(sm.this.name)-flags:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.this).targets))@)$$(call sm.tool.common.rm,$$($(sm.var.this).flag_files))
 clean-$(sm.this.name)-targets:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.this).targets))@)$$(call sm.tool.common.rm,$$($(sm.var.this).targets))
-clean-$(sm.this.name)-objects:
-	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.this).objects))@)$$(call sm.tool.common.rm,$$($(sm.var.this).objects))
+clean-$(sm.this.name)-intermediates:
+	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.this).intermediates))@)$$(call sm.tool.common.rm,$$($(sm.var.this).intermediates))
 clean-$(sm.this.name)-depends:
 	$(if $(call is-true,$(sm.this.verbose)),,$$(info remove:$($(sm.var.this).depends))@)$$(call sm.tool.common.rm,$$($(sm.var.this).depends))
 endef #sm.code.clean-rules
