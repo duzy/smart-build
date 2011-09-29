@@ -231,7 +231,8 @@ endef #sm.code.shift-flags-to-file
 
 define sm.fun.compute-flags-compile
 $(eval \
-  sm.var.temp._fvar_name := $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang)
+  sm.temp._fvar_prop := compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang)
+  sm.var.temp._fvar_name := $(sm._this).$$(sm.temp._fvar_prop)
  )\
 $(eval \
   ifeq ($($(sm.var.temp._fvar_name).computed),)
@@ -267,7 +268,7 @@ $(eval \
            $($(sm._this).used.includes), -I)
 
     ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
-      sm.var.temp._flag_file := $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang)
+      sm.var.temp._flag_file := $($(sm._this).out.tmp)/$(sm.temp._fvar_prop)
       $(sm.var.temp._fvar_name).flat := $$(subst \",\\\",$$($(sm.var.temp._fvar_name)))
       $(sm.var.temp._fvar_name) := @$$(sm.var.temp._flag_file)
       $(sm._this).flag_files += $$(sm.var.temp._flag_file)
