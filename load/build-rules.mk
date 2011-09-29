@@ -87,7 +87,6 @@ endif # $(sm._this).name == ""
   $(sm._this).sources.external := $(sm.this.sources.external)
   $(sm._this).sources.common := $(sm.this.sources.common)
   $(sm._this).intermediates := $(sm.this.intermediates)
-  $(info $(sm._this).intermediates: $($(sm._this).intermediates))
 
   ## Compute sources of each language supported by the toolset.
   sm.var.toolset := sm.tool.$($(sm._this).toolset)
@@ -237,11 +236,13 @@ $(eval \
 $(eval \
   ifeq ($($(sm.var.temp._fvar_name).computed),)
     $(sm.var.temp._fvar_name).computed := true
+
     ifeq ($($(sm._this).type),t)
       $(sm.var.temp._fvar_name) := -x$($(sm._this).lang)
     else
       $(sm.var.temp._fvar_name) :=
     endif
+
     $(sm.var.temp._fvar_name) += $(call sm.fun.make-pretty-list,\
        $($(sm.var.toolset).defines)\
        $($(sm.var.toolset).defines.$(sm.var.temp._lang))\
@@ -265,7 +266,15 @@ $(eval \
            $($(sm._this).includes) \
            $($(sm._this).used.includes), -I)
 
-    $(call sm.code.shift-flags-to-file,compile,flags.$($(sm._this)._cnum).$(sm.var.temp._lang))
+    ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
+      sm.var.temp._flag_file := $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang)
+      $(sm.var.temp._fvar_name).flat := $$(subst \",\\\",$$($(sm.var.temp._fvar_name)))
+      $(sm.var.temp._fvar_name) := @$$(sm.var.temp._flag_file)
+      $(sm._this).flag_files += $$(sm.var.temp._flag_file)
+      $$(sm.var.temp._flag_file): $($(sm._this).makefile)
+	@$$(info smart: compile flags file: $$@)
+	@mkdir -p $$(@D) && echo $$($(sm.var.temp._fvar_name).flat) > $$@
+    endif
   endif
  )
 endef #sm.fun.compute-flags-compile
