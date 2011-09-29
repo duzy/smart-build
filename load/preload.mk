@@ -36,6 +36,8 @@ sm.this.type :=
 sm.this.using :=
 sm.this.whole_archives :=
 
+$(call sm-reset-module, sm.this)
+
 $(foreach sm.var.temp._lang,$(sm.tool.common.langs),\
    $(eval sm.this.sources.$(sm.var.temp._lang) :=)\
    $(eval sm.this.sources.has.$(sm.var.temp._lang) :=))

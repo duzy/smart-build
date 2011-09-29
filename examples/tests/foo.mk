@@ -1,6 +1,6 @@
 ##################################################
 
-$(call sm-new-module, foo, tests)
+$(call sm-new-module, foo, tests, gcc)
 sm.this.verbose := true
 sm.this.lang := c
 sm.this.toolset := gcc

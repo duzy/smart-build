@@ -57,6 +57,15 @@ $(if $(call equal,$1,dynamic),shared,\
         $(if $(call equal,$1,tests),t,$1)))
 endef
 
+##
+define sm-reset-module
+$(eval \
+  sm.temp._mod := $(strip $1)
+ )$(foreach sm.temp._, $(sm.module.properties),\
+    $(eval $(sm.temp._mod)$(sm.temp._) :=))
+endef #sm-reset-module
+
+##
 define sm-clone-module
 $(eval \
   sm.temp._src := $(strip $1)
@@ -70,6 +79,8 @@ $(foreach sm.temp._, $(sm.module.properties),\
     else
     ifeq ($(sm.temp._flavor),recursive)
       $(sm.temp._dst)$(sm.temp._) = $(value $(sm.temp._src)$(sm.temp._))
+    else
+      #(undefine $(sm.temp._dst)$(sm.temp._))
     endif
     endif
    ))
@@ -142,7 +153,7 @@ endef
 ## NOTE: The build script should definitely defined a module using sm-new-module.
 define sm-load-module
 $(eval \
-   sm.temp._smartfile := $(strip $1)
+   sm.temp._smartfile := $(strip $(wildcard $1))
  )\
 $(info smart: load '$(sm.temp._smartfile)'..)\
 $(eval \

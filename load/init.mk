@@ -133,4 +133,7 @@ sm.module.properties := \
   .export.libdirs \
   .export.libs \
 
+$(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.common.langs)")
+$(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.XXX.langs)")
+
 sm.var.Q := @

@@ -87,6 +87,7 @@ endif # $(sm._this).name == ""
   $(sm._this).sources.external := $(sm.this.sources.external)
   $(sm._this).sources.common := $(sm.this.sources.common)
   $(sm._this).intermediates := $(sm.this.intermediates)
+  $(info $(sm._this).intermediates: $($(sm._this).intermediates))
 
   ## Compute sources of each language supported by the toolset.
   sm.var.toolset := sm.tool.$($(sm._this).toolset)
@@ -665,6 +666,10 @@ ifeq ($($(sm._this).type),t)
   sm.this.sources.$(sm.var.temp._lang).t = $($(sm._this).sources.$(sm.var.temp._lang).t)
   sm.this.sources.external.$(sm.var.temp._lang).t = $($(sm._this).sources.external.$(sm.var.temp._lang).t)
   sm.this.sources.has.$(sm.var.temp._lang).t = $($(sm._this).sources.has.$(sm.var.temp._lang).t)
+
+  $(info $(sm._this).sources: $($(sm._this).sources))
+  $(info $(sm._this).sources.external: $($(sm._this).sources.external))
+  $(info $(sm._this).intermediates: $($(sm._this).intermediates))
 endif
 
 sm.var.temp._should_make_targets := \
