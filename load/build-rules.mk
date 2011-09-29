@@ -237,8 +237,12 @@ $(eval \
 $(eval \
   ifeq ($($(sm.var.temp._fvar_name).computed),)
     $(sm.var.temp._fvar_name).computed := true
-    $(sm.var.temp._fvar_name) := $(call sm.fun.make-pretty-list,\
-       $(if $(call equal,$($(sm._this).type),t),-x$($(sm._this).lang))\
+    ifeq ($($(sm._this).type),t)
+      $(sm.var.temp._fvar_name) := -x$($(sm._this).lang)
+    else
+      $(sm.var.temp._fvar_name) :=
+    endif
+    $(sm.var.temp._fvar_name) += $(call sm.fun.make-pretty-list,\
        $($(sm.var.toolset).defines)\
        $($(sm.var.toolset).defines.$(sm.var.temp._lang))\
        $($(sm.var.toolset).compile.flags)\
@@ -255,7 +259,12 @@ $(eval \
        $($(sm._this).defines.$(sm.var.temp._lang))\
        $($(sm._this).compile.flags)\
        $($(sm._this).compile.flags.$(sm.var.temp._lang)))
-    $$(call sm.fun.append-items-with-fix,$(sm.var.temp._fvar_name), $(sm.global.includes) $($(sm._this).includes) $($(sm._this).used.includes), -I)
+
+    $$(call sm.fun.append-items-with-fix, $(sm.var.temp._fvar_name), \
+           $(sm.global.includes) \
+           $($(sm._this).includes) \
+           $($(sm._this).used.includes), -I)
+
     $(call sm.code.shift-flags-to-file,compile,flags.$($(sm._this)._cnum).$(sm.var.temp._lang))
   endif
  )
