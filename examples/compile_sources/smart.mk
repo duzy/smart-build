@@ -1,6 +1,7 @@
 #
 
 $(call sm-new-module, foo, executable, gcc)
+
 $(call sm-check-not-empty,sm.this.dir)
 $(call sm-check-not-empty,sm.this.type)
 $(call sm-check-not-empty,sm.this.name)
@@ -21,7 +22,7 @@ sm.this.includes := $(sm.this.dir)/../include
 
 ## The flags to be used by the linker
 ## NOTE: no needs to '-Wl,' or '-Wlinker' to pass linker arguments
-sm.this.link.flags := $(if $(sm.os.name.win32),--subsystem=console)
+sm.this.link.flags := $(if $(sm.os.name.win32),--subsystem=console) -DFOO
 
 ## The libraries search path (for linker's -L switch), each item of this will
 ## be translated into a -L switch similar to 'sm.this.includes'.

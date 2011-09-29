@@ -179,18 +179,18 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(eval $(sm._this).compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang) := )\
   $(eval $(sm._this).compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang).computed := ))
 
-$(sm._this).archive.flags :=
-$(sm._this).archive.flags.computed :=
-$(sm._this).archive.intermediates =
-$(sm._this).archive.intermediates.computed :=
-$(sm._this).archive.libs :=
-$(sm._this).archive.libs.computed :=
-$(sm._this).link.flags :=
-$(sm._this).link.flags.computed :=
-$(sm._this).link.intermediates =
-$(sm._this).link.intermediates.computed :=
-$(sm._this).link.libs :=
-$(sm._this).link.libs.computed :=
+$(sm._this)._archive.flags :=
+$(sm._this)._archive.flags.computed :=
+$(sm._this)._archive.intermediates =
+$(sm._this)._archive.intermediates.computed :=
+$(sm._this)._archive.libs :=
+$(sm._this)._archive.libs.computed :=
+$(sm._this)._link.flags :=
+$(sm._this)._link.flags.computed :=
+$(sm._this)._link.intermediates =
+$(sm._this)._link.intermediates.computed :=
+$(sm._this)._link.libs :=
+$(sm._this)._link.libs.computed :=
 
 $(sm._this).flag_files :=
 
@@ -263,72 +263,72 @@ endef #sm.fun.compute-flags-compile
 ##
 define sm.fun.compute-flags-archive
 $(eval \
-  ifeq ($($(sm._this).archive.flags.computed),)
-    $(sm._this).archive.flags.computed := true
-    $(sm._this).archive.flags := $(call sm.fun.make-pretty-list,\
+  ifeq ($($(sm._this)._archive.flags.computed),)
+    $(sm._this)._archive.flags.computed := true
+    $(sm._this)._archive.flags := $(call sm.fun.make-pretty-list,\
         $(sm.global.archive.flags)\
         $($(sm._this).used.archive.flags)\
         $($(sm._this).archive.flags))
-    $(call sm.code.shift-flags-to-file,archive,flags)
+    $(call sm.code.shift-flags-to-file,_archive,flags)
   endif
  )
 endef #sm.fun.compute-flags-archive
 
 define sm.fun.compute-flags-link
 $(eval \
-  ifeq ($($(sm._this).link.flags.computed),)
-    $(sm._this).link.flags.computed := true
-    $(sm._this).link.flags := $(call sm.fun.make-pretty-list,\
+  ifeq ($($(sm._this)._link.flags.computed),)
+    $(sm._this)._link.flags.computed := true
+    $(sm._this)._link.flags := $(call sm.fun.make-pretty-list,\
        $($(sm.var.toolset).link.flags)\
        $(sm.global.link.flags)\
        $($(sm._this).used.link.flags)\
        $($(sm._this).link.flags))
     ifeq ($($(sm._this).type),shared)
-      $$(if $$(filter -shared,$$($(sm._this).link.flags)),,\
-          $$(eval $(sm._this).link.flags += -shared))
+      $$(if $$(filter -shared,$$($(sm._this)._link.flags)),,\
+          $$(eval $(sm._this)._link.flags += -shared))
     endif
-    $(call sm.code.shift-flags-to-file,link,flags)
+    $(call sm.code.shift-flags-to-file,_link,flags)
   endif
  )
 endef #sm.fun.compute-flags-link
 
 define sm.fun.compute-intermediates-archive
 $(eval \
-  ifeq ($($(sm._this).archive.intermediates.computed),)
-    $(sm._this).archive.intermediates.computed := true
-    $(sm._this).archive.intermediates := $(call sm.fun.make-pretty-list,\
+  ifeq ($($(sm._this)._archive.intermediates.computed),)
+    $(sm._this)._archive.intermediates.computed := true
+    $(sm._this)._archive.intermediates := $(call sm.fun.make-pretty-list,\
        $($(sm._this).intermediates))
-    $(call sm.code.shift-flags-to-file,archive,intermediates)
+    $(call sm.code.shift-flags-to-file,_archive,intermediates)
   endif
  )
 endef #sm.fun.compute-intermediates-archive
 
 define sm.fun.compute-libs-archive
 $(eval \
-  $(sm._this).archive.libs.computed := true
-  $(sm._this).archive.libs :=
+  $(sm._this)._archive.libs.computed := true
+  $(sm._this)._archive.libs :=
  )
 endef #sm.fun.compute-libs-archive
 
 define sm.fun.compute-intermediates-link
 $(eval \
-  ifeq ($($(sm._this).link.intermediates.computed),)
-    $(sm._this).link.intermediates.computed := true
-    $(sm._this).link.intermediates := $(call sm.fun.make-pretty-list,\
+  ifeq ($($(sm._this)._link.intermediates.computed),)
+    $(sm._this)._link.intermediates.computed := true
+    $(sm._this)._link.intermediates := $(call sm.fun.make-pretty-list,\
        $($(sm._this).intermediates))
-    $(call sm.code.shift-flags-to-file,link,intermediates)
+    $(call sm.code.shift-flags-to-file,_link,intermediates)
   endif
  )
 endef #sm.fun.compute-intermediates-link
 
 define sm.fun.compute-libs-link
 $(eval \
-  ifeq ($($(sm._this).link.libs.computed),)
-    $(sm._this).link.libs.computed := true
-    $(sm._this).link.libs :=
-    $$(call sm.fun.append-items-with-fix, $(sm._this).link.libs, $(sm.global.libdirs) $($(sm._this).libdirs) $($(sm._this).used.libdirs), -L)
-    $$(call sm.fun.append-items-with-fix, $(sm._this).link.libs, $(sm.global.libs) $($(sm._this).libs) $($(sm._this).used.libs), -l)
-    $(call sm.code.shift-flags-to-file,link,libs)
+  ifeq ($($(sm._this)._link.libs.computed),)
+    $(sm._this)._link.libs.computed := true
+    $(sm._this)._link.libs :=
+    $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, $(sm.global.libdirs) $($(sm._this).libdirs) $($(sm._this).used.libdirs), -L)
+    $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, $(sm.global.libs) $($(sm._this).libs) $($(sm._this).used.libs), -l)
+    $(call sm.code.shift-flags-to-file,_link,libs)
   endif
  )
 endef #sm.fun.compute-libs-link
@@ -687,9 +687,9 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   $(call sm-check-defined,sm.fun.compute-module-targets-$($(sm._this).type))
 
   $(call sm-check-defined,sm-rule-$($(sm._this).action)-$($(sm._this).lang))
-  $(call sm-check-defined,$(sm._this).$($(sm._this).action).flags)
-  $(call sm-check-defined,$(sm._this).$($(sm._this).action).intermediates)
-  $(call sm-check-defined,$(sm._this).$($(sm._this).action).libs)
+  $(call sm-check-defined,$(sm._this)._$($(sm._this).action).flags)
+  $(call sm-check-defined,$(sm._this)._$($(sm._this).action).intermediates)
+  $(call sm-check-defined,$(sm._this)._$($(sm._this).action).libs)
   $(call sm-check-not-empty,$(sm._this).lang)
 
   $(sm._this).targets := $(strip $(call sm.fun.compute-module-targets-$($(sm._this).type)))
@@ -700,8 +700,9 @@ ifeq ($(sm.var.temp._should_make_targets),true)
 
   sm.args.target := $($(sm._this).targets)
   sm.args.sources := $($(sm._this).intermediates)
-  sm.args.flags.0 := $($(sm._this).$($(sm._this).action).flags)
-  sm.args.flags.1 := $($(sm._this).$($(sm._this).action).libs)
+  #sm.args.sources := $($(sm._this).$($(sm._this).action).intermediates)
+  sm.args.flags.0 := $($(sm._this)._$($(sm._this).action).flags)
+  sm.args.flags.1 := $($(sm._this)._$($(sm._this).action).libs)
 
   ifeq ($(call is-true,$($(sm._this).$($(sm._this).action).flags.infile)),true)
     sm.var.temp._flag_files := \
