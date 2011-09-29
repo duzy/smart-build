@@ -733,13 +733,13 @@ endif #$($(sm._this).toolset) != common
 $(sm._this).module_targets := $($(sm._this).targets)
 $(sm._this).targets += $($(sm._this).user_defined_targets)
 $(sm._this).inters = $($(sm._this).intermediates)
-sm.this.intermediates = $($(sm._this).intermediates)
-sm.this.inters = $(sm.this.intermediates)
-sm.this.depends = $($(sm._this).depends)
-sm.this.targets = $($(sm._this).targets)
-sm.this.documents = $($(sm._this).documents)
-sm.this.sources.common = $($(sm._this).sources.common)
-sm.this.sources.unknown = $($(sm._this).sources.unknown)
+sm.this.intermediates := $($(sm._this).intermediates)
+sm.this.inters := $(sm.this.intermediates)
+sm.this.depends := $($(sm._this).depends)
+sm.this.targets := $($(sm._this).targets)
+sm.this.documents := $($(sm._this).documents)
+sm.this.sources.common := $($(sm._this).sources.common)
+sm.this.sources.unknown := $($(sm._this).sources.unknown)
 
 ##################################################
 ##################################################
