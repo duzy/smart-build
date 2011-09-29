@@ -212,11 +212,11 @@ endef #sm.fun.append-items-with-fix
 ##
 ## eg. $(call sm.code.shift-flags-to-file,compile,flags.c++)
 define sm.code.shift-flags-to-file-r
- ifeq ($(call is-true,$($(sm._this).$1.flags.infile)),true)
+ ifeq ($(call is-true,$($(sm._this).$(1:_%=%).flags.infile)),true)
   $(sm._this).$1.$2.flat := $$(subst \",\\\",$$($(sm._this).$1.$2))
-  $(sm._this).$1.$2 := @$($(sm._this).out.tmp)/$1.$2
-  $(sm._this).flag_files += $($(sm._this).out.tmp)/$1.$2
-  $($(sm._this).out.tmp)/$1.$2: $($(sm._this).makefile)
+  $(sm._this).$1.$2 := @$($(sm._this).out.tmp)/$(1:_%=%).$2
+  $(sm._this).flag_files += $($(sm._this).out.tmp)/$(1:_%=%).$2
+  $($(sm._this).out.tmp)/$(1:_%=%).$2: $($(sm._this).makefile)
 	@$$(info smart: flag file: $$@)
 	@mkdir -p $($(sm._this).out.tmp)
 	@echo $$($(sm._this).$1.$2.flat) > $$@
