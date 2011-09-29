@@ -176,8 +176,8 @@ endif
 
 ## Clear compile options for all langs
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
-  $(eval $(sm._this).compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang) := )\
-  $(eval $(sm._this).compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang).computed := ))
+  $(eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang) := )\
+  $(eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang).computed := ))
 
 $(sm._this)._archive.flags :=
 $(sm._this)._archive.flags.computed :=
@@ -231,7 +231,7 @@ endef #sm.code.shift-flags-to-file
 
 define sm.fun.compute-flags-compile
 $(eval \
-  sm.var.temp._fvar_name := $(sm._this).compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang)
+  sm.var.temp._fvar_name := $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang)
  )\
 $(eval \
   ifeq ($($(sm.var.temp._fvar_name).computed),)
@@ -255,7 +255,7 @@ $(eval \
        $($(sm._this).compile.flags)\
        $($(sm._this).compile.flags.$(sm.var.temp._lang)))
     $$(call sm.fun.append-items-with-fix,$(sm.var.temp._fvar_name), $(sm.global.includes) $($(sm._this).includes) $($(sm._this).used.includes), -I)
-    $(call sm.code.shift-flags-to-file,compile,$($(sm._this)._cnum).flags.$(sm.var.temp._lang))
+    $(call sm.code.shift-flags-to-file,compile,flags.$($(sm._this)._cnum).$(sm.var.temp._lang))
   endif
  )
 endef #sm.fun.compute-flags-compile
@@ -395,7 +395,7 @@ define sm.fun.make-rule-depend
     $(sm._this).depends += $(sm.var.temp._depend)
 
     ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
-      sm.var.temp._flag_file := $($(sm._this).out.tmp)/compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang)
+      sm.var.temp._flag_file := $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang)
     else
       sm.var.temp._flag_file :=
     endif
@@ -403,7 +403,7 @@ define sm.fun.make-rule-depend
     sm.args.output := $(sm.var.temp._depend)
     sm.args.target := $(sm.var.temp._intermediate)
     sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
-    sm.args.flags.0 := $($(sm._this).compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang))
+    sm.args.flags.0 := $($(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang))
     sm.args.flags.0 += $(strip $($(sm._this).compile.flags-$(sm.var.temp._source)))
     sm.args.flags.1 :=
     sm.args.flags.2 :=
@@ -438,13 +438,13 @@ define sm.fun.make-rule-compile
  $(eval \
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
-   sm.args.flags.0 := $($(sm._this).compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang))
+   sm.args.flags.0 := $($(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang))
    sm.args.flags.0 += $($(sm._this).compile.flags-$(sm.var.temp._source))
    sm.args.flags.1 :=
    sm.args.flags.2 :=
 
    ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
-     $(sm.args.target) : $($(sm._this).out.tmp)/compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang)
+     $(sm.args.target) : $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang)
    endif
 
    $$(sm-rule-compile-$(sm.var.temp._lang))
