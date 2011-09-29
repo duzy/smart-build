@@ -13,10 +13,6 @@ ifeq ($(sm._this),)
   $(error smart: internal: sm._this is empty)
 endif
 
-ifeq ($(sm._this.fun),)
-  $(error smart: internal: sm._this.fun is empty)
-endif
-
 ## check origin of 'sm-check-origin' itself
 ifneq ($(origin sm-check-origin),file)
   $(error smart: Please load 'build/main.mk' first)

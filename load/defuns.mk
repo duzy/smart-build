@@ -57,73 +57,66 @@ $(if $(call equal,$1,dynamic),shared,\
         $(if $(call equal,$1,tests),t,$1)))
 endef
 
-sm.module.properties := \
-    .dir \
-    .name \
-    .type \
-    .lang \
-    .toolset \
-    .using \
-    .suffix \
-    .verbose \
-    .gen_deps \
-    .sources \
-    .sources.external \
-    .sources.common \
-    .intermediates \
-
 define sm-clone-module
 $(eval \
-  sm.this.args.src := $(strip $1)
-  sm.this.args.dst := $(strip $2)
+  sm.temp._src := $(strip $1)
+  sm.temp._dst := $(strip $2)
  )\
-$(foreach sm.this.temp._,$(sm.module.properties),\
-  $(eval $(sm.this.args.dst)$(sm.this.temp._) := $($(sm.this.args.src)$(sm.this.temp._)))\
-  $(info $(sm.this.args.dst)$(sm.this.temp._): $($(sm.this.args.dst)$(sm.this.temp._))))
+$(foreach sm.temp._, $(sm.module.properties),\
+  $(eval sm.temp._flavor := $(flavor $(sm.temp._src)$(sm.temp._)))\
+  $(eval \
+    ifeq ($(sm.temp._flavor),simple)
+      $(sm.temp._dst)$(sm.temp._) := $($(sm.temp._src)$(sm.temp._))
+    else
+    ifeq ($(sm.temp._flavor),recursive)
+      $(sm.temp._dst)$(sm.temp._) = $(value $(sm.temp._src)$(sm.temp._))
+    endif
+    endif
+   ))
 endef #sm-clone-module
 
 # sm-new-module must be used before any 'include' commands, since
 # it invokes sm-module-dir and sm-this-makefile
 define sm-new-module
  $(eval \
-   sm.this.args.name := $(strip $1)
-   sm.this.args.type := $(strip $2)
-   sm.this.args.toolset := $(strip $3)
+   sm.temp._name := $(strip $1)
+   sm.temp._type := $(strip $2)
+   sm.temp._toolset := $(strip $3)
   )\
- $(if $(sm.this.args.name),,$(error module name(as arg 1) required))\
- $(if $(filter $(sm.this.args.name),$(sm.global.modules)),\
-     $(error module "$(sm.this.args.name)" already defined in $(sm.global.modules.$(sm.this.args.name))))\
+ $(if $(sm.temp._name),,$(error module name(as arg 1) required))\
+ $(if $(filter $(sm.temp._name),$(sm.global.modules)),\
+     $(error module "$(sm.temp._name)" already defined in $(sm.global.modules.$(sm.temp._name))))\
  $(eval \
-   sm.this.name := $(basename $(sm.this.args.name))
-   sm.this.suffix := $(suffix $(sm.this.args.name))
+   sm.this.name := $(basename $(sm.temp._name))
+   sm.this.suffix := $(suffix $(sm.temp._name))
    sm.this.dir := $$(call sm-module-dir)
    sm.this.makefile := $$(call sm-this-makefile)
    sm.this.gen_deps := true
-   sm.global.modules += $(sm.this.args.name)
-   sm.global.modules.$(sm.this.args.name) := $$(sm.this.makefile)
+   sm.global.modules += $(sm.temp._name)
+   sm.global.modules.$(sm.temp._name) := $$(sm.this.makefile)
   )\
  $(if $(sm.this.name),,$(error module name is empty))\
  $(eval \
-   sm.this.type := $(call sm-module-type-name,$(sm.this.args.type))
+   sm.this.type := $(call sm-module-type-name,$(sm.temp._type))
    ifeq ($$(sm.this.type),shared)
      sm.this.out_implib := $(sm.this.name)
    endif
    ifeq ($$(sm.this.type),docs)
-     sm.this.args.toolset := common
+     sm.temp._toolset := common
    endif
    sm.this.docs.format := .pdf
   )\
  $(if $(filter $(sm.this.type),$(sm.global.module_types)),,\
      $(error $(sm.this.type) is not valid module type(see: $(sm.global.module_types))))\
- $(if $(sm.this.args.toolset),\
+ $(if $(sm.temp._toolset),\
    $(if $(call equal,$(sm.this.type),depends),\
-       ,$(if $(wildcard $(sm.dir.buildsys)/tools/$(sm.this.args.toolset).mk),\
-            ,$(error smart: toolset $(sm.this.args.toolset) not unknown)))\
+       ,$(if $(wildcard $(sm.dir.buildsys)/tools/$(sm.temp._toolset).mk),\
+            ,$(error smart: toolset $(sm.temp._toolset) not unknown)))\
    $(eval \
      ifeq ($(origin toolset),command line)
-       sm.this.toolset := $(or $(toolset),$(sm.this.args.toolset))
+       sm.this.toolset := $(or $(toolset),$(sm.temp._toolset))
      else
-       sm.this.toolset := $(sm.this.args.toolset)
+       sm.this.toolset := $(sm.temp._toolset)
      endif
      ifeq ($$(sm.this.toolset),common)
        #$$(warning TODO: common toolset...)
@@ -149,21 +142,21 @@ endef
 ## NOTE: The build script should definitely defined a module using sm-new-module.
 define sm-load-module
 $(eval \
-   sm.this.args.smartfile := $(strip $1)
+   sm.temp._smartfile := $(strip $1)
  )\
-$(info smart: load '$(sm.this.args.smartfile)'..)\
+$(info smart: load '$(sm.temp._smartfile)'..)\
 $(eval \
   ######
-  ifeq ($(sm.this.args.smartfile),)
+  ifeq ($(sm.temp._smartfile),)
     $$(error must specify the smart.mk file for the module)
   endif
   ######
-  ifeq ($(wildcard $(sm.this.args.smartfile)),)
-    $$(error module build script '$(sm.this.args.smartfile)' missed)
+  ifeq ($(wildcard $(sm.temp._smartfile)),)
+    $$(error module build script '$(sm.temp._smartfile)' missed)
   endif
   ##########
   include $(sm.dir.buildsys)/preload.mk
-  include $(sm.this.args.smartfile)
+  include $(sm.temp._smartfile)
   sm.result.module.name := $$(sm.this.name)
   -include $(sm.dir.buildsys)/postload.mk
   ##########
@@ -178,26 +171,54 @@ endef #sm-load-module
 ## 
 define sm-use-module
  $(eval \
-   sm.this.args.modir := $(strip $1)
-   sm.this.temp._using := $$(wildcard $$(sm.this.args.modir)/smart.mk)
-  )$(info smart: using $(sm.this.args.modir)..)\
- $(call sm-clone-module,sm.this,sm.var.foo)\
- $(call sm-load-module,$(sm.this.temp._using))\
- $(info smart: module "$(sm.result.module.name)" used)\
+   sm.temp._modir := $(strip $1)
+   sm.temp._using := $$(wildcard $$(sm.temp._modir)/smart.mk)
+
+   ifeq ($(sm.this.name),)
+     $$(error smart: sm.this.name is empty, must use sm-new-module first)
+   endif
+
+   sm._this := sm.var.$(sm.this.name)
+  )\
  $(eval \
-   $$(warning TODO: restore the previous module context)
-   sm.this.name := foo
-   sm._this.fun := sm.fun.$$(sm.this.name)
+   ifeq ($($(sm._this)._configured),true)
+     $$(error smart: $(sm.this.name) already configured, cannot do using)
+   endif
+
+   ifeq ($(filter $(sm.this.name),$(sm.global.using)),$(sm.this.name))
+     $$(error smart: internal: recursive using: $(sm.this.name): $(sm.global.using))
+   endif
+   sm.global.using += $(sm.this.name)
+  )\
+ $(info smart: using $(sm.temp._modir) for "$(sm.this.name)"..)\
+ $(call sm-clone-module, sm.this, $(sm._this))\
+ $(call sm-load-module, $(sm.temp._using))\
+ $(eval \
+   sm._that := sm.var.$$(sm.this.name)
+
+   ## restore context to the previous module
+   sm.this.name := $(lastword $(sm.global.using))
+   ifeq ($(sm.this.name),)
+     $$(error smart: internal: sm.global.using damaged: $(sm.global.using))
+   else
+     #sm.global.using := $$(wordlist 1,$(words $(sm.global.using))-1,$(sm.global.using))
+     sm.global.using := $(filter-out $(sm.this.name),$(sm.global.using))
+   endif
    sm._this := sm.var.$$(sm.this.name)
-  )$(call sm-clone-module,sm.var.foo,sm.this)
+  )\
+ $(eval \
+   $(sm._this).using_list += $($(sm._that).name)
+  )\
+ $(info smart: module "$(sm.result.module.name)" used by "$(sm.this.name)")\
+ $(call sm-clone-module, $(sm._this), sm.this)
 endef #sm-use-module
 
 ##
 define sm-import-module
  $(eval \
-   sm.this.args.name := $(strip $1)
+   sm.temp._name := $(strip $1)
   )\
- $(warning TODO: load and use module $(sm.this.args.name) from sm.global.module_path)
+ $(warning TODO: load and use module $(sm.temp._name) from sm.global.module_path)
 endef #sm-import-module
 
 ## Find level-one sub-modules.
@@ -231,7 +252,7 @@ define sm-compile-sources
       ifeq ($(sm.this.name),)
         $$(error smart: internal: sm.this.name is empty)
       endif
-      sm._this.fun := sm.fun.$(sm.this.name)
+
       sm._this := sm.var.$(sm.this.name)
      )\
     $(eval \
@@ -264,21 +285,21 @@ endef #sm-generate-implib
 ## sm-copy-files -- make rules for copying files
 define sm-copy-files
 $(eval \
-  sm.this.args.files := $(strip $1)
-  sm.this.args.location := $(strip $2)
+  sm.temp._files := $(strip $1)
+  sm.temp._location := $(strip $2)
  )\
 $(eval \
   ######
-  ifeq ($(sm.this.args.files),)
+  ifeq ($(sm.temp._files),)
     $$(error smart: files must be specified to be copied)
   endif
   ######
-  ifeq ($(sm.this.args.location),)
+  ifeq ($(sm.temp._location),)
     $$(error smart: target location(directory) must be specified)
   endif
   ##########
-  sm.var.__copyfiles := $(sm.this.args.files)
-  sm.var.__copyfiles.to := $(sm.this.args.location)
+  sm.var.__copyfiles := $(sm.temp._files)
+  sm.var.__copyfiles.to := $(sm.temp._location)
   include $(sm.dir.buildsys)/copyfiles.mk
   sm.var.__copyfiles :=
   sm.var.__copyfiles.to :=
@@ -315,7 +336,6 @@ $(eval \
   endif
   ##########
   sm.global.goals += goal-$(sm.this.name)
-  sm._this.fun := sm.fun.$(sm.this.name)
   sm._this := sm.var.$(sm.this.name)
   $$(sm._this)._cnum := 0
   $$(sm._this)._should_compute_sources := true

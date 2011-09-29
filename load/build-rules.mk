@@ -15,10 +15,6 @@ ifeq ($(sm._this),)
   $(error smart: internal: sm._this is empty)
 endif
 
-ifeq ($(sm._this.fun),)
-  $(error smart: internal: sm._this.fun is empty)
-endif
-
 ##################################################
 
 sm.var.action.static := archive
@@ -30,43 +26,26 @@ sm.var.depend.suffixes.shared := .d
 sm.var.depend.suffixes.exe := .d
 sm.var.depend.suffixes.t := .t.d
 
-##
-## for sm.this.using: recursive loading
+## clone module from sm.this for sm.this.using/sm-use-module: recursive loading
+#ifeq ($($(sm._this).name),)
+  $(call sm-clone-module, sm.this, $(sm._this))
+#endif # $(sm._this).name == ""
+
+## check module name
 ifeq ($($(sm._this).name),)
-  $(sm._this).dir := $(sm.this.dir)
-  $(sm._this).name := $(sm.this.name)
-  $(sm._this).type := $(sm.this.type)
-  $(sm._this).lang := $(sm.this.lang)
-  $(sm._this).using := $(sm.this.using)
-  $(sm._this).toolset := $(sm.this.toolset)
-  $(sm._this).suffix := $(sm.this.suffix)
-  $(sm._this).verbose := $(sm.this.verbose)
-  $(sm._this).makefile := $(sm.this.makefile)
-  $(sm._this).sources := $(sm.this.sources)
-  $(sm._this).sources.external := $(sm.this.sources.external)
-  $(sm._this).sources.common := $(sm.this.sources.common)
-  $(sm._this).intermediates := $(sm.this.intermediates)
-  $(sm._this).depends := $(sm.this.depends)
-  $(sm._this).docs.format := $(sm.this.docs.format)
-  $(sm._this).defines := $(sm.this.defines)
-  $(sm._this).includes := $(sm.this.includes)
-  $(sm._this).compile.flags := $(sm.this.compile.flags)
-  $(sm._this).compile.flags.infile := $(sm.this.compile.flags.infile)
-  $(sm._this).archive.flags := $(sm.this.archive.flags)
-  $(sm._this).archive.flags.infile := $(sm.this.archive.flags.infile)
-  $(sm._this).link.flags := $(sm.this.link.flags)
-  $(sm._this).link.flags.infile := $(sm.this.link.flags.infile)
-  $(sm._this).libdirs := $(sm.this.libdirs)
-  $(sm._this).libs := $(sm.this.libs)
-  $(sm._this).clean-steps := $(sm.this.clean-steps)
-  $(sm._this).gen_deps := $(sm.this.gen_deps)
+  $(error smart: internal: $(sm._this).name is empty)
 endif # $(sm._this).name == ""
+
+## configure the module if not yet done
+#ifneq ($(sm._this)._configured,true)
+  $(sm._this)._configured := true
+
   $(sm._this).action := $(sm.var.action.$(sm.this.type))
   $(sm._this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
   $(sm._this).user_defined_targets := $(strip $(sm.this.targets))
   $(sm._this).out.tmp := $(sm.out.tmp)/$(sm.this.name)
 
-  $(sm._this)._intermediate_prefix := $(sm.this.dir:$(sm.top)%=%)
+  $(sm._this)._intermediate_prefix := $($(sm._this).dir:$(sm.top)%=%)
   $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:%.=%)
   $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:/%=%)
   ifneq ($($(sm._this)._intermediate_prefix),)
@@ -75,13 +54,14 @@ endif # $(sm._this).name == ""
 
   # BUG: wrong if more than one sm-build-this occurs in a smart.mk
   #$(warning $(sm.this.name): $($(sm._this)._intermediate_prefix))
+#endif #$(sm._this)._configured == ""
 
 ##
 ## $(sm._this)._should_compute_sources will be "true" on each
 ## sm-build-this and sm-compile-sources calling.
-ifeq ($($(sm._this)._should_compute_sources),true)
-define sm.fun.compute-sources-by-lang
-$(eval \
+#ifeq ($($(sm._this)._should_compute_sources),true)
+  define sm.fun.compute-sources-by-lang
+  $(eval \
   sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
   $(sm._this).sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources))
   $(sm._this).sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources.external))
@@ -91,21 +71,22 @@ $(eval \
   sm.this.sources.$(sm.var.temp._lang) = $$($(sm._this).sources.$(sm.var.temp._lang))
   sm.this.sources.external.$(sm.var.temp._lang) = $$($(sm._this).sources.external.$(sm.var.temp._lang))
   sm.this.sources.has.$(sm.var.temp._lang) = $$($(sm._this).sources.has.$(sm.var.temp._lang))
- )
-endef #sm.fun.compute-sources-for-lang
+  )
+  endef #sm.fun.compute-sources-for-lang
 
-define sm.fun.compute-per-source-flags
-$(foreach sm.var.temp._source,\
+  define sm.fun.compute-per-source-flags
+  $(foreach sm.var.temp._source,\
      $(sm.this.sources.$(sm.var.temp._lang))\
      $(sm.this.sources.external.$(sm.var.temp._lang)),\
-  $(eval $(sm._this).compile.flags-$(sm.var.temp._source) := $(sm.this.compile.flags-$(sm.var.temp._source))))
-endef #sm.fun.compute-per-source-flags
+    $(eval $(sm._this).compile.flags-$(sm.var.temp._source) := $(sm.this.compile.flags-$(sm.var.temp._source))))
+  endef #sm.fun.compute-per-source-flags
 
-  # ## sources must always be reset for sm-compile-sources
-  # $(sm._this).sources := $(sm.this.sources)
-  # $(sm._this).sources.external := $(sm.this.sources.external)
-  # $(sm._this).sources.common := $(sm.this.sources.common)
-  # $(sm._this).intermediates := $(sm.this.intermediates)
+  ## sources must always be reset because of possible sm-compile-sources calls
+  ## and after sm-use-module, the source list may also be updated
+  $(sm._this).sources := $(sm.this.sources)
+  $(sm._this).sources.external := $(sm.this.sources.external)
+  $(sm._this).sources.common := $(sm.this.sources.common)
+  $(sm._this).intermediates := $(sm.this.intermediates)
 
   ## Compute sources of each language supported by the toolset.
   sm.var.toolset := sm.tool.$($(sm._this).toolset)
@@ -114,13 +95,31 @@ endef #sm.fun.compute-per-source-flags
     $(sm.fun.compute-per-source-flags))
 
   $(sm._this)._should_compute_sources :=
-endif # $(sm._this)._should_compute_sources == true
+#endif # $(sm._this)._should_compute_sources == true
 
 #-----------------------------------------------
 #-----------------------------------------------
+
+ifneq ($($(sm._this).using_list),)
+  define sm.fun.compute-used-flags
+  $(eval \
+    $(sm._this).used.includes += $($(sm._that).export.includes)
+    $(sm._this).used.defines += $($(sm._that).export.defines)
+    $(sm._this).used.compile.flags += $($(sm._that).export.compile.flags)
+    $(sm._this).used.archive.flags += $($(sm._that).export.archive.flags)
+    $(sm._this).used.link.flags += $($(sm._that).export.link.flags)
+    $(sm._this).used.libdirs += $($(sm._that).export.libdirs)
+    $(sm._this).used.libs += $($(sm._that).export.libs)
+   )
+  endef #sm.fun.compute-used-flags
+  $(foreach sm.var.temp._use,$($(sm._this).using_list),\
+    $(info used: $(sm.var.temp._use))\
+    $(eval sm._that := sm.var.$(sm.var.temp._use))\
+    $(sm.fun.compute-used-flags))
+endif # $(sm._this).using_list != ""
 
 ifneq ($($(sm._this).using),)
-  $(warning sm.this.using is not working!)
+  $(warning sm.this.using is not working with GNU Make!)
 
   define sm.fun.using-module
     $(info smart: using $(sm.var.temp._modir))\
@@ -181,9 +180,6 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(eval $(sm._this).compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang) := )\
   $(eval $(sm._this).compile.$($(sm._this)._cnum).flags.$(sm.var.temp._lang).computed := ))
 
-## unset sm.var.temp._lang, the name may be used later
-sm.var.temp._lang :=
-
 $(sm._this).archive.flags :=
 $(sm._this).archive.flags.computed :=
 $(sm._this).archive.intermediates =
@@ -209,10 +205,10 @@ $(strip $(eval sm.var.temp._pretty_list :=)\
 endef #sm.fun.make-pretty-list
 
 ## eg. $(call sm.fun.append-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
-define sm.fun.append-items
+define sm.fun.append-items-with-fix
 $(foreach sm.var.temp._item,$(strip $2),\
   $(eval $(strip $1) += $(strip $3)$(sm.var.temp._item:$(strip $3)%$(strip $4)=%)$(strip $4)))
-endef #sm.fun.append-items
+endef #sm.fun.append-items-with-fix
 
 ##
 ## eg. $(call sm.code.shift-flags-to-file,compile,flags.c++)
@@ -251,24 +247,28 @@ $(eval \
        $(sm.global.defines.$(sm.var.temp._lang))\
        $(sm.global.compile.flags)\
        $(sm.global.compile.flags.$(sm.var.temp._lang))\
+       $($(sm._this).used.defines)\
+       $($(sm._this).used.defines.$(sm.var.temp._lang))\
+       $($(sm._this).used.compile.flags)\
+       $($(sm._this).used.compile.flags.$(sm.var.temp._lang))\
        $($(sm._this).defines)\
        $($(sm._this).defines.$(sm.var.temp._lang))\
        $($(sm._this).compile.flags)\
        $($(sm._this).compile.flags.$(sm.var.temp._lang)))
-    $$(call sm.fun.append-items,$(sm.var.temp._fvar_name),\
-       $(sm.global.includes) $($(sm._this).includes), -I)
+    $$(call sm.fun.append-items-with-fix,$(sm.var.temp._fvar_name), $(sm.global.includes) $($(sm._this).includes) $($(sm._this).used.includes), -I)
     $(call sm.code.shift-flags-to-file,compile,$($(sm._this)._cnum).flags.$(sm.var.temp._lang))
   endif
  )
 endef #sm.fun.compute-flags-compile
 
+##
 define sm.fun.compute-flags-archive
 $(eval \
   ifeq ($($(sm._this).archive.flags.computed),)
     $(sm._this).archive.flags.computed := true
-    $(sm._this).archive.flags := \
-      $(call sm.fun.make-pretty-list,\
+    $(sm._this).archive.flags := $(call sm.fun.make-pretty-list,\
         $(sm.global.archive.flags)\
+        $($(sm._this).used.archive.flags)\
         $($(sm._this).archive.flags))
     $(call sm.code.shift-flags-to-file,archive,flags)
   endif
@@ -282,6 +282,7 @@ $(eval \
     $(sm._this).link.flags := $(call sm.fun.make-pretty-list,\
        $($(sm.var.toolset).link.flags)\
        $(sm.global.link.flags)\
+       $($(sm._this).used.link.flags)\
        $($(sm._this).link.flags))
     ifeq ($($(sm._this).type),shared)
       $$(if $$(filter -shared,$$($(sm._this).link.flags)),,\
@@ -296,7 +297,8 @@ define sm.fun.compute-intermediates-archive
 $(eval \
   ifeq ($($(sm._this).archive.intermediates.computed),)
     $(sm._this).archive.intermediates.computed := true
-    $(sm._this).archive.intermediates := $($(sm._this).intermediates)
+    $(sm._this).archive.intermediates := $(call sm.fun.make-pretty-list,\
+       $($(sm._this).intermediates))
     $(call sm.code.shift-flags-to-file,archive,intermediates)
   endif
  )
@@ -313,7 +315,8 @@ define sm.fun.compute-intermediates-link
 $(eval \
   ifeq ($($(sm._this).link.intermediates.computed),)
     $(sm._this).link.intermediates.computed := true
-    $(sm._this).link.intermediates := $($(sm._this).intermediates)
+    $(sm._this).link.intermediates := $(call sm.fun.make-pretty-list,\
+       $($(sm._this).intermediates))
     $(call sm.code.shift-flags-to-file,link,intermediates)
   endif
  )
@@ -324,8 +327,8 @@ $(eval \
   ifeq ($($(sm._this).link.libs.computed),)
     $(sm._this).link.libs.computed := true
     $(sm._this).link.libs :=
-    $$(call sm.fun.append-items, $(sm._this).link.libs,$(sm.global.libdirs) $($(sm._this).libdirs), -L)
-    $$(call sm.fun.append-items, $(sm._this).link.libs,$(sm.global.libs) $($(sm._this).libs), -l)
+    $$(call sm.fun.append-items-with-fix, $(sm._this).link.libs, $(sm.global.libdirs) $($(sm._this).libdirs) $($(sm._this).used.libdirs), -L)
+    $$(call sm.fun.append-items-with-fix, $(sm._this).link.libs, $(sm.global.libs) $($(sm._this).libs) $($(sm._this).used.libs), -l)
     $(call sm.code.shift-flags-to-file,link,libs)
   endif
  )

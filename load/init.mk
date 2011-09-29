@@ -95,4 +95,42 @@ ifeq ($(sm.config.variant),release)
   sm.global.compile.flags += -O2
 endif
 
+###
+sm.global.using :=
+sm.module.properties := \
+  .dir \
+  .name \
+  .type \
+  .lang \
+  .using \
+  .toolset \
+  .suffix \
+  .verbose \
+  .makefile \
+  .sources \
+  .sources.external \
+  .sources.common \
+  .intermediates \
+  .depends \
+  .docs.format \
+  .defines \
+  .includes \
+  .compile.flags \
+  .compile.flags.infile \
+  .archive.flags \
+  .archive.flags.infile \
+  .link.flags \
+  .link.flags.infile \
+  .libdirs \
+  .libs \
+  .clean-steps \
+  .gen_deps \
+  .export.includes \
+  .export.defines \
+  .export.compile.flags \
+  .export.archive.flags \
+  .export.link.flags \
+  .export.libdirs \
+  .export.libs \
+
 sm.var.Q := @
