@@ -113,7 +113,6 @@ ifneq ($($(sm._this).using_list),)
    )
   endef #sm.fun.compute-used-flags
   $(foreach sm.var.temp._use,$($(sm._this).using_list),\
-    $(info used: $(sm.var.temp._use))\
     $(eval sm._that := sm.var.$(sm.var.temp._use))\
     $(sm.fun.compute-used-flags))
 endif # $(sm._this).using_list != ""
