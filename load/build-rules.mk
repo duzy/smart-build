@@ -285,10 +285,12 @@ define sm.fun.compute-flags-archive
 $(eval \
   ifeq ($($(sm._this)._archive.flags.computed),)
     $(sm._this)._archive.flags.computed := true
+
     $(sm._this)._archive.flags := $(call sm.fun.make-pretty-list,\
         $(sm.global.archive.flags)\
         $($(sm._this).used.archive.flags)\
         $($(sm._this).archive.flags))
+
     $(call sm.code.shift-flags-to-file,_archive,flags)
   endif
  )
@@ -298,15 +300,18 @@ define sm.fun.compute-flags-link
 $(eval \
   ifeq ($($(sm._this)._link.flags.computed),)
     $(sm._this)._link.flags.computed := true
+
     $(sm._this)._link.flags := $(call sm.fun.make-pretty-list,\
        $($(sm.var.toolset).link.flags)\
        $(sm.global.link.flags)\
        $($(sm._this).used.link.flags)\
        $($(sm._this).link.flags))
+
     ifeq ($($(sm._this).type),shared)
       $$(if $$(filter -shared,$$($(sm._this)._link.flags)),,\
           $$(eval $(sm._this)._link.flags += -shared))
     endif
+
     $(call sm.code.shift-flags-to-file,_link,flags)
   endif
  )
@@ -316,8 +321,10 @@ define sm.fun.compute-intermediates-archive
 $(eval \
   ifeq ($($(sm._this)._archive.intermediates.computed),)
     $(sm._this)._archive.intermediates.computed := true
+
     $(sm._this)._archive.intermediates := $(call sm.fun.make-pretty-list,\
        $($(sm._this).intermediates))
+
     $(call sm.code.shift-flags-to-file,_archive,intermediates)
   endif
  )
@@ -334,8 +341,10 @@ define sm.fun.compute-intermediates-link
 $(eval \
   ifeq ($($(sm._this)._link.intermediates.computed),)
     $(sm._this)._link.intermediates.computed := true
+
     $(sm._this)._link.intermediates := $(call sm.fun.make-pretty-list,\
        $($(sm._this).intermediates))
+
     $(call sm.code.shift-flags-to-file,_link,intermediates)
   endif
  )
@@ -346,8 +355,17 @@ $(eval \
   ifeq ($($(sm._this)._link.libs.computed),)
     $(sm._this)._link.libs.computed := true
     $(sm._this)._link.libs :=
-    $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, $(sm.global.libdirs) $($(sm._this).libdirs) $($(sm._this).used.libdirs), -L)
-    $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, $(sm.global.libs) $($(sm._this).libs) $($(sm._this).used.libs), -l)
+
+    $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, \
+           $(sm.global.libdirs) \
+           $($(sm._this).libdirs) \
+           $($(sm._this).used.libdirs), -L)
+
+    $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, \
+           $(sm.global.libs) \
+           $($(sm._this).libs) \
+           $($(sm._this).used.libs), -l)
+
     $(call sm.code.shift-flags-to-file,_link,libs)
   endif
  )
