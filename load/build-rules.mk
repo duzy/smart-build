@@ -17,10 +17,6 @@ endif
 
 ##################################################
 
-sm.var.action.static := archive
-sm.var.action.shared := link
-sm.var.action.exe := link
-sm.var.action.t := link
 sm.var.depend.suffixes.static := .d
 sm.var.depend.suffixes.shared := .d
 sm.var.depend.suffixes.exe := .d
@@ -125,6 +121,10 @@ endif # $(sm._this).using != ""
 
 ##################################################
 
+sm.var.action.static := archive
+sm.var.action.shared := link
+sm.var.action.exe := link
+sm.var.action.t := link
 sm.var.action := $(sm.var.action.$($(sm._this).type))
 sm.var.toolset := sm.tool.$($(sm._this).toolset)
 ifeq ($($(sm.var.toolset)),)
