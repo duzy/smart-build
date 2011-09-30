@@ -32,17 +32,16 @@ sm.var.depend.suffixes.static := .d
 sm.var.depend.suffixes.shared := .d
 sm.var.depend.suffixes.exe := .d
 sm.var.depend.suffixes.t := .t.d
-$(sm._this).out.tmp := $(sm.out.tmp)/$($(sm._this).name)
 $(sm._this).depend.suffixes := $(sm.var.depend.suffixes.$($(sm._this).type))
+$(sm._this).out.tmp := $(sm.out.tmp)/$($(sm._this).name)
 $(sm._this).user_defined_targets := $($(sm._this).targets)
 $(sm._this).targets :=
 
-$(sm._this)._intermediate_prefix := $($(sm._this).dir:$(sm.top)%=%)
-$(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:%.=%)
-$(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:/%=%)
-ifneq ($($(sm._this)._intermediate_prefix),)
-  $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix)/
-endif
+sm.var.temp._ := $($(sm._this).dir:$(sm.top)%=%)
+sm.var.temp._ := $(sm.var.temp._:%.=%)
+sm.var.temp._ := $(sm.var.temp._:/%=%)
+sm.var.temp._ := $(if $(sm.var.temp._),$(sm.var.temp._)/)
+$(sm._this)._intermediate_prefix := $(sm.var.temp._)
 
 ##
 ## $(sm._this)._should_compute_sources will be "true" on each
