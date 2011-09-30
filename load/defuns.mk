@@ -268,7 +268,6 @@ define sm-compile-sources
      )\
     $(eval \
       $(sm._this)._cnum := $(call sm-compute-compile-num,1)
-      $(sm._this)._should_compute_sources := true
       $(sm._this)._intermediates_only := true
       include $(sm.dir.buildsys)/build-rules.mk
       $(sm._this)._intermediates_only :=)\
@@ -359,7 +358,6 @@ $(eval \
   sm.global.goals += goal-$(sm.this.name)
   sm._this := sm.var.$(sm.this.name)
   $$(sm._this)._cnum := 0
-  $$(sm._this)._should_compute_sources := true
   include $(sm.dir.buildsys)/build-this.mk
  )\
 $(eval \

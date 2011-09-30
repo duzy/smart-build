@@ -73,8 +73,6 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(sm.fun.compute-sources-by-lang)\
   $(sm.fun.compute-per-source-flags))
 
-$(sm._this)._should_compute_sources :=
-
 #-----------------------------------------------
 #-----------------------------------------------
 
