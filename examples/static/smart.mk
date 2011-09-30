@@ -1,6 +1,7 @@
 #
 
 $(call sm-new-module, foo, static, gcc)
+
 $(call sm-check-not-empty,sm.this.dir)
 $(call sm-check-not-empty,sm.this.name)
 $(call sm-check-not-empty,sm.this.suffix)
@@ -21,7 +22,6 @@ sm.this.compile.flags := -DTEST=\"$(sm.this.name)\"
 sm.this.includes := $(sm.this.dir)/../include
 sm.this.sources := foobar.c
 
-# TODO: should use sm.this.archive.flags for this
 sm.this.link.flags := $(if $(sm.os.name.win32),--subsystem=console)
 
 # TODO: ignore this and make a warning for static module

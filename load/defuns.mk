@@ -345,6 +345,16 @@ $(eval \
       $$(error sm.this.lang must be defined for tests module)
     endif
   endif
+  ######
+  ifneq ($(sm.this.archive.flags),)
+    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
+  endif
+  ifneq ($(sm.this.archive.flags.infile),)
+    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
+  endif
+  ifneq ($(sm.this.archive.libs),)
+    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
+  endif
   ##########
   sm.global.goals += goal-$(sm.this.name)
   sm._this := sm.var.$(sm.this.name)

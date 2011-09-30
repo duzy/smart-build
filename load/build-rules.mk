@@ -40,7 +40,6 @@ endif # $(sm._this).name == ""
 #ifneq ($(sm._this)._configured,true)
   $(sm._this)._configured := true
 
-  $(sm._this).action := $(sm.var.action.$(sm.this.type))
   $(sm._this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
   $(sm._this).user_defined_targets := $(strip $(sm.this.targets))
   $(sm._this).out.tmp := $(sm.out.tmp)/$(sm.this.name)
@@ -106,7 +105,6 @@ ifneq ($($(sm._this).using_list),)
     $(sm._this).used.includes += $($(sm._that).export.includes)
     $(sm._this).used.defines += $($(sm._that).export.defines)
     $(sm._this).used.compile.flags += $($(sm._that).export.compile.flags)
-    $(sm._this).used.archive.flags += $($(sm._that).export.archive.flags)
     $(sm._this).used.link.flags += $($(sm._that).export.link.flags)
     $(sm._this).used.libdirs += $($(sm._that).export.libdirs)
     $(sm._this).used.libs += $($(sm._that).export.libs)
@@ -140,6 +138,7 @@ endif # $(sm._this).using != ""
 
 ##################################################
 
+sm.var.action := $(sm.var.action.$($(sm._this).type))
 sm.var.toolset := sm.tool.$($(sm._this).toolset)
 ifeq ($($(sm.var.toolset)),)
   include $(sm.dir.buildsys)/loadtool.mk
@@ -270,23 +269,6 @@ $(eval \
   endif
  )
 endef #sm.fun.compute-flags-compile
-
-##
-define sm.fun.compute-flags-archive
-$(eval \
-  ifeq ($($(sm._this)._archive.flags.computed),)
-    $(sm._this)._archive.flags.computed := true
-    $(sm._this)._archive.flags := $(call sm.fun.make-pretty-list,\
-        $(sm.global.archive.flags)\
-        $($(sm._this).used.archive.flags)\
-        $($(sm._this).archive.flags))
-
-    ifeq ($(call is-true,$($(sm._this).archive.flags.infile)),true)
-      $(call sm.code.shift-flags-to-file,_archive.flags)
-    endif
-  endif
- )
-endef #sm.fun.compute-flags-archive
 
 define sm.fun.compute-flags-link
 $(eval \
@@ -717,41 +699,40 @@ ifeq ($(sm.var.temp._should_make_targets),true)
  ## Make rule for targets of the module
   $(if $($(sm._this).intermediates),,$(error smart: no intermediates for building '$($(sm._this).name)'))
 
-  $(call sm-check-defined,$(sm._this).action)
   $(call sm-check-defined,$(sm._this).lang)
-  $(call sm-check-defined,sm-rule-$($(sm._this).action)-$($(sm._this).lang))
-  $(call sm-check-defined,sm.fun.compute-flags-$($(sm._this).action))
-  $(call sm-check-defined,sm.fun.compute-intermediates-$($(sm._this).action))
-  $(call sm-check-defined,sm.fun.compute-libs-$($(sm._this).action))
+  $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm._this).lang))
+  $(call sm-check-defined,sm.fun.compute-flags-link)
+  $(call sm-check-defined,sm.fun.compute-intermediates-link)
+  $(call sm-check-defined,sm.fun.compute-libs-link)
   $(call sm-check-defined,sm.fun.compute-module-targets-$($(sm._this).type))
 
-  $(call sm-check-defined,sm-rule-$($(sm._this).action)-$($(sm._this).lang))
-  $(call sm-check-defined,$(sm._this)._$($(sm._this).action).flags)
-  $(call sm-check-defined,$(sm._this)._$($(sm._this).action).intermediates)
-  $(call sm-check-defined,$(sm._this)._$($(sm._this).action).libs)
+  $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm._this).lang))
+  $(call sm-check-defined,$(sm._this)._link.flags)
+  $(call sm-check-defined,$(sm._this)._link.intermediates)
+  $(call sm-check-defined,$(sm._this)._link.libs)
   $(call sm-check-not-empty,$(sm._this).lang)
 
   $(sm._this).targets := $(sm.fun.compute-module-targets-$($(sm._this).type))
   $(sm._this).targets := $(strip $($(sm._this).targets))
 
-  $(sm.fun.compute-flags-$($(sm._this).action))
-  $(sm.fun.compute-intermediates-$($(sm._this).action))
-  $(sm.fun.compute-libs-$($(sm._this).action))
+  $(sm.fun.compute-flags-link)
+  $(sm.fun.compute-intermediates-link)
+  $(sm.fun.compute-libs-link)
 
-  sm.var.temp._flag_file_prefix := $($(sm._this).out.tmp)/$($(sm._this).action)
+  sm.var.temp._flag_file_prefix := $($(sm._this).out.tmp)/link
   sm.var.temp._flag_files :=
 
-  ifeq ($(call is-true,$($(sm._this).$($(sm._this).action).flags.infile)),true)
+  ifeq ($(call is-true,$($(sm._this).link.flags.infile)),true)
     sm.var.temp._flag_files += $(sm.var.temp._flag_file_prefix).flags
   endif ## flags.infile == true
 
-  ifeq ($(call is-true,$($(sm._this).$($(sm._this).action).intermediates.infile)),true)
+  ifeq ($(call is-true,$($(sm._this).link.intermediates.infile)),true)
     $(warning TODO: apply sm.this.link.intermediates.infile)
     sm.var.temp._flag_files += $(sm.var.temp._flag_file_prefix).intermediates
   endif ## intermediates.infile == true
 
   ifeq ($(call is-true,$($(sm._this).libs.infile)),true)
-    ifeq ($($(sm._this).action),link)
+    ifeq (link,link)
       sm.var.temp._flag_files += $(sm.var.temp._flag_file_prefix).libs
     endif
   endif ## libs.infile == true
@@ -762,10 +743,10 @@ ifeq ($(sm.var.temp._should_make_targets),true)
 
   sm.args.target := $($(sm._this).targets)
   sm.args.sources := $($(sm._this).intermediates)
-  #sm.args.sources := $($(sm._this).$($(sm._this).action).intermediates)
-  sm.args.flags.0 := $($(sm._this)._$($(sm._this).action).flags)
-  sm.args.flags.1 := $($(sm._this)._$($(sm._this).action).libs)
-  $(sm-rule-$($(sm._this).action)-$($(sm._this).lang))
+  #sm.args.sources := $($(sm._this).link.intermediates)
+  sm.args.flags.0 := $($(sm._this)._link.flags)
+  sm.args.flags.1 := $($(sm._this)._link.libs)
+  $(sm-rule-$(sm.var.action)-$($(sm._this).lang))
 
   ifeq ($(strip $($(sm._this).targets)),)
     $(error smart: internal error: targets mis-computed)

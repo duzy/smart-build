@@ -84,7 +84,6 @@ sm.global.libdirs :=
 sm.global.includes :=
 sm.global.libs :=
 sm.global.compile.flags :=
-sm.global.archive.flags :=
 sm.global.link.flags :=
 sm.global.module_types := static shared executable exe tests t docs depends
 
@@ -117,8 +116,6 @@ sm.module.properties := \
   .includes \
   .compile.flags \
   .compile.flags.infile \
-  .archive.flags \
-  .archive.flags.infile \
   .link.flags \
   .link.flags.infile \
   .link.intermediates.infile \
@@ -130,7 +127,6 @@ sm.module.properties := \
   .export.includes \
   .export.defines \
   .export.compile.flags \
-  .export.archive.flags \
   .export.link.flags \
   .export.libdirs \
   .export.libs \
