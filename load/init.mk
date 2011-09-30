@@ -121,8 +121,10 @@ sm.module.properties := \
   .archive.flags.infile \
   .link.flags \
   .link.flags.infile \
+  .link.intermediates.infile \
   .libdirs \
   .libs \
+  .libs.infile \
   .clean-steps \
   .gen_deps \
   .export.includes \

@@ -45,6 +45,7 @@ TODO: documentation for these:
       * sm.this.sources.external.LANG
       * sm.this.sources.external.LANG.t
       * sm.this.sources.common
+      * sm.this.sources.common.LANG
       * sm.this.objects
       * sm.this.depends
       * sm.this.depends.copyfiles
@@ -53,12 +54,16 @@ TODO: documentation for these:
       * sm.this.defines
       * sm.this.defines.LANG
       * sm.this.compile.flags
-      * sm.this.compile.flags.LANG
       * sm.this.compile.flags-src/foo.cpp
+      * sm.this.compile.flags.LANG
+      * sm.this.compile.flags.infile
       * sm.this.archive.flags
+      * sm.this.archive.flags.infile
       * sm.this.link.flags
+      * sm.this.link.flags.infile
       * sm.this.libdirs
       * sm.this.libs
+      * sm.this.libs.infile
       * sm.this.out_implib
       * sm.this.clean-steps
 
