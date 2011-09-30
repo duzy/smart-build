@@ -180,8 +180,19 @@ endef #sm.fun.make-pretty-list
 
 ## eg. $(call sm.fun.append-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
 define sm.fun.append-items-with-fix
-$(foreach sm.var.temp._item,$(strip $2),\
-  $(eval $(strip $1) += $(strip $3)$(sm.var.temp._item:$(strip $3)%$(strip $4)=%)$(strip $4)))
+$(foreach sm.var.temp._,$(strip $2),\
+  $(eval \
+    ## NOTE: sm.var.temp._ may contains commas ",", so must use $$ here
+    ifeq ($$(filter $(strip $3)%$(strip $4),$$(sm.var.temp._)),$$(sm.var.temp._))
+      $1 += $(sm.var.temp._)
+    else
+      ifeq ($$(filter $(strip $5),$$(sm.var.temp._)),$$(sm.var.temp._))
+        $1 += $(sm.var.temp._)
+      else
+        $1 += $(strip $3)$(sm.var.temp._:$(strip $3)%$(strip $4)=%)$(strip $4)
+      endif
+    endif
+   ))
 endef #sm.fun.append-items-with-fix
 
 ##
@@ -235,9 +246,9 @@ $(eval \
        $($(sm._this).compile.flags.$(sm.var.temp._lang)))
 
     $$(call sm.fun.append-items-with-fix, $(sm.var.temp._fvar_name), \
-           $(sm.global.includes) \
-           $($(sm._this).includes) \
-           $($(sm._this).used.includes), -I)
+           $$(sm.global.includes) \
+           $$($(sm._this).includes) \
+           $$($(sm._this).used.includes), -I, , -%)
 
     ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
       $(call sm.code.shift-flags-to-file,$(sm.temp._fvar_prop))
@@ -289,14 +300,14 @@ $(eval \
     $(sm._this)._link.libs :=
 
     $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, \
-           $(sm.global.libdirs) \
-           $($(sm._this).libdirs) \
-           $($(sm._this).used.libdirs), -L)
+           $$(sm.global.libdirs) \
+           $$($(sm._this).libdirs) \
+           $$($(sm._this).used.libdirs), -L, , -% -Wl%)
 
     $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, \
-           $(sm.global.libs) \
-           $($(sm._this).libs) \
-           $($(sm._this).used.libs), -l)
+           $$(sm.global.libs) \
+           $$($(sm._this).libs) \
+           $$($(sm._this).used.libs), -l, , -% -Wl%)
 
     ifeq ($(call is-true,$($(sm._this).libs.infile)),true)
       $(call sm.code.shift-flags-to-file,_link.libs)

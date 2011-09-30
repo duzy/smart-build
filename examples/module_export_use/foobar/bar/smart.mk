@@ -4,6 +4,7 @@ $(info foobar/bar: using: foobar/bar/smart.mk loaded)
 
 $(call sm-new-module, bar, shared, gcc)
 
+sm.this.verbose := true
 sm.this.sources := bar.cpp
 sm.this.compile.flags := -fPIC
 
