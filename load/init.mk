@@ -104,6 +104,7 @@ sm.module.properties := \
   .using \
   .toolset \
   .suffix \
+  .targets \
   .verbose \
   .makefile \
   .sources \

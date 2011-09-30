@@ -33,9 +33,9 @@ endif # $(sm._this).name == ""
 ## configure the module if not yet done
 $(sm._this)._configured := true
 
-$(sm._this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
-$(sm._this).user_defined_targets := $(strip $(sm.this.targets))
-$(sm._this).out.tmp := $(sm.out.tmp)/$(sm.this.name)
+$(sm._this).depend.suffixes := $(sm.var.depend.suffixes.$($(sm._this).type))
+$(sm._this).user_defined_targets := $(strip $($(sm._this).targets))
+$(sm._this).out.tmp := $(sm.out.tmp)/$($(sm._this).name)
 
 $(sm._this)._intermediate_prefix := $($(sm._this).dir:$(sm.top)%=%)
 $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:%.=%)
@@ -99,7 +99,7 @@ ifneq ($($(sm._this).using_list),)
 endif # $(sm._this).using_list != ""
 
 ifneq ($($(sm._this).using),)
-  $(warning sm.this.using is not working with GNU Make!)
+  $(warning "sm.this.using" is not working with GNU Make!)
 
   define sm.fun.using-module
     $(info smart: using $(sm.var.temp._modir))\
@@ -748,7 +748,7 @@ $(sm._this).module_targets := $($(sm._this).targets)
 $(sm._this).targets += $($(sm._this).user_defined_targets)
 $(sm._this).inters = $($(sm._this).intermediates)
 sm.this.intermediates := $($(sm._this).intermediates)
-sm.this.inters := $(sm.this.intermediates)
+sm.this.inters = $(sm.this.intermediates)
 sm.this.depends := $($(sm._this).depends)
 sm.this.targets := $($(sm._this).targets)
 sm.this.documents := $($(sm._this).documents)
