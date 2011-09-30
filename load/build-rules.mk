@@ -27,9 +27,7 @@ sm.var.depend.suffixes.exe := .d
 sm.var.depend.suffixes.t := .t.d
 
 ## clone module from sm.this for sm.this.using/sm-use-module: recursive loading
-#ifeq ($($(sm._this).name),)
-  $(call sm-clone-module, sm.this, $(sm._this))
-#endif # $(sm._this).name == ""
+$(call sm-clone-module, sm.this, $(sm._this))
 
 ## check module name
 ifeq ($($(sm._this).name),)
@@ -37,29 +35,26 @@ ifeq ($($(sm._this).name),)
 endif # $(sm._this).name == ""
 
 ## configure the module if not yet done
-#ifneq ($(sm._this)._configured,true)
-  $(sm._this)._configured := true
+$(sm._this)._configured := true
 
-  $(sm._this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
-  $(sm._this).user_defined_targets := $(strip $(sm.this.targets))
-  $(sm._this).out.tmp := $(sm.out.tmp)/$(sm.this.name)
+$(sm._this).depend.suffixes := $(sm.var.depend.suffixes.$(sm.this.type))
+$(sm._this).user_defined_targets := $(strip $(sm.this.targets))
+$(sm._this).out.tmp := $(sm.out.tmp)/$(sm.this.name)
 
-  $(sm._this)._intermediate_prefix := $($(sm._this).dir:$(sm.top)%=%)
-  $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:%.=%)
-  $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:/%=%)
-  ifneq ($($(sm._this)._intermediate_prefix),)
-    $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix)/
-  endif
+$(sm._this)._intermediate_prefix := $($(sm._this).dir:$(sm.top)%=%)
+$(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:%.=%)
+$(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:/%=%)
+ifneq ($($(sm._this)._intermediate_prefix),)
+  $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix)/
+endif
 
-  # BUG: wrong if more than one sm-build-this occurs in a smart.mk
-  #$(warning $(sm.this.name): $($(sm._this)._intermediate_prefix))
-#endif #$(sm._this)._configured == ""
+# BUG: wrong if more than one sm-build-this occurs in a smart.mk
+#$(warning $(sm.this.name): $($(sm._this)._intermediate_prefix))
 
 ##
 ## $(sm._this)._should_compute_sources will be "true" on each
 ## sm-build-this and sm-compile-sources calling.
-#ifeq ($($(sm._this)._should_compute_sources),true)
-  define sm.fun.compute-sources-by-lang
+define sm.fun.compute-sources-by-lang
   $(eval \
   sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
   $(sm._this).sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources))
@@ -71,30 +66,22 @@ endif # $(sm._this).name == ""
   sm.this.sources.external.$(sm.var.temp._lang) = $$($(sm._this).sources.external.$(sm.var.temp._lang))
   sm.this.sources.has.$(sm.var.temp._lang) = $$($(sm._this).sources.has.$(sm.var.temp._lang))
   )
-  endef #sm.fun.compute-sources-for-lang
+endef #sm.fun.compute-sources-for-lang
 
-  define sm.fun.compute-per-source-flags
+define sm.fun.compute-per-source-flags
   $(foreach sm.var.temp._source,\
      $(sm.this.sources.$(sm.var.temp._lang))\
      $(sm.this.sources.external.$(sm.var.temp._lang)),\
     $(eval $(sm._this).compile.flags-$(sm.var.temp._source) := $(sm.this.compile.flags-$(sm.var.temp._source))))
-  endef #sm.fun.compute-per-source-flags
+endef #sm.fun.compute-per-source-flags
 
-  ## sources must always be reset because of possible sm-compile-sources calls
-  ## and after sm-use-module, the source list may also be updated
-  $(sm._this).sources := $(sm.this.sources)
-  $(sm._this).sources.external := $(sm.this.sources.external)
-  $(sm._this).sources.common := $(sm.this.sources.common)
-  $(sm._this).intermediates := $(sm.this.intermediates)
+## Compute sources of each language supported by the toolset.
+sm.var.toolset := sm.tool.$($(sm._this).toolset)
+$(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+  $(sm.fun.compute-sources-by-lang)\
+  $(sm.fun.compute-per-source-flags))
 
-  ## Compute sources of each language supported by the toolset.
-  sm.var.toolset := sm.tool.$($(sm._this).toolset)
-  $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
-    $(sm.fun.compute-sources-by-lang)\
-    $(sm.fun.compute-per-source-flags))
-
-  $(sm._this)._should_compute_sources :=
-#endif # $(sm._this)._should_compute_sources == true
+$(sm._this)._should_compute_sources :=
 
 #-----------------------------------------------
 #-----------------------------------------------
