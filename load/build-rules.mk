@@ -58,7 +58,7 @@ define sm.fun.compute-sources-by-lang
   sm.this.sources.external.$(sm.var.temp._lang) = $$($(sm._this).sources.external.$(sm.var.temp._lang))
   sm.this.sources.has.$(sm.var.temp._lang) = $$($(sm._this).sources.has.$(sm.var.temp._lang))
   )
-endef #sm.fun.compute-sources-for-lang
+endef #sm.fun.compute-sources-by-lang
 
 define sm.fun.compute-per-source-flags
   $(foreach sm.var.temp._source,\
