@@ -516,7 +516,7 @@ $(eval \
   $$(foreach sm.var.temp._source,$$($(sm._this).sources.$(sm.var.temp._lang)),$$(call sm.fun.make-rule-compile))
   $$(foreach sm.var.temp._source,$$($(sm._this).sources.external.$(sm.var.temp._lang)),$$(call sm.fun.make-rule-compile,external))
  endif
- $(null))
+ )
 endef #sm.fun.make-rules-compile
 
 ## Same as sm.fun.make-rules-compile, but the common source file like 'foo.w'
@@ -612,7 +612,6 @@ $(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs.extra))
 $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(if $($(sm.var.toolset).$(sm.var.temp._lang).suffix),\
       ,$(error smart: toolset $($(sm._this).toolset)/$(sm.var.temp._lang) has no suffixes))\
-  $(eval $(sm._this).sources.$(sm.var.temp._lang) = $($(sm._this).sources.$(sm.var.temp._lang)))\
   $(call sm.fun.compute-flags-compile)\
   $(sm.fun.make-rules-compile)\
   $(if $(and $(call equal,$(strip $($(sm._this).lang)),),\
@@ -622,7 +621,7 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
 
 ## Make object rules for .t sources file
 ifeq ($($(sm._this).type),t)
-  # set sm.var.temp._lang, used by sm.fun.make-rule-compile
+  # set sm.var.temp._lang for sm.fun.make-rule-compile
   sm.var.temp._lang := $($(sm._this).lang)
 
   $(sm._this).sources.$(sm.var.temp._lang).t := $(filter %.t,$($(sm._this).sources))
@@ -632,19 +631,12 @@ ifeq ($($(sm._this).type),t)
   ifeq ($(or $($(sm._this).sources.has.$(sm.var.temp._lang)),$($(sm._this).sources.has.$(sm.var.temp._lang).t)),true)
     $(foreach sm.var.temp._source,$($(sm._this).sources.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile))
     $(foreach sm.var.temp._source,$($(sm._this).sources.external.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile,external))
-    ifeq ($($(sm._this).lang),)
-      $(sm._this).lang := $($(sm._this).lang)
-    endif
   endif
 
   sm.this.sources.$(sm.var.temp._lang).t = $($(sm._this).sources.$(sm.var.temp._lang).t)
   sm.this.sources.external.$(sm.var.temp._lang).t = $($(sm._this).sources.external.$(sm.var.temp._lang).t)
   sm.this.sources.has.$(sm.var.temp._lang).t = $($(sm._this).sources.has.$(sm.var.temp._lang).t)
-
-  $(info $(sm._this).sources: $($(sm._this).sources))
-  $(info $(sm._this).sources.external: $($(sm._this).sources.external))
-  $(info $(sm._this).intermediates: $($(sm._this).intermediates))
-endif
+endif # $(sm._this).type == t
 
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $($(sm._this).sources.unknown)),),\
@@ -652,12 +644,13 @@ sm.var.temp._should_make_targets := \
             $(call is-true,$($(sm._this)._intermediates_only))\
         ),,true)
 
+##-----------------------------------
+## make static, shared, exe, t targets
 ifneq ($($(sm._this).toolset),common)
 ifeq ($(sm.var.temp._should_make_targets),true)
- ## Make rule for targets of the module
+  ## Make rule for targets of the module
   $(if $($(sm._this).intermediates),,$(error smart: no intermediates for building '$($(sm._this).name)'))
 
-  $(call sm-check-defined,$(sm._this).lang)
   $(call sm-check-defined,$(sm._this)._link.flags)
   $(call sm-check-defined,$(sm._this)._link.intermediates)
   $(call sm-check-defined,$(sm._this)._link.libs)
@@ -666,7 +659,6 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   $(call sm-check-defined,sm.fun.compute-intermediates-link)
   $(call sm-check-defined,sm.fun.compute-libs-link)
   $(call sm-check-defined,sm.fun.compute-module-targets-$($(sm._this).type))
-  $(call sm-check-not-empty,$(sm._this).lang)
 
   $(sm._this).targets := $(sm.fun.compute-module-targets-$($(sm._this).type))
   $(sm._this).targets := $(strip $($(sm._this).targets))
@@ -697,10 +689,10 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   endif # $(sm.var.temp._flag_files) != ""
 
   sm.args.target := $($(sm._this).targets)
-  sm.args.sources := $(strip $($(sm._this)._link.intermediates))
-  sm.args.prerequisites := $(strip $($(sm._this).intermediates))
-  sm.args.flags.0 := $(strip $($(sm._this)._link.flags))
-  sm.args.flags.1 := $(strip $($(sm._this)._link.libs))
+  sm.args.sources := $($(sm._this)._link.intermediates)
+  sm.args.prerequisites := $($(sm._this).intermediates)
+  sm.args.flags.0 := $($(sm._this)._link.flags)
+  sm.args.flags.1 := $($(sm._this)._link.libs)
   $(sm-rule-$(sm.var.action)-$($(sm._this).lang))
 
   ifeq ($(strip $($(sm._this).targets)),)
