@@ -17,11 +17,6 @@ endif
 
 ##################################################
 
-sm.var.depend.suffixes.static := .d
-sm.var.depend.suffixes.shared := .d
-sm.var.depend.suffixes.exe := .d
-sm.var.depend.suffixes.t := .t.d
-
 ## clone module from sm.this for sm.this.using/sm-use-module: recursive loading
 $(call sm-clone-module, sm.this, $(sm._this))
 
@@ -33,9 +28,14 @@ endif # $(sm._this).name == ""
 ## configure the module if not yet done
 $(sm._this)._configured := true
 
-$(sm._this).depend.suffixes := $(sm.var.depend.suffixes.$($(sm._this).type))
-$(sm._this).user_defined_targets := $(strip $($(sm._this).targets))
+sm.var.depend.suffixes.static := .d
+sm.var.depend.suffixes.shared := .d
+sm.var.depend.suffixes.exe := .d
+sm.var.depend.suffixes.t := .t.d
 $(sm._this).out.tmp := $(sm.out.tmp)/$($(sm._this).name)
+$(sm._this).depend.suffixes := $(sm.var.depend.suffixes.$($(sm._this).type))
+$(sm._this).user_defined_targets := $($(sm._this).targets)
+$(sm._this).targets :=
 
 $(sm._this)._intermediate_prefix := $($(sm._this).dir:$(sm.top)%=%)
 $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:%.=%)
@@ -43,9 +43,6 @@ $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix:/%=%)
 ifneq ($($(sm._this)._intermediate_prefix),)
   $(sm._this)._intermediate_prefix := $($(sm._this)._intermediate_prefix)/
 endif
-
-# BUG: wrong if more than one sm-build-this occurs in a smart.mk
-#$(warning $(sm.this.name): $($(sm._this)._intermediate_prefix))
 
 ##
 ## $(sm._this)._should_compute_sources will be "true" on each
@@ -126,6 +123,7 @@ sm.var.action.shared := link
 sm.var.action.exe := link
 sm.var.action.t := link
 sm.var.action := $(sm.var.action.$($(sm._this).type))
+
 sm.var.toolset := sm.tool.$($(sm._this).toolset)
 ifeq ($($(sm.var.toolset)),)
   include $(sm.dir.buildsys)/loadtool.mk
@@ -165,12 +163,6 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang) := )\
   $(eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang).computed := ))
 
-$(sm._this)._archive.flags :=
-$(sm._this)._archive.flags.computed :=
-$(sm._this)._archive.intermediates =
-$(sm._this)._archive.intermediates.computed :=
-$(sm._this)._archive.libs :=
-$(sm._this)._archive.libs.computed :=
 $(sm._this)._link.flags :=
 $(sm._this)._link.flags.computed :=
 $(sm._this)._link.intermediates =
@@ -279,27 +271,6 @@ $(eval \
  )
 endef #sm.fun.compute-flags-link
 
-define sm.fun.compute-intermediates-archive
-$(eval \
-  ifeq ($($(sm._this)._archive.intermediates.computed),)
-    $(sm._this)._archive.intermediates.computed := true
-    $(sm._this)._archive.intermediates := $(call sm.fun.make-pretty-list,\
-       $($(sm._this).intermediates))
-
-    ifeq ($(call is-true,$($(sm._this).archive.intermediates.infile)),true)
-      $(call sm.code.shift-flags-to-file,_archive.intermediates)
-    endif
-  endif
- )
-endef #sm.fun.compute-intermediates-archive
-
-define sm.fun.compute-libs-archive
-$(eval \
-  $(sm._this)._archive.libs.computed := true
-  $(sm._this)._archive.libs :=
- )
-endef #sm.fun.compute-libs-archive
-
 define sm.fun.compute-intermediates-link
 $(eval \
   ifeq ($($(sm._this)._link.intermediates.computed),)
@@ -407,6 +378,7 @@ define sm.fun.make-rule-depend
     sm.args.output := $(sm.var.temp._depend)
     sm.args.target := $(sm.var.temp._intermediate)
     sm.args.sources := $(call sm.fun.compute-source.$1,$(sm.var.temp._source))
+    sm.args.prerequisites = $(sm.args.sources)
     sm.args.flags.0 := $($(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang))
     sm.args.flags.0 += $(strip $($(sm._this).compile.flags-$(sm.var.temp._source)))
     sm.args.flags.1 :=
@@ -442,6 +414,7 @@ define sm.fun.make-rule-compile
  $(eval \
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
+   sm.args.prerequisites = $(sm.args.sources)
    sm.args.flags.0 := $($(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang))
    sm.args.flags.0 += $($(sm._this).compile.flags-$(sm.var.temp._source))
    sm.args.flags.1 :=
@@ -478,6 +451,7 @@ define sm.fun.make-rule-compile-common
    sm.args.lang = $($(sm._this).lang)
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(sm.var.temp._source)
+   sm.args.prerequisites = $(sm.args.sources)
   )$(eval \
    ## If $(sm.var.temp._source) is possible to be transformed into another lang.
    $(sm._this).sources.$(sm.var.temp._output_lang) += $(sm.args.target)
@@ -498,6 +472,7 @@ define sm.fun.make-rule-compile-common
       # TODO: should use sm.args.targets to including .tex, .idx, .scn files
       sm.args.target := $(basename $(sm.var.temp._intermediate))$(sm.tool.common.intermediate.suffix.$(sm.var.temp._lang).$(sm.var.temp._literal_lang))
       sm.args.sources := $(sm.var.temp._source)
+      sm.args.prerequisites = $(sm.args.sources)
      )$(eval ## compilate rule for documentation sources(.tex files)
       #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
       $(sm._this).sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
@@ -516,6 +491,7 @@ define sm.fun.make-rule-compile-common
   $(if $(call equal,$(sm.var.temp._literal_lang),$(sm.var.temp._lang)),\
     $(eval \
       sm.args.sources := $(sm.var.temp._source)
+      sm.args.prerequisites = $(sm.args.sources)
       sm.args.target := $(sm.out.doc)/$(notdir $(basename $(sm.var.temp._source)))$(sm.args.docs_format)
      )\
     $(eval # rules for producing .dvi/.pdf(depends on sm.args.docs_format) files
@@ -557,8 +533,6 @@ $(if $($(sm._this).sources.has.$(sm.var.temp._lang)),\
 endef #sm.fun.make-rules-compile-common
 
 ##################################################
-
-$(sm._this).targets :=
 
 ##
 ##
@@ -687,16 +661,14 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   $(if $($(sm._this).intermediates),,$(error smart: no intermediates for building '$($(sm._this).name)'))
 
   $(call sm-check-defined,$(sm._this).lang)
+  $(call sm-check-defined,$(sm._this)._link.flags)
+  $(call sm-check-defined,$(sm._this)._link.intermediates)
+  $(call sm-check-defined,$(sm._this)._link.libs)
   $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm._this).lang))
   $(call sm-check-defined,sm.fun.compute-flags-link)
   $(call sm-check-defined,sm.fun.compute-intermediates-link)
   $(call sm-check-defined,sm.fun.compute-libs-link)
   $(call sm-check-defined,sm.fun.compute-module-targets-$($(sm._this).type))
-
-  $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm._this).lang))
-  $(call sm-check-defined,$(sm._this)._link.flags)
-  $(call sm-check-defined,$(sm._this)._link.intermediates)
-  $(call sm-check-defined,$(sm._this)._link.libs)
   $(call sm-check-not-empty,$(sm._this).lang)
 
   $(sm._this).targets := $(sm.fun.compute-module-targets-$($(sm._this).type))
@@ -714,7 +686,6 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   endif ## flags.infile == true
 
   ifeq ($(call is-true,$($(sm._this).link.intermediates.infile)),true)
-    $(warning TODO: apply sm.this.link.intermediates.infile)
     sm.var.temp._flag_files += $(sm.var.temp._flag_file_prefix).intermediates
   endif ## intermediates.infile == true
 
@@ -729,10 +700,10 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   endif # $(sm.var.temp._flag_files) != ""
 
   sm.args.target := $($(sm._this).targets)
-  sm.args.sources := $($(sm._this).intermediates)
-  #sm.args.sources := $($(sm._this).link.intermediates)
-  sm.args.flags.0 := $($(sm._this)._link.flags)
-  sm.args.flags.1 := $($(sm._this)._link.libs)
+  sm.args.sources := $(strip $($(sm._this)._link.intermediates))
+  sm.args.prerequisites := $(strip $($(sm._this).intermediates))
+  sm.args.flags.0 := $(strip $($(sm._this)._link.flags))
+  sm.args.flags.1 := $(strip $($(sm._this)._link.libs))
   $(sm-rule-$(sm.var.action)-$($(sm._this).lang))
 
   ifeq ($(strip $($(sm._this).targets)),)

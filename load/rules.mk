@@ -4,19 +4,19 @@
 
 define sm-rule
 $(call sm-check-flavor,\
-   sm.tool.$(sm.this.toolset).$(sm.args.action).$(sm.args.lang),recursive,\
-   broken toolset '$(sm.this.toolset)': 'sm.tool.$(sm.this.toolset).$(sm.args.action).$(sm.args.lang)' is not recursive)\
+   $(sm.var.toolset).$(sm.args.action).$(sm.args.lang),recursive,\
+   broken toolset '$(sm.this.toolset)': '$(sm.var.toolset).$(sm.args.action).$(sm.args.lang)' is not recursive)\
 $(eval \
   ifeq ($(sm.global.has.rule.$(sm.args.target)),)
    sm.global.has.rule.$(sm.args.target) := true
-   $(sm.args.target) : $(sm.args.sources)
+   $(sm.args.target) : $(sm.args.prerequisites)
 	$$(call sm-util-mkdir,$$(@D))
 	$(if $(call equal,$(sm.this.verbose),true),,\
              $(if $(call equal,$(sm.args.action),compile),\
                   $$(info $(sm.args.lang): $(sm.this.name) += $(sm.args.sources:$(sm.top)/%=%)),\
                   $$(info $(sm.args.lang): $(sm.this.name) -> $(sm.args.target))\
              )$(sm.var.Q)\
-        )$(sm.tool.$(sm.this.toolset).$(sm.args.action).$(sm.args.lang))
+        )$($(sm.var.toolset).$(sm.args.action).$(sm.args.lang))
   else
    #$$(info smart: rule duplicated for $(sm.args.target))
   endif
