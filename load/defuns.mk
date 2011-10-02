@@ -88,15 +88,25 @@ endef #sm-clone-module
 
 # sm-new-module must be used before any 'include' commands, since
 # it invokes sm-module-dir and sm-this-makefile
-define sm-new-module
+sm-new-module = $(sm-new-module-internal)
+define sm-new-module-internal
  $(eval \
    sm.temp._name := $(strip $1)
    sm.temp._type := $(strip $2)
    sm.temp._toolset := $(strip $3)
+
+   ifeq ($$(sm.temp._name),)
+     $$(error module name(as arg 1) required)
+   endif
+
+   ifneq ($$(filter $$(sm.temp._name),$(sm.global.modules)),)
+     $$(error module "$$(sm.temp._name)" already defined in $(sm.global.modules.$$(sm.temp._name)))
+   endif
+
+   ifeq ($(origin toolset),command line)
+     sm.temp._toolset := $(toolset)
+   endif
   )\
- $(if $(sm.temp._name),,$(error module name(as arg 1) required))\
- $(if $(filter $(sm.temp._name),$(sm.global.modules)),\
-     $(error module "$(sm.temp._name)" already defined in $(sm.global.modules.$(sm.temp._name))))\
  $(eval \
    sm.this.name := $(basename $(sm.temp._name))
    sm.this.suffix := $(suffix $(sm.temp._name))
@@ -105,8 +115,11 @@ define sm-new-module
    sm.this.gen_deps := true
    sm.global.modules += $(sm.temp._name)
    sm.global.modules.$(sm.temp._name) := $$(sm.this.makefile)
+
+   ifeq ($$(sm.this.name),,)
+     $$(error module name is empty)
+   endif
   )\
- $(if $(sm.this.name),,$(error module name is empty))\
  $(eval \
    sm.this.type := $(call sm-module-type-name,$(sm.temp._type))
    ifeq ($$(sm.this.type),shared)
@@ -116,28 +129,32 @@ define sm-new-module
      sm.temp._toolset := common
    endif
    sm.this.docs.format := .pdf
+
+   ifeq ($$(filter $$(sm.this.type),$(sm.global.module_types)),)
+     $$(error smart "$$(sm.this.type)" is not valid module type(see: $(sm.global.module_types)))
+   endif
   )\
- $(if $(filter $(sm.this.type),$(sm.global.module_types)),,\
-     $(error $(sm.this.type) is not valid module type(see: $(sm.global.module_types))))\
  $(if $(sm.temp._toolset),\
-   $(if $(call equal,$(sm.this.type),depends),\
-       ,$(if $(wildcard $(sm.dir.buildsys)/tools/$(sm.temp._toolset).mk),\
-            ,$(error smart: toolset $(sm.temp._toolset) not unknown)))\
    $(eval \
-     ifeq ($(origin toolset),command line)
-       sm.this.toolset := $(or $(toolset),$(sm.temp._toolset))
-     else
-       sm.this.toolset := $(sm.temp._toolset)
+     ifeq ($(sm.this.type),depends)
+       ifeq ($(wildcard $(sm.dir.buildsys)/tools/$(sm.temp._toolset).mk),)
+         $$(error smart: toolset $(sm.temp._toolset) not unknown)
+       endif
      endif
+     ######
+     sm.this.toolset := $(sm.temp._toolset)
+     ######
      ifeq ($$(sm.this.toolset),common)
        #$$(warning TODO: common toolset...)
      else
        ifeq ($$(sm.tool.$$(sm.this.toolset)),)
          include $(sm.dir.buildsys)/loadtool.mk
        endif
+       ######
        ifeq ($$(sm.tool.$$(sm.this.toolset)),)
          $$(error smart: sm.tool.$$(sm.this.toolset) is not defined)
        endif
+       ######
        ifeq ($$(sm.this.suffix),)
          $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
          sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
@@ -146,7 +163,12 @@ define sm-new-module
     ))\
  $(if $(filter $(sm.this.type),depends docs),\
      ,$(if $(sm.this.toolset),,$(error smart: toolset is not set)))
-endef #sm-clone-module
+endef #sm-new-module-internal
+
+##
+define sm-new-module-external
+$(warning TODO: new external module: $1,$2,$3)
+endef #sm-new-module-external
 
 ## Load the build script for the specified module, and returns the module name
 ## via sm.result.module_name variable .
@@ -279,14 +301,24 @@ define sm-use-external
    sm._this := sm.var.$(sm.this.name)
   )\
  $(info smart: use external "$(sm.temp._modir)" for "$(sm.this.name)"..)\
- $(call sm-clone-module, sm.this, $(sm._this))\
+ $(eval \
+   $$(call sm-clone-module, sm.this, $(sm._this))
+
+   sm-new-module = $$(sm-new-module-external)
+   sm-build-this = $$(sm-build-this-external)
+   include $(sm.temp._using)
+   sm-new-module = $$(sm-new-module-internal)
+   sm-build-this = $$(sm-build-this-internal)
+
+   $$(call sm-clone-module, $(sm._this), sm.this)
+  )\
  $(warning TODO: eval "$(sm.temp._modir)" and extract "export"s)
 endef #sm-use-external
 
 ## Find level-one sub-modules.
 define sm-find-sub-modules
 $(wildcard $(strip $1)/*/smart.mk)
-endef
+endef #sm-find-sub-modules
 
 ##
 define sm-compute-compile-num
@@ -375,7 +407,8 @@ define sm-copy-headers
 endef
 
 ## sm-build-this - Build the current module
-define sm-build-this
+sm-build-this = $(sm-build-this-internal)
+define sm-build-this-internal
 $(eval \
   ifeq ($(sm.this.name),)
     $$(error sm.this.name is empty)
@@ -416,7 +449,12 @@ $(eval \
     $$(error smart: strange sources: $(strip $($(sm._this).sources.unknown)))
   endif
  )
-endef #sm-build-this
+endef #sm-build-this-internal
+
+##
+define sm-build-this-external
+$(warning TODO: build external module "$(sm.this.name)"...)
+endef #sm-build-this-external
 
 ## sm-build-depends  - Makefile code for sm-build-depends
 ## args: 1: module name (required, for sm-new-module)
@@ -426,7 +464,10 @@ endef #sm-build-this
 ##	 5: extra make targets (optional, for make command)
 ##	 6: make command name (optional, e.g: gmake, default to 'make')
 ##	 7: log type (optional, default: 'smart')
-define sm-build-depends.code
+## Build some dependencies by invoking a external Makefile
+## usage: $(call sm-build-depends, name, depends, makefile-name, [extra-depends], [extra-targets], [make-name], [log-type])
+define sm-build-depends
+$(eval \
  $(if $1,,$(error module name is empty (arg 1)))\
  $(if $2,,$(error module depends is empty (arg 2)))\
  $(if $3,,$(error module makefile-name is empty (arg 3)))\
@@ -445,12 +486,7 @@ define sm-build-depends.code
 	cd $$< && $(or $(strip $6),make) -f $(strip $3) clean
 
  $$(call sm-build-this)
-endef #sm-build-depends.code
-
-## Build some dependencies by invoking a external Makefile
-## usage: $(call sm-build-depends, name, depends, makefile-name, [extra-depends], [extra-targets], [make-name], [log-type])
-define sm-build-depends
-$(eval $(sm-build-depends.code))
+ )
 endef #sm-build-depends
 
 
