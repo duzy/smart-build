@@ -107,7 +107,7 @@ define sm-new-module-internal
      sm.temp._toolset := $(toolset)
    endif
 
-   sm.temp._type := $(call sm-module-type-name,$$(sm.temp._type))
+   sm.temp._type := $$(call sm-module-type-name,$$(sm.temp._type))
    sm.temp._suffix := $$(suffix $$(sm.temp._name))
    sm.temp._name := $$(basename $$(sm.temp._name))
 
@@ -220,7 +220,7 @@ define sm-import
      $$(error smart: sm.this.name is empty, must use sm-new-module first)
    endif
 
-   sm._this := sm.var.$(sm.this.name)
+   sm._this := sm.module.$(sm.this.name)
   )\
  $(eval \
    ifeq ($($(sm._this)._configured),true)
@@ -236,7 +236,7 @@ define sm-import
  $(call sm-clone-module, sm.this, $(sm._this))\
  $(call sm-load-module, $(sm.temp._using))\
  $(eval \
-   sm._that := sm.var.$$(sm.this.name)
+   sm._that := sm.module.$$(sm.this.name)
 
    ## restore context to the previous module
    sm.this.name := $(lastword $(sm.global.using))
@@ -246,7 +246,7 @@ define sm-import
      #sm.global.using := $$(wordlist 1,$(words $(sm.global.using))-1,$(sm.global.using))
      sm.global.using := $(filter-out $(sm.this.name),$(sm.global.using))
    endif
-   sm._this := sm.var.$$(sm.this.name)
+   sm._this := sm.module.$$(sm.this.name)
   )\
  $(eval \
    $(sm._this).using_list += $($(sm._that).name)
@@ -270,8 +270,8 @@ define sm-use
      $$(error smart: module cannot make use of itself)
    endif
 
-   sm._this := sm.var.$(sm.this.name)
-   sm._that := sm.var.$$(sm.temp._name)
+   sm._this := sm.module.$(sm.this.name)
+   sm._that := sm.module.$$(sm.temp._name)
   )\
  $(eval \
    ifeq ($($(sm._this)._configured),true)
@@ -306,7 +306,7 @@ define sm-use-external
      $$(error smart: sm.this.name is empty, must use sm-new-module first)
    endif
 
-   sm._this := sm.var.$(sm.this.name)
+   sm._this := sm.module.$(sm.this.name)
   )\
  $(info smart: use external "$(sm.temp._modir)" for "$(sm.this.name)"..)\
  $(eval \
@@ -364,7 +364,7 @@ define sm-compile-sources-internal
         $$(error smart: internal: sm.this.name is empty)
       endif
 
-      sm._this := sm.var.$(sm.this.name)
+      sm._this := sm.module.$(sm.this.name)
      )\
     $(eval \
       $(sm._this)._cnum := $(call sm-compute-compile-num,1)
@@ -384,13 +384,13 @@ define sm.code.generate-implib-win32
   sm.this.depends += $(sm.out.lib)
   sm.this.targets += $(sm.out.lib)/lib$(sm.this.name).a
   sm.this.link.flags += -Wl,-out-implib,$(sm.out.lib)/lib$(sm.this.name).a
- $(sm.out.lib)/lib$(sm.this.name).a:$$(sm.var.$(sm.this.name).module_targets)
+ $(sm.out.lib)/lib$(sm.this.name).a:$$(sm.module.$(sm.this.name).module_targets)
 endef #sm.code.generate-implib-win32
 #####
 define sm.code.generate-implib-linux
   sm.this.targets += $(sm.out.lib)/lib$(sm.this.name).so
- $(sm.out.lib)/lib$(sm.this.name).so:$(sm.out.lib) $$(sm.var.$(sm.this.name).module_targets)
-	$$(call sm.tool.common.ln,$(sm.top)/$$(sm.var.$(sm.this.name).module_targets),$$@)
+ $(sm.out.lib)/lib$(sm.this.name).so:$(sm.out.lib) $$(sm.module.$(sm.this.name).module_targets)
+	$$(call sm.tool.common.ln,$(sm.top)/$$(sm.module.$(sm.this.name).module_targets),$$@)
 endef #sm.code.generate-implib-linux
 #####
 define sm-generate-implib-internal
@@ -474,7 +474,7 @@ $(eval \
   endif
   ##########
   sm.global.goals += goal-$(sm.this.name)
-  sm._this := sm.var.$(sm.this.name)
+  sm._this := sm.module.$(sm.this.name)
   $$(sm._this)._cnum := 0
   include $(sm.dir.buildsys)/build-this.mk
  )\

@@ -501,7 +501,7 @@ define sm.fun.make-rule-compile-common
        $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
-            $(filter %, $(sm.tool.common.compile.$(sm.var.temp._literal_lang)))
+            $(filter %, $(sm.tool.common.compile.$(sm.var.temp._literal_lang))))
 	@[[ -f $$@ ]] || (echo "ERROR: $(sm.var.temp._lang): no document output: $$@" && true)
       endif
      )))
