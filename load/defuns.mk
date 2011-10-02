@@ -106,24 +106,28 @@ define sm-new-module-internal
    ifeq ($(origin toolset),command line)
      sm.temp._toolset := $(toolset)
    endif
-  )\
- $(eval \
-   sm.this.name := $(basename $(sm.temp._name))
-   sm.this.suffix := $(suffix $(sm.temp._name))
-   sm.this.dir := $$(call sm-module-dir)
-   sm.this.makefile := $$(call sm-this-makefile)
-   sm.this.gen_deps := true
-   sm.global.modules += $(sm.temp._name)
-   sm.global.modules.$(sm.temp._name) := $$(sm.this.makefile)
 
-   ifeq ($$(sm.this.name),,)
-     $$(error module name is empty)
+   sm.temp._type := $(call sm-module-type-name,$$(sm.temp._type))
+   sm.temp._suffix := $$(suffix $$(sm.temp._name))
+   sm.temp._name := $$(basename $$(sm.temp._name))
+
+   ifeq ($$(sm.temp._name),)
+     $$(error smart: module name is empty)
    endif
   )\
  $(eval \
-   sm.this.type := $(call sm-module-type-name,$(sm.temp._type))
+   sm.this.type := $(sm.temp._type)
+   sm.this.name := $(sm.temp._name)
+   sm.this.suffix := $(sm.temp._suffix)
+   sm.this.dir := $$(call sm-module-dir)
+   sm.this.makefile := $$(call sm-this-makefile)
+   sm.this.gen_deps := true
+
+   sm.global.modules += $(sm.temp._name)
+   sm.global.modules.$(sm.temp._name) := $$(sm.this.makefile)
+
    ifeq ($$(sm.this.type),shared)
-     sm.this.out_implib := $(sm.this.name)
+     sm.this.out_implib := $$(sm.this.name)
    endif
    ifeq ($$(sm.this.type),docs)
      sm.temp._toolset := common
@@ -134,40 +138,43 @@ define sm-new-module-internal
      $$(error smart "$$(sm.this.type)" is not valid module type(see: $(sm.global.module_types)))
    endif
   )\
- $(if $(sm.temp._toolset),\
-   $(eval \
-     ifeq ($(sm.this.type),depends)
-       ifeq ($(wildcard $(sm.dir.buildsys)/tools/$(sm.temp._toolset).mk),)
-         $$(error smart: toolset $(sm.temp._toolset) not unknown)
-       endif
+ $(if $(sm.temp._toolset),$(eval \
+   ifeq ($(sm.this.type),depends)
+     ifeq ($(wildcard $(sm.dir.buildsys)/tools/$(sm.temp._toolset).mk),)
+       $$(error smart: toolset $(sm.temp._toolset) not unknown)
+     endif
+   endif
+   ######
+   sm.this.toolset := $(sm.temp._toolset)
+   ######
+   ifeq ($$(sm.this.toolset),common)
+     #$$(warning TODO: common toolset...)
+   else
+     ifeq ($$(sm.tool.$$(sm.this.toolset)),)
+       include $(sm.dir.buildsys)/loadtool.mk
      endif
      ######
-     sm.this.toolset := $(sm.temp._toolset)
-     ######
-     ifeq ($$(sm.this.toolset),common)
-       #$$(warning TODO: common toolset...)
-     else
-       ifeq ($$(sm.tool.$$(sm.this.toolset)),)
-         include $(sm.dir.buildsys)/loadtool.mk
-       endif
-       ######
-       ifeq ($$(sm.tool.$$(sm.this.toolset)),)
-         $$(error smart: sm.tool.$$(sm.this.toolset) is not defined)
-       endif
-       ######
-       ifeq ($$(sm.this.suffix),)
-         $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
-         sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
-       endif
+     ifeq ($$(sm.tool.$$(sm.this.toolset)),)
+       $$(error smart: sm.tool.$$(sm.this.toolset) is not defined)
      endif
-    ))\
- $(if $(filter $(sm.this.type),depends docs),\
-     ,$(if $(sm.this.toolset),,$(error smart: toolset is not set)))
+     ######
+     ifeq ($$(sm.this.suffix),)
+       $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+       sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+     endif
+   endif
+  ))\
+ $(eval \
+   ifneq ($(filter $(sm.this.type),depends docs),)
+     $(if $(sm.this.toolset),,$$(error smart: toolset is not set))
+   endif
+  )
 endef #sm-new-module-internal
-
-##
+#####
 define sm-new-module-external
-$(warning TODO: new external module: $1,$2,$3)
+$(warning TODO: avoid eval loadtool.mk for external module)\
+$(sm-new-module-internal)\
+$(info smart: external module "$(sm.this.name)" of type "$(sm.this.type)")
 endef #sm-new-module-external
 
 ## Load the build script for the specified module, and returns the module name
@@ -248,6 +255,7 @@ define sm-import
  $(call sm-clone-module, $(sm._this), sm.this)
 endef #sm-import
 
+##
 ## same as sm-import, except that sm-use accepts a module name instead of
 ## a module built script and it can only "use" a loaded module.
 define sm-use
@@ -306,9 +314,18 @@ define sm-use-external
 
    sm-new-module = $$(sm-new-module-external)
    sm-build-this = $$(sm-build-this-external)
+   sm-compile-sources = $$(sm-compile-sources-external)
+   sm-copy-files = $$(sm-copy-files-external)
+   sm-build-depends = $$(sm-build-depends-external)
+
+   ## use include here instead of sm-load-module
    include $(sm.temp._using)
+
    sm-new-module = $$(sm-new-module-internal)
    sm-build-this = $$(sm-build-this-internal)
+   sm-compile-sources = $$(sm-compile-sources-internal)
+   sm-copy-files = $$(sm-copy-files-internal)
+   sm-build-depends = $$(sm-build-depends-internal)
 
    $$(call sm-clone-module, $(sm._this), sm.this)
   )\
@@ -336,8 +353,8 @@ $(eval \
 endef #sm-compute-compile-num
 
 ## Generate compilation rules for sources
-sm-generate-objects = $(call sm-deprecated, sm-generate-objects, sm-compile-sources)
-define sm-compile-sources
+sm-compile-sources = $(sm-compile-sources-internal)
+define sm-compile-sources-internal
  $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
     $(info smart: intermediates for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
     $(eval \
@@ -355,8 +372,13 @@ define sm-compile-sources
       include $(sm.dir.buildsys)/build-rules.mk
       $(sm._this)._intermediates_only :=)\
    ,$(error smart: No sources defined))
-endef #sm-compile-sources
+endef #sm-compile-sources-internal
+#####
+define sm-compile-sources-external
+$(warning TODO: external compile sources)
+endef #sm-compile-sources-external
 
+sm-generate-implib = $(sm-generate-implib-internal)
 ## sm-generate-implib - Generate import library for shared objects.
 define sm.code.generate-implib-win32
   sm.this.depends += $(sm.out.lib)
@@ -364,19 +386,27 @@ define sm.code.generate-implib-win32
   sm.this.link.flags += -Wl,-out-implib,$(sm.out.lib)/lib$(sm.this.name).a
  $(sm.out.lib)/lib$(sm.this.name).a:$$(sm.var.$(sm.this.name).module_targets)
 endef #sm.code.generate-implib-win32
+#####
 define sm.code.generate-implib-linux
   sm.this.targets += $(sm.out.lib)/lib$(sm.this.name).so
  $(sm.out.lib)/lib$(sm.this.name).so:$(sm.out.lib) $$(sm.var.$(sm.this.name).module_targets)
 	$$(call sm.tool.common.ln,$(sm.top)/$$(sm.var.$(sm.this.name).module_targets),$$@)
 endef #sm.code.generate-implib-linux
-define sm-generate-implib
+#####
+define sm-generate-implib-internal
 $(call sm-check-not-empty,sm.os.name)\
 $(if $(call equal,$(sm.this.type),shared),\
   $(eval $(sm.code.generate-implib-$(sm.os.name))))
-endef #sm-generate-implib
+endef #sm-generate-implib-internal
+
+##
+define sm-generate-implib-external
+$(warning TODO: generate external implib)
+endef #sm-generate-implib-external
 
 ## sm-copy-files -- make rules for copying files
-define sm-copy-files
+sm-copy-files = $(sm-copy-files-internal)
+define sm-copy-files-internal
 $(eval \
   sm.temp._files := $(strip $1)
   sm.temp._location := $(strip $2)
@@ -397,7 +427,11 @@ $(eval \
   sm.var.__copyfiles :=
   sm.var.__copyfiles.to :=
  )
-endef
+endef #sm-copy-files-internal
+#####
+define sm-copy-files-external
+$(warning TODO: external copy files)
+endef #sm-copy-files-external
 
 ## sm-copy-headers - copy headers into $(sm.out.inc)
 ## It's a shortcut for: $(call sm-copy-files, $1, $(sm.out.inc)/$2)
@@ -450,8 +484,7 @@ $(eval \
   endif
  )
 endef #sm-build-this-internal
-
-##
+#####
 define sm-build-this-external
 $(warning TODO: build external module "$(sm.this.name)"...)
 endef #sm-build-this-external
@@ -466,7 +499,8 @@ endef #sm-build-this-external
 ##	 7: log type (optional, default: 'smart')
 ## Build some dependencies by invoking a external Makefile
 ## usage: $(call sm-build-depends, name, depends, makefile-name, [extra-depends], [extra-targets], [make-name], [log-type])
-define sm-build-depends
+sm-build-depends = $(sm-build-depends-internal)
+define sm-build-depends-internal
 $(eval \
  $(if $1,,$(error module name is empty (arg 1)))\
  $(if $2,,$(error module depends is empty (arg 2)))\
@@ -487,7 +521,11 @@ $(eval \
 
  $$(call sm-build-this)
  )
-endef #sm-build-depends
+endef #sm-build-depends-internal
+#####
+define sm-build-depends-external
+$(warning TODO: external build depends)
+endef #sm-build-depends-external
 
 
 sm-load-sub-modules = $(call sm-deprecated, sm-load-sub-modules, sm-load-subdirs)
