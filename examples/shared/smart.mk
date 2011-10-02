@@ -41,6 +41,11 @@ sm.this.libdirs := $(sm.this.dir)/../libs
 ##	libNAME	-> -lNAME
 ##	NAME	-> -lNAME
 ##	-lNAME	-> -lNAME
-sm.this.libs := 
+sm.this.libs :=
 
+sm.this.export.includes := $(sm.this.dir)
+sm.this.export.libdirs := $(sm.this.dir)/$(sm.out.lib)
+sm.this.export.libs := foo
+
+$(sm-generate-implib)
 $(sm-build-this)

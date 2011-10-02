@@ -14,7 +14,9 @@ sm.this.sources := foo.cpp
 ## module names
 #sm.this.using.names := bar
 
-## use sm-use-module instead of sm.this.using for that purpose
-$(call sm-use-module, foobar/bar)
+## use sm-import instead of sm.this.using for that purpose
+$(call sm-import, foobar/bar)
+
+$(call sm-use-external, ../shared)
 
 $(sm-build-this)

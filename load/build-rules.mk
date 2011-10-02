@@ -171,13 +171,6 @@ $(sm._this).flag_files :=
 
 ##################################################
 
-## make list of only one space separated items
-define sm.fun.make-pretty-list
-$(strip $(eval sm.var.temp._pretty_list :=)\
-  $(foreach _,$1,$(eval sm.var.temp._pretty_list += $(strip $_)))\
-  $(sm.var.temp._pretty_list))
-endef #sm.fun.make-pretty-list
-
 ## eg. $(call sm.fun.append-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
 define sm.fun.append-items-with-fix
 $(foreach sm.var.temp._,$(strip $2),\
@@ -227,7 +220,7 @@ $(eval \
       $(sm.var.temp._fvar_name) :=
     endif
 
-    $(sm.var.temp._fvar_name) += $(call sm.fun.make-pretty-list,\
+    $(sm.var.temp._fvar_name) += $(filter %,\
        $($(sm.var.toolset).defines)\
        $($(sm.var.toolset).defines.$(sm.var.temp._lang))\
        $($(sm.var.toolset).compile.flags)\
@@ -261,7 +254,7 @@ define sm.fun.compute-flags-link
 $(eval \
   ifeq ($($(sm._this)._link.flags.computed),)
     $(sm._this)._link.flags.computed := true
-    $(sm._this)._link.flags := $(call sm.fun.make-pretty-list,\
+    $(sm._this)._link.flags := $(filter %,\
        $($(sm.var.toolset).link.flags)\
        $(sm.global.link.flags)\
        $($(sm._this).used.link.flags)\
@@ -283,8 +276,7 @@ define sm.fun.compute-intermediates-link
 $(eval \
   ifeq ($($(sm._this)._link.intermediates.computed),)
     $(sm._this)._link.intermediates.computed := true
-    $(sm._this)._link.intermediates := $(call sm.fun.make-pretty-list,\
-       $($(sm._this).intermediates))
+    $(sm._this)._link.intermediates := $(filter %, $($(sm._this).intermediates))
 
     ifeq ($(call is-true,$($(sm._this).link.intermediates.infile)),true)
       $(call sm.code.shift-flags-to-file,_link.intermediates)
@@ -398,7 +390,7 @@ define sm.fun.make-rule-depend
 	$$(call sm-util-mkdir,$$(@D))
 	$(if $(call equal,$($(sm._this).verbose),true),,\
           $$(info smart: update $(sm.args.output))\
-          $(sm.var.Q))$(sm.tool.$($(sm._this).toolset).dependency.$(sm.args.lang))
+          $(sm.var.Q))$(filter %, $(sm.tool.$($(sm._this).toolset).dependency.$(sm.args.lang)))
    endif
   )
 endef #sm.fun.make-rule-depend
@@ -470,7 +462,7 @@ define sm.fun.make-rule-compile-common
      $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
-            $(sm.tool.common.compile.$(sm.var.temp._lang)))
+            $(filter %, $(sm.tool.common.compile.$(sm.var.temp._lang))))
    endif
   ))\
  $(if $(sm.var.temp._literal_lang),\
@@ -493,7 +485,7 @@ define sm.fun.make-rule-compile-common
       $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
-            $(sm.tool.common.compile.literal.$(sm.var.temp._lang)))
+            $(filter %, $(sm.tool.common.compile.literal.$(sm.var.temp._lang))))
       endif
      ))\
   $(if $(call equal,$(sm.var.temp._literal_lang),$(sm.var.temp._lang)),\
@@ -509,7 +501,7 @@ define sm.fun.make-rule-compile-common
        $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.temp._lang),\
-            $(sm.tool.common.compile.$(sm.var.temp._literal_lang)))
+            $(filter %, $(sm.tool.common.compile.$(sm.var.temp._literal_lang)))
 	@[[ -f $$@ ]] || (echo "ERROR: $(sm.var.temp._lang): no document output: $$@" && true)
       endif
      )))

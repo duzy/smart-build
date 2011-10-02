@@ -96,6 +96,7 @@ endif
 
 ###
 sm.global.using :=
+## NOTE: sm.module.properties should not include .using_list
 sm.module.properties := \
   .dir \
   .name \

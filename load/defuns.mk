@@ -36,26 +36,26 @@ endef
 #####
 define sm-deprecated
 $(error smart: $(strip $1) is deprecated, use $(strip $2) instead)
-endef
+endef #sm-deprecated
 
 define sm-this-makefile
 $(lastword $(MAKEFILE_LIST))
-endef
+endef #sm-this-makefile
 
 define sm-this-dir
 $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
-endef
+endef #sm-this-dir
 
 define sm-module-dir
 $(if $(sm.this.name),$(call sm-this-dir),\
   $(error 'sm.this.name' is empty, please use 'sm-this-dir' instead))
-endef
+endef #sm-module-dir
 
 define sm-module-type-name
 $(if $(call equal,$1,dynamic),shared,\
     $(if $(call equal,$1,executable),exe,\
         $(if $(call equal,$1,tests),t,$1)))
-endef
+endef #sm-module-type-name
 
 ##
 define sm-reset-module
@@ -146,7 +146,7 @@ define sm-new-module
     ))\
  $(if $(filter $(sm.this.type),depends docs),\
      ,$(if $(sm.this.toolset),,$(error smart: toolset is not set)))
-endef
+endef #sm-clone-module
 
 ## Load the build script for the specified module, and returns the module name
 ## via sm.result.module_name variable .
@@ -179,8 +179,10 @@ endef #sm-load-module
 ##
 ## The sm.this.using alt is now failed because of this error:
 ## foobar/bar/smart.mk:13: *** prerequisites cannot be defined in command scripts
-## 
-define sm-use-module
+##
+## Import and smart build script and use it for the current module.
+sm-use-module = $(call sm-deprecated, sm-use-module, sm-import)
+define sm-import
  $(eval \
    sm.temp._modir := $(strip $1)
    sm.temp._using := $$(wildcard $$(sm.temp._modir)/smart.mk)
@@ -201,7 +203,7 @@ define sm-use-module
    endif
    sm.global.using += $(sm.this.name)
   )\
- $(info smart: using $(sm.temp._modir) for "$(sm.this.name)"..)\
+ $(info smart: import "$(sm.temp._modir)" for "$(sm.this.name)"..)\
  $(call sm-clone-module, sm.this, $(sm._this))\
  $(call sm-load-module, $(sm.temp._using))\
  $(eval \
@@ -222,15 +224,64 @@ define sm-use-module
   )\
  $(info smart: module "$(sm.result.module.name)" used by "$(sm.this.name)")\
  $(call sm-clone-module, $(sm._this), sm.this)
-endef #sm-use-module
+endef #sm-import
 
-##
-define sm-import-module
+## same as sm-import, except that sm-use accepts a module name instead of
+## a module built script and it can only "use" a loaded module.
+define sm-use
  $(eval \
    sm.temp._name := $(strip $1)
+
+   ifeq ($(sm.this.name),)
+     $$(error smart: sm.this.name is empty, must use sm-new-module first)
+   endif
+
+   ifeq ($(sm.this.name),$$(sm.temp._name))
+     $$(error smart: module cannot make use of itself)
+   endif
+
+   sm._this := sm.var.$(sm.this.name)
+   sm._that := sm.var.$$(sm.temp._name)
   )\
- $(warning TODO: load and use module $(sm.temp._name) from sm.global.module_path)
-endef #sm-import-module
+ $(eval \
+   ifeq ($($(sm._this)._configured),true)
+     $$(error smart: $(sm.this.name) already configured, cannot do using)
+   endif
+  )\
+ $(info smart: using "$(sm.temp._name)" for "$(sm.this.name)"..)\
+ $(eval \
+   ifneq ($($(sm._that).name),$(sm.temp._name))
+     $$(error smart: module "$(sm.temp._name)" is misconfigured as "$($(sm._that).name)")
+   endif
+
+   ifeq ($(filter $(sm.temp._name),$($(sm._this).using_list)),$(sm.temp._name))
+     $$(error smart: module $(sm.temp._name) already been used)
+   endif
+   $(sm._this).using_list += $($(sm._that).name)
+  )
+endef #sm-use
+
+##
+## Use a module defined in a external smart script.
+##
+## This will first execute the external smart script but nothing will be built
+## from inside that script, it just extract "export" parameters and "use" it for
+## the current module.
+define sm-use-external
+ $(eval \
+   sm.temp._modir := $(strip $1)
+   sm.temp._using := $$(wildcard $$(sm.temp._modir)/smart.mk)
+
+   ifeq ($(sm.this.name),)
+     $$(error smart: sm.this.name is empty, must use sm-new-module first)
+   endif
+
+   sm._this := sm.var.$(sm.this.name)
+  )\
+ $(info smart: use external "$(sm.temp._modir)" for "$(sm.this.name)"..)\
+ $(call sm-clone-module, sm.this, $(sm._this))\
+ $(warning TODO: eval "$(sm.temp._modir)" and extract "export"s)
+endef #sm-use-external
 
 ## Find level-one sub-modules.
 define sm-find-sub-modules

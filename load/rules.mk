@@ -23,7 +23,7 @@ $(eval \
       else
 	$$(info $(sm.args.lang): $($(sm._this).name) -> $(sm.args.target))
       endif
-	$(sm.var.Q)$($(sm.var.toolset).$(sm.args.action).$(sm.args.lang))
+	$(sm.var.Q)$(filter %, $($(sm.var.toolset).$(sm.args.action).$(sm.args.lang)))
     endif
   endif
   )
