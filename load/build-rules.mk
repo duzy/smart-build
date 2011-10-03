@@ -15,15 +15,12 @@ ifeq ($(sm._this),)
   $(error smart: internal: sm._this is empty)
 endif
 
-##################################################
-
-## clone module from sm.this for sm.this.using/sm-use-module: recursive loading
-$(call sm-clone-module, sm.this, $(sm._this))
-
 ## check module name
 ifeq ($($(sm._this).name),)
   $(error smart: internal: $(sm._this).name is empty)
 endif # $(sm._this).name == ""
+
+##################################################
 
 ## configure the module if not yet done
 $(sm._this)._configured := true
@@ -75,12 +72,11 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
 
 #-----------------------------------------------
 #-----------------------------------------------
-
 ifneq ($($(sm._this).using_list),)
   define sm.fun.compute-used-flags
   $(eval \
-    $(sm._this).used.includes += $($(sm._that).export.includes)
     $(sm._this).used.defines += $($(sm._that).export.defines)
+    $(sm._this).used.includes += $($(sm._that).export.includes)
     $(sm._this).used.compile.flags += $($(sm._that).export.compile.flags)
     $(sm._this).used.link.flags += $($(sm._that).export.link.flags)
     $(sm._this).used.libdirs += $($(sm._that).export.libdirs)
@@ -88,7 +84,7 @@ ifneq ($($(sm._this).using_list),)
    )
   endef #sm.fun.compute-used-flags
   $(foreach sm.var.temp._use,$($(sm._this).using_list),\
-    $(eval sm._that := sm.var.$(sm.var.temp._use))\
+    $(eval sm._that := sm.module.$(sm.var.temp._use))\
     $(sm.fun.compute-used-flags))
 endif # $(sm._this).using_list != ""
 

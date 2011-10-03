@@ -1,3 +1,3 @@
 #
 
-$(call sm-load-module, foo.mk)
+$(call sm-load-module, foobar.mk)

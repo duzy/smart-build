@@ -240,7 +240,7 @@ define sm-import
  $(call sm-clone-module, sm.this, $(sm._this))\
  $(call sm-load-module, $(sm.temp._using))\
  $(eval \
-   sm._that := sm.module.$$(sm.this.name)
+   sm._that := sm.module.$(sm.this.name)
 
    ## restore context to the previous module
    sm.this.name := $(lastword $(sm.global.using))
@@ -252,7 +252,7 @@ define sm-import
      #sm.global.using := $$(wordlist 1,$(words $(sm.global.using))-1,$(sm.global.using))
      sm.global.using := $(filter-out $(sm.this.name),$(sm.global.using))
    endif
-   sm._this := sm.module.$$(sm.this.name)
+   sm._this := sm.module.$(sm.this.name)
   )\
  $(eval \
    $(sm._this).using_list += $($(sm._that).name)
@@ -326,10 +326,10 @@ define sm-use-external
  $(eval \
    $$(call sm-clone-module, sm.this, $(sm._this))
    sm-new-module = $$(sm-new-module-external)
-   sm-build-this = $$(sm-build-this-external)
    sm-compile-sources = $$(sm-compile-sources-external)
    sm-copy-files = $$(sm-copy-files-external)
    sm-build-depends = $$(sm-build-depends-external)
+   sm-build-this = $$(sm-build-this-external)
 
    ## use include here instead of sm-load-module
    include $(sm.temp._using)
@@ -347,13 +347,18 @@ define sm-use-external
      #sm.global.using := $$(wordlist 1,$(words $(sm.global.using))-1,$(sm.global.using))
      sm.global.using := $(filter-out $(sm.this.name),$(sm.global.using))
    endif
+
    sm._this := sm.module.$(sm.this.name)
 
+   ifeq ($$(sm._this),$(sm._that))
+     $$(error smart: internal: self using: $$(sm._this), $(sm._that))
+   endif
+
    sm-new-module = $$(sm-new-module-internal)
-   sm-build-this = $$(sm-build-this-internal)
    sm-compile-sources = $$(sm-compile-sources-internal)
    sm-copy-files = $$(sm-copy-files-internal)
    sm-build-depends = $$(sm-build-depends-internal)
+   sm-build-this = $$(sm-build-this-internal)
    $$(call sm-clone-module, $$(sm._this), sm.this)
   )\
  $(eval \
@@ -502,8 +507,10 @@ $(eval \
     $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
   endif
   ##########
-  sm.global.goals += goal-$(sm.this.name)
   sm._this := sm.module.$(sm.this.name)
+  sm.__this := sm.module.$(sm.this.name)
+  $$(call sm-clone-module, sm.this, $$(sm._this))
+
   $$(sm._this)._cnum := 0
   include $(sm.dir.buildsys)/build-this.mk
  )\
@@ -515,7 +522,10 @@ $(eval \
 endef #sm-build-this-internal
 #####
 define sm-build-this-external
-$(warning TODO: build external module "$(sm.this.name)"...)
+$(eval \
+  sm._this := sm.module.$(sm.this.name)
+ )\
+$(call sm-clone-module, sm.this, $(sm._this))
 endef #sm-build-this-external
 
 ## sm-build-depends  - Makefile code for sm-build-depends

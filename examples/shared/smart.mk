@@ -25,13 +25,13 @@ sm.this.verbose ?= true
 
 sm.this.compile.flags := $(M64_FLAGS) -DTEST=\"$(sm.this.name)\"
 sm.this.includes := $(sm.this.dir)/../include
-sm.this.sources := foobar.c
+sm.this.sources := foo.c
 sm.this.link.flags := $(M64_FLAGS) $(if $(sm.os.name.win32),--subsystem=console)
 sm.this.libdirs := $(sm.this.dir)/../libs
 sm.this.libs :=
 
+sm.this.export.defines := -DTEST_FOO=defined_in_external_foo
 sm.this.export.includes := $(sm.this.dir)
-sm.this.export.defines := -Dfoo=\"defined in external foo\"
 sm.this.export.libdirs := $(sm.this.dir)/$(sm.out.lib)
 sm.this.export.libs := foo
 

@@ -21,17 +21,23 @@ endif
 $(call sm-check-origin,sm-check-directory,file,broken smart build system)
 $(call sm-check-directory,$(sm.dir.buildsys),broken smart build system)
 
-ifeq ($(sm.this.type),subdirs)
+ifeq ($($(sm._this).name),)
+  $(error smart: internal: invalid configured module: $$(sm._this).name is empty)
+endif
+
+ifeq ($($(sm._this).type),subdirs)
   $(error smart: please try calling 'sm-load-subdirs' instead for 'subdirs')
 endif
 
-ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
-  ifeq ($(strip $(sm.this.type)),depends)
-    goal-$(sm.this.name) : $(sm.this.depends) $(sm.this.depends.copyfiles)
-    clean-$(sm.this.name):
-	$(call sm.tool.common.rm, $(sm.this.depends) $(sm.this.depends.copyfiles))
+ifneq ($(filter $($(sm._this).type),$(sm.global.module_types)),)
+  sm.global.goals += goal-$($(sm._this).name)
+
+  ifeq ($(strip $($(sm._this).type)),depends)
+    goal-$($(sm._this).name) : $($(sm._this).depends) $($(sm._this).depends.copyfiles)
+    clean-$($(sm._this).name):
+	$(call sm.tool.common.rm, $($(sm._this).depends) $($(sm._this).depends.copyfiles))
   else
-    ifeq ($(strip $(sm.this.toolset)),)
+    ifeq ($(strip $($(sm._this).toolset)),)
       $(error smart: 'sm.this.toolset' is empty)
     endif
 
@@ -41,5 +47,5 @@ ifneq ($(filter $(sm.this.type),$(sm.global.module_types)),)
     include $(sm.dir.buildsys)/build-rules.mk
   endif
 else
-  $(warning smart: $(sm.this.name) will not be built)
+  $(warning smart: "$($(sm._this).name)" will not be built)
 endif
