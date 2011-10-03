@@ -132,6 +132,7 @@ sm.module.properties := \
   .export.link.flags \
   .export.libdirs \
   .export.libs \
+  .is_external \
 
 $(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.common.langs)")
 $(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.XXX.langs)")

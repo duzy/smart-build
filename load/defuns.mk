@@ -172,9 +172,13 @@ define sm-new-module-internal
 endef #sm-new-module-internal
 #####
 define sm-new-module-external
-$(warning TODO: avoid eval loadtool.mk for external module)\
+$(info smart: external module "$(sm.this.name)" of type "$(sm.this.type)")\
 $(sm-new-module-internal)\
-$(info smart: external module "$(sm.this.name)" of type "$(sm.this.type)")
+$(eval \
+  sm.this.is_external := true
+  sm.this.type := $$(sm.this.type)+external
+  $$(call sm-clone-module, sm.this, sm.module.$(sm.this.name))
+ )
 endef #sm-new-module-external
 
 ## Load the build script for the specified module, and returns the module name
@@ -240,6 +244,8 @@ define sm-import
 
    ## restore context to the previous module
    sm.this.name := $(lastword $(sm.global.using))
+  )\
+ $(eval \
    ifeq ($(sm.this.name),)
      $$(error smart: internal: sm.global.using damaged: $(sm.global.using))
    else
@@ -256,6 +262,8 @@ define sm-import
 endef #sm-import
 
 ##
+## Use a module that it's already loaded.
+## 
 ## same as sm-import, except that sm-use accepts a module name instead of
 ## a module built script and it can only "use" a loaded module.
 define sm-use
@@ -308,10 +316,15 @@ define sm-use-external
 
    sm._this := sm.module.$(sm.this.name)
   )\
+ $(eval \
+   ifeq ($(filter $(sm.this.name),$(sm.global.using)),$(sm.this.name))
+     $$(error smart: internal: recursive using: $(sm.this.name)(external): $(sm.global.using))
+   endif
+   sm.global.using += $(sm.this.name)
+  )\
  $(info smart: use external "$(sm.temp._modir)" for "$(sm.this.name)"..)\
  $(eval \
    $$(call sm-clone-module, sm.this, $(sm._this))
-
    sm-new-module = $$(sm-new-module-external)
    sm-build-this = $$(sm-build-this-external)
    sm-compile-sources = $$(sm-compile-sources-external)
@@ -320,16 +333,33 @@ define sm-use-external
 
    ## use include here instead of sm-load-module
    include $(sm.temp._using)
+  )\
+ $(eval \
+   sm._that := sm.module.$(sm.this.name)
+
+   ## restore context to the previous module
+   sm.this.name := $(lastword $(sm.global.using))
+  )\
+ $(eval \
+   ifeq ($(sm.this.name),)
+     $$(error smart: internal: sm.global.using damaged: $(sm.global.using))
+   else
+     #sm.global.using := $$(wordlist 1,$(words $(sm.global.using))-1,$(sm.global.using))
+     sm.global.using := $(filter-out $(sm.this.name),$(sm.global.using))
+   endif
+   sm._this := sm.module.$(sm.this.name)
 
    sm-new-module = $$(sm-new-module-internal)
    sm-build-this = $$(sm-build-this-internal)
    sm-compile-sources = $$(sm-compile-sources-internal)
    sm-copy-files = $$(sm-copy-files-internal)
    sm-build-depends = $$(sm-build-depends-internal)
-
-   $$(call sm-clone-module, $(sm._this), sm.this)
+   $$(call sm-clone-module, $$(sm._this), sm.this)
   )\
- $(warning TODO: eval "$(sm.temp._modir)" and extract "export"s)
+ $(eval \
+   $(sm._this).using_list += $($(sm._that).name)
+  )\
+ $(info smart: module "$($(sm._that).name)(external)" used by "$(sm.this.name)")
 endef #sm-use-external
 
 ## Find level-one sub-modules.
@@ -398,8 +428,7 @@ $(call sm-check-not-empty,sm.os.name)\
 $(if $(call equal,$(sm.this.type),shared),\
   $(eval $(sm.code.generate-implib-$(sm.os.name))))
 endef #sm-generate-implib-internal
-
-##
+#####
 define sm-generate-implib-external
 $(warning TODO: generate external implib)
 endef #sm-generate-implib-external

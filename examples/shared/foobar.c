@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-void foobar()
+void foo()
 {
   printf("smart::build::example::module: %s", TEST);
 }
 
-void main() { foobar(); }
+void main() { foo(); }
