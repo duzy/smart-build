@@ -401,6 +401,7 @@ define sm-compile-sources-internal
 
       sm._this := sm.module.$(sm.this.name)
      )\
+    $(call sm-clone-module, sm.this, $(sm._this))\
     $(eval \
       $(sm._this)._cnum := $(call sm-compute-compile-num,1)
       $(sm._this)._intermediates_only := true

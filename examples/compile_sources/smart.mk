@@ -46,4 +46,3 @@ $(sm-compile-sources)
 sm.this.compile.flags := -DTEST=\"foobar\"
 sm.this.sources := foobar.c
 $(sm-build-this)
-
