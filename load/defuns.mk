@@ -393,8 +393,6 @@ define sm-compile-sources-internal
  $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
     $(info smart: intermediates for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
     $(eval \
-      _sm_log = $$(if $(sm.log.filename),echo $$1 >> $(sm.out)/$(sm.log.filename),true)
-
       ifeq ($(sm.this.name),)
         $$(error smart: internal: sm.this.name is empty)
       endif
