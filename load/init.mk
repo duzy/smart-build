@@ -29,7 +29,7 @@ sm.dir.top = $(call sm-deprecated, sm.dir.top, sm.top)
 sm.out = out/$(if $(sm.this.toolset),$(sm.this.toolset)/)$(sm.config.variant)
 sm.out.bin = $(sm.out)/bin
 sm.out.lib = $(sm.out)/lib
-sm.out.inc = $(sm.out)/include
+sm.out.inc = out/$(if $(sm.this.toolset),$(sm.this.toolset)/)include
 sm.out.obj = $(call sm-deprecated, sm.out.obj, sm.out.inter)
 sm.out.tmp = $(sm.out)/temp
 sm.out.inter = $(sm.out)/intermediates
@@ -113,6 +113,7 @@ sm.module.properties := \
   .sources.common \
   .intermediates \
   .depends \
+  .depends.copyfiles \
   .docs.format \
   .defines \
   .includes \

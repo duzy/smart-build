@@ -172,8 +172,8 @@ define sm-new-module-internal
 endef #sm-new-module-internal
 #####
 define sm-new-module-external
-$(info smart: external module "$(sm.this.name)" of type "$(sm.this.type)")\
 $(sm-new-module-internal)\
+$(info smart: external module "$(sm.this.name)" of type "$(sm.this.type)")\
 $(eval \
   sm.this.is_external := true
   sm.this.type := $$(sm.this.type)+external
@@ -286,7 +286,7 @@ define sm-use
      $$(error smart: $(sm.this.name) already configured, cannot do using)
    endif
   )\
- $(info smart: using "$(sm.temp._name)" for "$(sm.this.name)"..)\
+ $(info smart: use "$(sm.temp._name)" for "$(sm.this.name)"..)\
  $(eval \
    ifneq ($($(sm._that).name),$(sm.temp._name))
      $$(error smart: module "$(sm.temp._name)" is misconfigured as "$($(sm._that).name)")
@@ -364,7 +364,7 @@ define sm-use-external
  $(eval \
    $(sm._this).using_list += $($(sm._that).name)
   )\
- $(info smart: module "$($(sm._that).name)(external)" used by "$(sm.this.name)")
+ $(info smart: external module "$($(sm._that).name)" used by "$(sm.this.name)")
 endef #sm-use-external
 
 ## Find level-one sub-modules.
@@ -454,12 +454,17 @@ $(eval \
     $$(error smart: target location(directory) must be specified)
   endif
   ##########
-  sm.var.__copyfiles := $(sm.temp._files)
-  sm.var.__copyfiles.to := $(sm.temp._location)
-  include $(sm.dir.buildsys)/copyfiles.mk
-  sm.var.__copyfiles :=
-  sm.var.__copyfiles.to :=
- )
+  sm.var.temp._d := $(call sm-relative-path,$(sm.temp._location))
+ )\
+$(foreach v, $(sm.temp._files),\
+   $(eval \
+     sm.this.depends.copyfiles += $(sm.var.temp._d)/$(notdir $v)
+     $(sm.var.temp._d)/$(notdir $v): \
+     $(call sm-relative-path,$(sm.this.dir)/$v) ;\
+       @( echo smart: copy: $$@ )\
+       && ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@))\
+       && ($(CP) -u $$< $$@)
+    ))
 endef #sm-copy-files-internal
 #####
 define sm-copy-files-external
@@ -471,7 +476,7 @@ endef #sm-copy-files-external
 define sm-copy-headers
  $(call sm-check-not-empty, sm.out.inc)\
  $(call sm-copy-files,$1,$(sm.out.inc)/$(strip $2))
-endef
+endef #sm-copy-headers
 
 ## sm-build-this - Build the current module
 sm-build-this = $(sm-build-this-internal)

@@ -37,14 +37,14 @@ $(sm._this).targets :=
 sm.var.temp._ := $($(sm._this).dir:$(sm.top)%=%)
 sm.var.temp._ := $(sm.var.temp._:%.=%)
 sm.var.temp._ := $(sm.var.temp._:/%=%)
-sm.var.temp._ := $(if $(sm.var.temp._),$(sm.var.temp._)/)
+sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this)._intermediate_prefix := $(sm.var.temp._)
 
 ##
 ## $(sm._this)._should_compute_sources will be "true" on each
 ## sm-build-this and sm-compile-sources calling.
 define sm.fun.compute-sources-by-lang
-  $(eval \
+  ${eval \
   sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
   $(sm._this).sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources))
   $(sm._this).sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources.external))
@@ -54,59 +54,59 @@ define sm.fun.compute-sources-by-lang
   sm.this.sources.$(sm.var.temp._lang) = $$($(sm._this).sources.$(sm.var.temp._lang))
   sm.this.sources.external.$(sm.var.temp._lang) = $$($(sm._this).sources.external.$(sm.var.temp._lang))
   sm.this.sources.has.$(sm.var.temp._lang) = $$($(sm._this).sources.has.$(sm.var.temp._lang))
-  )
+  }
 endef #sm.fun.compute-sources-by-lang
 
 define sm.fun.compute-per-source-flags
-  $(foreach sm.var.temp._source,\
+  ${foreach sm.var.temp._source,\
      $(sm.this.sources.$(sm.var.temp._lang))\
      $(sm.this.sources.external.$(sm.var.temp._lang)),\
-    $(eval $(sm._this).compile.flags-$(sm.var.temp._source) := $(sm.this.compile.flags-$(sm.var.temp._source))))
+    ${eval $(sm._this).compile.flags-$(sm.var.temp._source) := $(sm.this.compile.flags-$(sm.var.temp._source))}}
 endef #sm.fun.compute-per-source-flags
 
 ## Compute sources of each language supported by the toolset.
 sm.var.toolset := sm.tool.$($(sm._this).toolset)
-$(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(sm.fun.compute-sources-by-lang)\
-  $(sm.fun.compute-per-source-flags))
+  $(sm.fun.compute-per-source-flags)}
 
 #-----------------------------------------------
 #-----------------------------------------------
 ifneq ($($(sm._this).using_list),)
   define sm.fun.compute-used-flags
-  $(eval \
+  ${eval \
     $(sm._this).used.defines += $($(sm._that).export.defines)
     $(sm._this).used.includes += $($(sm._that).export.includes)
     $(sm._this).used.compile.flags += $($(sm._that).export.compile.flags)
     $(sm._this).used.link.flags += $($(sm._that).export.link.flags)
     $(sm._this).used.libdirs += $($(sm._that).export.libdirs)
     $(sm._this).used.libs += $($(sm._that).export.libs)
-   )
+   }
   endef #sm.fun.compute-used-flags
-  $(foreach sm.var.temp._use,$($(sm._this).using_list),\
-    $(eval sm._that := sm.module.$(sm.var.temp._use))\
-    $(sm.fun.compute-used-flags))
+  ${foreach sm.var.temp._use,$($(sm._this).using_list),\
+    ${eval sm._that := sm.module.$(sm.var.temp._use)}\
+    $(sm.fun.compute-used-flags)}
 endif # $(sm._this).using_list != ""
 
 ifneq ($($(sm._this).using),)
-  $(warning "sm.this.using" is not working with GNU Make!)
+  ${warning "sm.this.using" is not working with GNU Make!}
 
   define sm.fun.using-module
-    $(info smart: using $(sm.var.temp._modir))\
-    $(if $(filter $(sm.var.temp._modir),$(sm.global.using.loaded)),,\
-        $(eval \
+    ${info smart: using $(sm.var.temp._modir)}\
+    ${if ${filter $(sm.var.temp._modir),$(sm.global.using.loaded)},,\
+        ${eval \
           sm.global.using.loaded += $(sm.var.temp._modir)
-          sm.var.temp._using := $(wildcard $(sm.var.temp._modir)/smart.mk)
+          sm.var.temp._using := ${wildcard $(sm.var.temp._modir)/smart.mk}
           sm.rules.phony.* += using-$$(sm.var.temp._using)
           goal-$($(sm._this).name) : using-$$(sm.var.temp._using)
           using-$$(sm.var.temp._using): ; \
             $$(info smart: using $$@)\
 	    $$(call sm-load-module,$$(sm.var.temp._using))\
             echo using: $$@ -> $$(info $(sm.result.module.name))
-         ))
+         }}
   endef #sm.fun.using-module
 
-  $(foreach sm.var.temp._modir,$($(sm._this).using),$(sm.fun.using-module))
+  ${foreach sm.var.temp._modir,$($(sm._this).using),$(sm.fun.using-module)}
 endif # $(sm._this).using != ""
 
 ##################################################
@@ -128,23 +128,23 @@ endif
 
 ifneq ($($(sm._this).toolset),common)
   ifeq ($($(sm._this).suffix),)
-    $(call sm-check-defined,$(sm.var.toolset).target.suffix.$(sm.os.name).$($(sm._this).type))
+    ${call sm-check-defined,$(sm.var.toolset).target.suffix.$(sm.os.name).$($(sm._this).type)}
     $(sm._this).suffix := $($(sm.var.toolset).target.suffix.$(sm.os.name).$($(sm._this).type))
   endif
 endif
 
-ifeq ($(strip \
+ifeq (${strip \
          $($(sm._this).sources)\
          $($(sm._this).sources.external)\
-         $($(sm._this).intermediates)),)
+         $($(sm._this).intermediates)},)
   $(error smart: no sources or intermediates for module '$($(sm._this).name)')
 endif
 
 ifeq ($($(sm._this).type),t)
- $(if $($(sm._this).lang),,$(error smart: '$(sm._this).lang' must be defined for "tests" module))
+ ${if $($(sm._this).lang),,$(error smart: '$(sm._this).lang' must be defined for "tests" module)}
 endif
 
-sm.args.docs_format := $(strip $($(sm._this).docs.format))
+sm.args.docs_format := ${strip $($(sm._this).docs.format)}
 ifeq ($(sm.args.docs_format),)
   sm.args.docs_format := .dvi
 endif
@@ -152,9 +152,9 @@ endif
 ##################################################
 
 ## Clear compile options for all langs
-$(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
-  $(eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang) := )\
-  $(eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang).computed := ))
+${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+  ${eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang) := }\
+  ${eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang).computed := }}
 
 $(sm._this)._link.flags :=
 $(sm._this)._link.flags.computed :=
@@ -169,8 +169,8 @@ $(sm._this).flag_files :=
 
 ## eg. $(call sm.fun.append-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
 define sm.fun.append-items-with-fix
-$(foreach sm.var.temp._,$(strip $2),\
-  $(eval \
+${foreach sm.var.temp._,$(strip $2),\
+  ${eval \
     ## NOTE: sm.var.temp._ may contains commas ",", so must use $$ here
     ifeq ($$(filter $(strip $3)%$(strip $4),$$(sm.var.temp._)),$$(sm.var.temp._))
       $1 += $(sm.var.temp._)
@@ -181,7 +181,7 @@ $(foreach sm.var.temp._,$(strip $2),\
         $1 += $(strip $3)$(sm.var.temp._:$(strip $3)%$(strip $4)=%)$(strip $4)
       endif
     endif
-   ))
+   }}
 endef #sm.fun.append-items-with-fix
 
 ##
@@ -202,11 +202,11 @@ endef #sm.code.shift-flags-to-file
 ####################
 
 define sm.fun.compute-flags-compile
-$(eval \
+${eval \
   sm.temp._fvar_prop := compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang)
   sm.var.temp._fvar_name := $(sm._this).$$(sm.temp._fvar_prop)
- )\
-$(eval \
+ }\
+${eval \
   ifeq ($($(sm.var.temp._fvar_name).computed),)
     $(sm.var.temp._fvar_name).computed := true
 
@@ -243,11 +243,11 @@ $(eval \
       $(call sm.code.shift-flags-to-file,$(sm.temp._fvar_prop))
     endif
   endif
- )
+ }
 endef #sm.fun.compute-flags-compile
 
 define sm.fun.compute-flags-link
-$(eval \
+${eval \
   ifeq ($($(sm._this)._link.flags.computed),)
     $(sm._this)._link.flags.computed := true
     $(sm._this)._link.flags := $(filter %,\
@@ -265,11 +265,11 @@ $(eval \
       $(call sm.code.shift-flags-to-file,_link.flags)
     endif
   endif
- )
+ }
 endef #sm.fun.compute-flags-link
 
 define sm.fun.compute-intermediates-link
-$(eval \
+${eval \
   ifeq ($($(sm._this)._link.intermediates.computed),)
     $(sm._this)._link.intermediates.computed := true
     $(sm._this)._link.intermediates := $(filter %, $($(sm._this).intermediates))
@@ -278,11 +278,11 @@ $(eval \
       $(call sm.code.shift-flags-to-file,_link.intermediates)
     endif
   endif
- )
+ }
 endef #sm.fun.compute-intermediates-link
 
 define sm.fun.compute-libs-link
-$(eval \
+${eval \
   ifeq ($($(sm._this)._link.libs.computed),)
     $(sm._this)._link.libs.computed := true
     $(sm._this)._link.libs :=
@@ -301,7 +301,7 @@ $(eval \
       $(call sm.code.shift-flags-to-file,_link.libs)
     endif
   endif
- )
+ }
 endef #sm.fun.compute-libs-link
 
 ##################################################
@@ -328,7 +328,7 @@ endef #sm.fun.compute-intermediate.common
 ##
 ## source file of relative location
 define sm.fun.compute-source.
-$(call sm-relative-path,$($(sm._this).dir)/$(strip $1))
+${call sm-relative-path,$($(sm._this).dir)/$(strip $1)}
 endef #sm.fun.compute-source.
 
 ##
@@ -360,8 +360,8 @@ endef #sm.fun.compute-module-targets-static
 ifneq ($(and $(call is-true,$($(sm._this).gen_deps)),\
              $(call not-equal,$(MAKECMDGOALS),clean)),)
 define sm.fun.make-rule-depend
-  $(eval sm.var.temp._depend := $(sm.var.temp._intermediate:%.o=%$($(sm._this).depend.suffixes)))\
-  $(eval \
+  ${eval sm.var.temp._depend := $(sm.var.temp._intermediate:%.o=%$($(sm._this).depend.suffixes))}\
+  ${eval \
     -include $(sm.var.temp._depend)
     $(sm._this).depends += $(sm.var.temp._depend)
 
@@ -379,7 +379,7 @@ define sm.fun.make-rule-depend
     sm.args.flags.0 += $(strip $($(sm._this).compile.flags-$(sm.var.temp._source)))
     sm.args.flags.1 :=
     sm.args.flags.2 :=
-  )$(eval \
+  }${eval \
    ifeq ($(sm.global.has.rule.$(sm.args.output)),)
     sm.global.has.rule.$(sm.args.output) := true
     $(sm.args.output) : $(sm.var.temp._flag_file) $(sm.args.sources)
@@ -388,7 +388,7 @@ define sm.fun.make-rule-depend
           $$(info smart: update $(sm.args.output))\
           $(sm.var.Q))$(filter %, $(sm.tool.$($(sm._this).toolset).dependency.$(sm.args.lang)))
    endif
-  )
+  }
 endef #sm.fun.make-rule-depend
 else
   sm.fun.make-rule-depend :=
@@ -577,12 +577,12 @@ endef #sm.fun.check-strange-and-compute-common-source
 ##
 ##
 define sm.fun.make-common-compile-rules-for-langs
-$(foreach sm.var.temp._lang,$1,\
+${foreach sm.var.temp._lang,$1,\
    $(if $(sm.tool.common.$(sm.var.temp._lang).suffix),\
       ,$(error smart: toolset $($(sm._this).toolset)/$(sm.var.temp._lang) has no suffixes))\
    $(eval $(sm._this).sources.$(sm.var.temp._lang) = $($(sm._this).sources.$(sm.var.temp._lang)))\
    $(call sm.fun.compute-flags-compile)\
-   $(sm.fun.make-rules-compile-common))
+   $(sm.fun.make-rules-compile-common)}
 endef #sm.fun.make-common-compile-rules-for-langs
 
 ##################################################
@@ -608,7 +608,7 @@ $(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs.extra))
 
 ## Make compile rules for sources of each lang supported by the selected toolset.
 ## E.g. $(sm._this).sources.$(sm.var.temp._lang)
-$(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(if $($(sm.var.toolset).$(sm.var.temp._lang).suffix),\
       ,$(error smart: toolset $($(sm._this).toolset)/$(sm.var.temp._lang) has no suffixes))\
   $(call sm.fun.compute-flags-compile)\
@@ -616,7 +616,7 @@ $(foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(if $(and $(call equal,$(strip $($(sm._this).lang)),),\
              $($(sm._this).sources.has.$(sm.var.temp._lang))),\
          $(info smart: language choosed as "$(sm.var.temp._lang)" for "$($(sm._this).name)")\
-         $(eval $(sm._this).lang := $(sm.var.temp._lang))))
+         $(eval $(sm._this).lang := $(sm.var.temp._lang)))}
 
 ## Make object rules for .t sources file
 ifeq ($($(sm._this).type),t)
@@ -628,8 +628,8 @@ ifeq ($($(sm._this).type),t)
   $(sm._this).sources.has.$(sm.var.temp._lang).t := $(if $($(sm._this).sources.$(sm.var.temp._lang).t)$($(sm._this).sources.external.$(sm.var.temp._lang).t),true)
 
   ifeq ($(or $($(sm._this).sources.has.$(sm.var.temp._lang)),$($(sm._this).sources.has.$(sm.var.temp._lang).t)),true)
-    $(foreach sm.var.temp._source,$($(sm._this).sources.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile))
-    $(foreach sm.var.temp._source,$($(sm._this).sources.external.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile,external))
+    ${foreach sm.var.temp._source,$($(sm._this).sources.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile)}
+    ${foreach sm.var.temp._source,$($(sm._this).sources.external.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile,external)}
   endif
 
   sm.this.sources.$(sm.var.temp._lang).t = $($(sm._this).sources.$(sm.var.temp._lang).t)
@@ -640,8 +640,8 @@ endif # $(sm._this).type == t
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $($(sm._this).sources.unknown)),),\
             $(call equal,$(strip $($(sm._this).intermediates)),),\
-            $(call is-true,$($(sm._this)._intermediates_only))\
-        ),,true)
+            $(call is-true,$($(sm._this)._intermediates_only)))\
+        ,,true)
 
 ##-----------------------------------
 ## make static, shared, exe, t targets
