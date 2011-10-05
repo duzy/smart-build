@@ -434,7 +434,6 @@ $(if $(call equal,$(sm.this.type),shared),\
 endef #sm-generate-implib-internal
 #####
 define sm-generate-implib-external
-$(warning TODO: generate external implib)
 endef #sm-generate-implib-external
 
 ## sm-copy-files -- make rules for copying files
@@ -468,7 +467,6 @@ $(foreach v, $(sm.temp._files),\
 endef #sm-copy-files-internal
 #####
 define sm-copy-files-external
-$(warning TODO: external copy files)
 endef #sm-copy-files-external
 
 ## sm-copy-headers - copy headers into $(sm.out.inc)
@@ -567,7 +565,6 @@ $(eval \
 endef #sm-build-depends-internal
 #####
 define sm-build-depends-external
-$(warning TODO: external build depends)
 endef #sm-build-depends-external
 
 
