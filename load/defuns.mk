@@ -578,7 +578,18 @@ sm-load-sub-modules = $(call sm-deprecated, sm-load-sub-modules, sm-load-subdirs
 define sm-load-subdirs
 $(if $(sm.this.dir),,$(eval sm.this.dir := $(sm-this-dir)))\
 $(if $1,$(eval sm.this.dirs += $1))\
-$(eval include $(sm.dir.buildsys)/subdirs.mk)
+$(eval \
+  ifeq ($(wildcard $(sm.this.dir)),)
+    $$(error smart: sm.this.dir must be specified first)
+  endif
+
+  ifeq ($(strip $(sm.this.dirs)),)
+    sm.temp._submods := $(foreach _,$(sm.this.dirs),$(wildcard $(sm.this.dir)/$_/smart.mk))
+  else
+    sm.temp._submods := $(call sm-find-sub-modules, $(sm.this.dir))
+  endif
+  )\
+$(foreach _, $(sm.temp._submods), $(eval $$(call sm-load-module,$_)))
 endef #sm-load-subdirs
 
 ## Command for making out dir
