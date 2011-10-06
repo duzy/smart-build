@@ -332,6 +332,7 @@ define sm-use-external
    sm-build-this = $$(sm-build-this-external)
 
    ## use include here instead of sm-load-module
+   include $(sm.dir.buildsys)/preload.mk
    include $(sm.temp._using)
   )\
  $(eval \
@@ -578,7 +579,7 @@ define sm-load-subdirs
 $(if $(sm.this.dir),,$(eval sm.this.dir := $(sm-this-dir)))\
 $(if $1,$(eval sm.this.dirs += $1))\
 $(eval include $(sm.dir.buildsys)/subdirs.mk)
-endef
+endef #sm-load-subdirs
 
 ## Command for making out dir
 #$(if $(wildcard $1),,$(info mkdir: $1)$(shell [[ -d $1 ]] || mkdir -p $1))

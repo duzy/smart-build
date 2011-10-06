@@ -382,6 +382,9 @@ define sm.fun.make-rule-depend
   }${eval \
    ifeq ($(sm.global.has.rule.$(sm.args.output)),)
     sm.global.has.rule.$(sm.args.output) := true
+    ifeq ($(wildcard $(sm.args.sources)),)
+      $$(info smart: error: no source $(sm.args.sources) ($($(sm._this).name)))
+    endif
     $(sm.args.output) : $(sm.var.temp._flag_file) $(sm.args.sources)
 	$$(call sm-util-mkdir,$$(@D))
 	$(if $(call equal,$($(sm._this).verbose),true),,\

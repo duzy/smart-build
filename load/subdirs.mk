@@ -13,17 +13,17 @@ endif
 
 # avoid: if upper level module is 'subdirs', that sm.this.dirs will
 #	 affect 'this' module
-sm._var._temp._dir := $(sm.this.dir)
-sm._var._temp._subdirs := $(sm.this.dirs)
+sm.var.temp._dir := $(sm.this.dir)
+sm.var.temp._subdirs := $(sm.this.dirs)
 sm.this.dir :=
 sm.this.dirs :=
 
-sm._var._temp._subdir_mods := $(if $(sm._var._temp._subdirs),\
-  $(foreach v,$(sm._var._temp._subdirs),$(wildcard $(sm._var._temp._dir)/$v/smart.mk)),\
-  $(call sm-find-sub-modules, $(sm._var._temp._dir)))
+sm.var.temp._subdir_mods := $(if $(sm.var.temp._subdirs),\
+  $(foreach v,$(sm.var.temp._subdirs),$(wildcard $(sm.var.temp._dir)/$v/smart.mk)),\
+  $(call sm-find-sub-modules, $(sm.var.temp._dir)))
 
-$(foreach v,$(sm._var._temp._subdir_mods),$(eval $$(call sm-load-module,$v)))
+$(foreach v,$(sm.var.temp._subdir_mods),$(eval $$(call sm-load-module,$v)))
 
-#sm.this.dir := $(sm._var._temp._dir)
+#sm.this.dir := $(sm.var.temp._dir)
 sm.this.dir :=
 sm.this.dirs :=
