@@ -314,7 +314,7 @@ define sm-use-external
 
    sm.temp._using := $$(wildcard $$(sm.temp._modir)/smart.mk)
    ifeq ($$(sm.temp._using),)
-     $$(error smart: external module "$(sm.temp._modir)" does not have a smart.mk)
+     $$(error smart: external module "$$(sm.temp._modir)" does not have a smart.mk)
    endif
 
    ifeq ($(sm.this.name),)
