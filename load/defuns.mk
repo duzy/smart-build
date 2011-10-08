@@ -100,7 +100,7 @@ define sm-new-module-internal
    endif
 
    ifneq ($$(filter $$(sm.temp._name),$(sm.global.modules)),)
-     $$(error module "$$(sm.temp._name)" already defined in $(sm.global.modules.$$(sm.temp._name)))
+     $$(error module "$$(sm.temp._name)" already defined in "$$(sm.global.modules.$$(sm.temp._name))")
    endif
 
    ifeq ($(origin toolset),command line)
@@ -120,6 +120,7 @@ define sm-new-module-internal
    sm.this.name := $(sm.temp._name)
    sm.this.suffix := $(sm.temp._suffix)
    sm.this.dir := $$(call sm-module-dir)
+   sm.this.dirs :=
    sm.this.makefile := $$(call sm-this-makefile)
    sm.this.gen_deps := true
 
@@ -497,7 +498,8 @@ $(eval \
     $$(error sm.this.name is empty)
   endif
   ######
-  ifneq ($(sm.this.type),depends)
+  #ifneq ($(sm.this.type),depends)
+  ifeq ($(filter $(strip $(sm.this.type)),depends none),)
     ifeq ($(sm.this.toolset),)
       $$(error sm.this.toolset is empty)
     endif
@@ -589,19 +591,19 @@ sm-load-sub-modules = $(call sm-deprecated, sm-load-sub-modules, sm-load-subdirs
 ##        $(call sm-load-subdirs, apps tests)
 define sm-load-subdirs
 $(if $(sm.this.dir),,$(eval sm.this.dir := $(sm-this-dir)))\
-$(if $1,$(eval sm.this.dirs += $1))\
+$(if $1,$(eval sm.this.dirs += $(strip $1)))\
 $(eval \
   ifeq ($(wildcard $(sm.this.dir)),)
     $$(error smart: sm.this.dir must be specified first)
   endif
 
-  ifeq ($(strip $(sm.this.dirs)),)
+  ifneq ($(strip $(sm.this.dirs)),)
     sm.temp._submods := $(foreach _,$(sm.this.dirs),$(wildcard $(sm.this.dir)/$_/smart.mk))
   else
-    sm.temp._submods := $(call sm-find-sub-modules, $(sm.this.dir))
+    sm.temp._submods := $(wildcard $(sm.this.dir)/*/smart.mk)
   endif
   )\
-$(foreach _, $(sm.temp._submods), $(eval $$(call sm-load-module,$_)))
+$(foreach _, $(sm.temp._submods), $(call sm-load-module,$_))
 endef #sm-load-subdirs
 
 ## Command for making out dir

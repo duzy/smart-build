@@ -11,6 +11,7 @@ sm.this.compile.flags.infile :=
 sm.this.depends :=
 sm.this.depends.copyfiles :=
 sm.this.dir :=
+#sm.this.dirs :=
 sm.this.docs.format := .dvi
 sm.this.gen_deps := true
 sm.this.headers :=
