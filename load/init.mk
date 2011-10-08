@@ -85,7 +85,7 @@ sm.global.includes :=
 sm.global.libs :=
 sm.global.compile.flags :=
 sm.global.link.flags :=
-sm.global.module_types := static shared executable exe tests t docs depends
+sm.global.module_types := static shared executable exe tests t docs depends none
 
 ifeq ($(sm.config.variant),debug)
   sm.global.compile.flags += -g -ggdb

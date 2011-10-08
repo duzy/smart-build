@@ -308,7 +308,14 @@ endef #sm-use
 define sm-use-external
  $(eval \
    sm.temp._modir := $(strip $1)
+   ifeq ($$(sm.temp._modir),)
+     $$(error smart: must specify the location of the external module)
+   endif
+
    sm.temp._using := $$(wildcard $$(sm.temp._modir)/smart.mk)
+   ifeq ($$(sm.temp._using),)
+     $$(error smart: external module "$(sm.temp._modir)" does not have a smart.mk)
+   endif
 
    ifeq ($(sm.this.name),)
      $$(error smart: sm.this.name is empty, must use sm-new-module first)
@@ -402,10 +409,13 @@ define sm-compile-sources-internal
      )\
     $(call sm-clone-module, sm.this, $(sm._this))\
     $(eval \
-      $(sm._this)._cnum := $(call sm-compute-compile-num,1)
-      $(sm._this)._intermediates_only := true
-      include $(sm.dir.buildsys)/build-rules.mk
-      $(sm._this)._intermediates_only :=)\
+      ifneq ($($(sm._this).type),none)
+        $(sm._this)._cnum := $(call sm-compute-compile-num,1)
+        $(sm._this)._intermediates_only := true
+        include $(sm.dir.buildsys)/build-rules.mk
+        $(sm._this)._intermediates_only :=
+      endif
+     )\
    ,$(error smart: No sources defined))
 endef #sm-compile-sources-internal
 #####
@@ -431,7 +441,9 @@ endef #sm.code.generate-implib-linux
 define sm-generate-implib-internal
 $(call sm-check-not-empty,sm.os.name)\
 $(if $(call equal,$(sm.this.type),shared),\
-  $(eval $(sm.code.generate-implib-$(sm.os.name))))
+    $(eval $(sm.code.generate-implib-$(sm.os.name))),\
+  $(if $(filter shared%,$(sm.this.type)),,\
+      $(error smart: cannot generate import lib for $(sm.this.type) module)))
 endef #sm-generate-implib-internal
 #####
 define sm-generate-implib-external
@@ -454,13 +466,13 @@ $(eval \
     $$(error smart: target location(directory) must be specified)
   endif
   ##########
-  sm.var.temp._d := $(call sm-relative-path,$(sm.temp._location))
+  sm.var.temp._d := $(patsubst $(sm.top)/%,%,$(sm.temp._location))
  )\
 $(foreach v, $(sm.temp._files),\
    $(eval \
      sm.this.depends.copyfiles += $(sm.var.temp._d)/$(notdir $v)
      $(sm.var.temp._d)/$(notdir $v): \
-     $(call sm-relative-path,$(sm.this.dir)/$v) ;\
+     $(patsubst $(sm.top)/%,%,$(sm.this.dir)/$v) ;\
        @( echo smart: copy: $$@ )\
        && ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@))\
        && ($(CP) -u $$< $$@)
@@ -511,11 +523,11 @@ $(eval \
   endif
   ##########
   sm._this := sm.module.$(sm.this.name)
-  sm.__this := sm.module.$(sm.this.name)
   $$(call sm-clone-module, sm.this, $$(sm._this))
-
-  $$(sm._this)._cnum := 0
-  include $(sm.dir.buildsys)/build-this.mk
+  ifneq ($$($$(sm._this).type),none)
+    $$(sm._this)._cnum := 0
+    include $(sm.dir.buildsys)/build-this.mk
+  endif
  )\
 $(eval \
   ifneq ($(strip $($(sm._this).sources.unknown)),)
@@ -596,13 +608,13 @@ endef #sm-load-subdirs
 #$(if $(wildcard $1),,$(info mkdir: $1)$(shell [[ -d $1 ]] || mkdir -p $1))
 define sm-util-mkdir
 $(if $(wildcard $1),,$(shell [[ -d $1 ]] || mkdir -p $1))
-endef
+endef #sm-util-mkdir
 
 ## Convert path to relative path (to $(sm.top)).
-define sm-relative-path
-$(patsubst $(sm.top)/%,%,$(strip $1))
-endef
-
+# define sm-relative-path
+# $(patsubst $(sm.top)/%,%,$(strip $1))
+# endef #sm-relative-path
+sm-relative-path = $(error sm-relative-path is deprecated)
 sm-to-relative-path = $(error sm-to-relative-path is deprecated, use sm-relative-path)
 
 

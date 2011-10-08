@@ -308,7 +308,7 @@ endef #sm.fun.compute-libs-link
 
 ## Compute the intermediate name without suffix.
 define sm.fun.compute-intermediate-name
-$($(sm._this)._intermediate_prefix)$(basename $(subst ..,_,$(call sm-relative-path,$(sm.var.temp._source))))
+$($(sm._this)._intermediate_prefix)$(basename $(subst ..,_,$(patsubst $(sm.top)/%,%,$(sm.var.temp._source))))
 endef #sm.fun.compute-intermediate-name
 
 ##
@@ -328,31 +328,31 @@ endef #sm.fun.compute-intermediate.common
 ##
 ## source file of relative location
 define sm.fun.compute-source.
-${call sm-relative-path,$($(sm._this).dir)/$(strip $1)}
+${patsubst $(sm.top)/%,%,$($(sm._this).dir)/$(strip $1)}
 endef #sm.fun.compute-source.
 
 ##
 ## source file of fixed location
 define sm.fun.compute-source.external
-$(call sm-relative-path,$(strip $1))
+$(patsubst $(sm.top)/%,%,$(strip $1))
 endef #sm.fun.compute-source.external
 
 ##
 ## binary module to be built
 define sm.fun.compute-module-targets-exe
-$(call sm-relative-path,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
+$(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
 endef #sm.fun.compute-module-targets-exe
 
 define sm.fun.compute-module-targets-t
-$(call sm-relative-path,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
+$(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
 endef #sm.fun.compute-module-targets-t
 
 define sm.fun.compute-module-targets-shared
-$(call sm-relative-path,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
+$(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
 endef #sm.fun.compute-module-targets-shared
 
 define sm.fun.compute-module-targets-static
-$(call sm-relative-path,$(sm.out.lib))/lib$($(sm._this).name:lib%=%)$($(sm._this).suffix)
+$(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name:lib%=%)$($(sm._this).suffix)
 endef #sm.fun.compute-module-targets-static
 
 ##################################################
