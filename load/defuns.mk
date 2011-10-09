@@ -166,7 +166,7 @@ define sm-new-module-internal
    endif
   ))\
  $(eval \
-   ifneq ($(filter $(sm.this.type),depends docs),)
+   ifeq ($(filter $(sm.this.type),none depends docs),)
      $(if $(sm.this.toolset),,$$(error smart: toolset is not set))
    endif
   )
