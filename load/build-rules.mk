@@ -381,10 +381,10 @@ define sm.fun.make-rule-depend
     sm.args.flags.2 :=
   }${eval \
    ifeq ($(sm.global.has.rule.$(sm.args.output)),)
-    sm.global.has.rule.$(sm.args.output) := true
     ifeq ($(wildcard $(sm.args.sources)),)
-      $$(info smart: error: no source $(sm.args.sources) ($($(sm._this).name)))
+      $$(info smart: missing $(sm.args.sources) ($($(sm._this).name)))
     endif
+    sm.global.has.rule.$(sm.args.output) := true
     $(sm.args.output) : $(sm.var.temp._flag_file) $(sm.args.sources)
 	$$(call sm-util-mkdir,$$(@D))
 	$(if $(call equal,$($(sm._this).verbose),true),,\
@@ -407,7 +407,7 @@ define sm.fun.make-rule-compile
  $(if $1,$(call sm-check-equal,$(strip $1),external,smart: arg \#3 must be 'external' if specified))\
  $(call sm-check-defined,sm.fun.compute-source.$(strip $1), smart: I donot know how to compute sources of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
  $(call sm-check-defined,sm.fun.compute-intermediate.$(strip $1), smart: I donot how to compute intermediates of lang '$(sm.var.temp._lang)$(if $1,($(strip $1)))')\
-  $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.$(strip $1)))\
+ $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.$(strip $1)))\
  $(eval $(sm._this).intermediates += $(sm.var.temp._intermediate))\
  $(call sm.fun.make-rule-depend,$1)\
  $(eval \
