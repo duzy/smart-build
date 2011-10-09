@@ -377,9 +377,10 @@ define sm-use-external
 endef #sm-use-external
 
 ## Find level-one sub-modules.
-define sm-find-sub-modules
-$(wildcard $(strip $1)/*/smart.mk)
-endef #sm-find-sub-modules
+# define sm-find-sub-modules
+# $(wildcard $(strip $1)/*/smart.mk)
+# endef #sm-find-sub-modules
+sm-find-sub-modules = $(error sm-find-sub-modules is deprecated)
 
 ##
 define sm-compute-compile-num
@@ -527,8 +528,13 @@ $(eval \
   sm._this := sm.module.$(sm.this.name)
   $$(call sm-clone-module, sm.this, $$(sm._this))
   ifneq ($$($$(sm._this).type),none)
+    ifeq ($$($$(sm._this)._already_built),true)
+      $$(error module "$(sm.this.name)" has been built already)
+    endif
+
     $$(sm._this)._cnum := 0
     include $(sm.dir.buildsys)/build-this.mk
+    $$(sm._this)._already_built := true
   endif
  )\
 $(eval \
@@ -602,8 +608,10 @@ $(eval \
   else
     sm.temp._submods := $(wildcard $(sm.this.dir)/*/smart.mk)
   endif
-  )\
-$(foreach _, $(sm.temp._submods), $(call sm-load-module,$_))
+  ## must clear sm.this.dirs in case of consequence sm-load-subdirs in a subdir
+  sm.this.dirs :=
+ )\
+$(foreach _, $(sm.temp._submods), $(call sm-load-module, $_))
 endef #sm-load-subdirs
 
 ## Command for making out dir

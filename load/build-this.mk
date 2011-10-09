@@ -45,6 +45,8 @@ ifneq ($(filter $($(sm._this).type),$(sm.global.module_types)),)
     #$(sm._this)._cnum := 0
 
     include $(sm.dir.buildsys)/build-rules.mk
+
+    $(sm._this)._already_built := true
   endif
 else
   $(warning smart: "$($(sm._this).name)" will not be built)
