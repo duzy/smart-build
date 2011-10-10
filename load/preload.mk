@@ -23,6 +23,7 @@ sm.this.libdirs :=
 sm.this.libs :=
 sm.this.link.flags :=
 sm.this.link.flags.infile :=
+sm.this.link.intermediates.infile :=
 sm.this.name :=
 sm.this.out_implib :=
 sm.this.rpath :=

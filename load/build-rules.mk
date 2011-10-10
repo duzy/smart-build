@@ -382,7 +382,7 @@ define sm.fun.make-rule-depend
   }${eval \
    ifeq ($(sm.global.has.rule.$(sm.args.output)),)
     ifeq ($(wildcard $(sm.args.sources)),)
-      $$(info smart: missing $(sm.args.sources) ($($(sm._this).name)))
+      #$$(info smart: missing $(sm.args.sources) ($($(sm._this).name)))
     endif
     sm.global.has.rule.$(sm.args.output) := true
     $(sm.args.output) : $(sm.var.temp._flag_file) $(sm.args.sources)
@@ -413,7 +413,7 @@ define sm.fun.make-rule-compile
  $(eval \
    sm.args.target := $(sm.var.temp._intermediate)
    sm.args.sources := $(call sm.fun.compute-source.$(strip $1),$(sm.var.temp._source))
-   sm.args.prerequisites = $(sm.args.sources)
+   sm.args.prerequisites = $$(sm.args.sources)
    sm.args.flags.0 := $($(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang))
    sm.args.flags.0 += $($(sm._this).compile.flags-$(sm.var.temp._source))
    sm.args.flags.1 :=
@@ -422,9 +422,7 @@ define sm.fun.make-rule-compile
    ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
      $(sm.args.target) : $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang)
    endif
-
-   $$(sm-rule-compile-$(sm.var.temp._lang))
- )
+  )$(sm-rule-compile-$(sm.var.temp._lang))
 endef #sm.fun.make-rule-compile
 
 ## 
