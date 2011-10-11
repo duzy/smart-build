@@ -608,7 +608,8 @@ $(eval \
   else
     sm.temp._submods := $(wildcard $(sm.this.dir)/*/smart.mk)
   endif
-  ## must clear sm.this.dirs in case of consequence sm-load-subdirs in a subdir
+  ## must clear sm.this.dirs in case of consequence sm-load-subdirs
+  ## from in a subdir
   sm.this.dirs :=
  )\
 $(foreach _, $(sm.temp._submods), $(call sm-load-module, $_))
