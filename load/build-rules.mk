@@ -175,6 +175,55 @@ $(sm._this).flag_files :=
 
 ##################################################
 
+## NOTE: this may slow down the compilation!! The make builtin function "sort"
+##       also remove duplicates!
+define sm.fun.remove-duplicates
+${eval \
+  sm.var.temp._var := $(strip $1)
+ }\
+${eval \
+  sm.var.temp._$(sm.var.temp._var) :=
+ }\
+${foreach sm.var.temp._, $($(sm.var.temp._var)),\
+  ${if ${filter $(sm.var.temp._),$(sm.var.temp._$(sm.var.temp._var))},\
+      ,${eval sm.var.temp._$(sm.var.temp._var) += $(sm.var.temp._)}\
+   }\
+ }\
+${eval \
+  $(sm.var.temp._var) := $(sm.var.temp._$(sm.var.temp._var))
+  sm.var.temp._$(sm.var.temp._var) :=
+ }
+endef #sm.fun.remove-duplicates
+
+##
+define sm.fun.remove-sequence-duplicates
+${eval \
+  sm.var.temp._var := $(strip $1)
+ }\
+${eval \
+  sm.var.temp._$(sm.var.temp._var) :=
+ }\
+${foreach sm.var.temp._, $($(sm.var.temp._var)),\
+   ${eval \
+     ifneq ($$(lastword $$(sm.var.temp._$(sm.var.temp._var))),$(sm.var.temp._))
+       sm.var.temp._$(sm.var.temp._var) += $(sm.var.temp._)
+     endif
+    }\
+ }\
+${eval \
+  $(sm.var.temp._var) := $(sm.var.temp._$(sm.var.temp._var))
+  sm.var.temp._$(sm.var.temp._var) :=
+ }
+endef #sm.fun.remove-sequence-duplicates
+
+# vvvvvvv := a b c d e f a a a f b c e g h i j c d
+# $(call sm.fun.remove-duplicates,vvvvvvv)
+# $(info test: $(vvvvvvv))
+
+# vvvvvvv := a b c d e f a a a f b c e g h i j c d
+# $(call sm.fun.remove-sequence-duplicates,vvvvvvv)
+# $(info test: $(vvvvvvv))
+
 ## eg. $(call sm.fun.append-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
 define sm.fun.append-items-with-fix
 ${foreach sm.var.temp._,$(strip $2),\
@@ -247,7 +296,7 @@ ${eval \
            $$($(sm._this).includes) \
            $$($(sm._this).used.includes), -I, , -%)
 
-    #$(sm.var.temp._fvar_name) := $$(call unique-flags)
+    $$(call sm.fun.remove-duplicates,$(sm.var.temp._fvar_name))
 
     ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
       $(call sm.code.shift-flags-to-file,$(sm.temp._fvar_prop))
@@ -270,6 +319,8 @@ ${eval \
       $$(if $$(filter -shared,$$($(sm._this)._link.flags)),,\
           $$(eval $(sm._this)._link.flags += -shared))
     endif
+
+    $$(call sm.fun.remove-duplicates,$(sm._this)._link.flags)
 
     ifeq ($(call is-true,$($(sm._this).link.flags.infile)),true)
       $(call sm.code.shift-flags-to-file,_link.flags)
@@ -295,17 +346,26 @@ define sm.fun.compute-libs-link
 ${eval \
   ifeq ($($(sm._this)._link.libs.computed),)
     $(sm._this)._link.libs.computed := true
+    $(sm._this)._link.libdirs :=
     $(sm._this)._link.libs :=
 
-    $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, \
+    $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libdirs, \
            $$(sm.global.libdirs) \
            $$($(sm._this).libdirs) \
            $$($(sm._this).used.libdirs), -L, , -% -Wl%)
+
+    $$(call sm.fun.remove-duplicates,$(sm._this)._link.libdirs)
 
     $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, \
            $$(sm.global.libs) \
            $$($(sm._this).libs) \
            $$($(sm._this).used.libs), -l, , -% -Wl%)
+
+    $$(call sm.fun.remove-sequence-duplicates,$(sm._this)._link.libs)
+
+    $(sm._this)._link.libs := \
+       $$($(sm._this)._link.libdirs) \
+       $$($(sm._this)._link.libs)
 
     ifeq ($(call is-true,$($(sm._this).libs.infile)),true)
       $(call sm.code.shift-flags-to-file,_link.libs)
