@@ -75,6 +75,7 @@ ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
 ifneq ($($(sm._this).using_list),)
   define sm.fun.compute-used-flags
   ${eval \
+    $(sm._this).using_list.appended += $(sm.var.temp._use)
     $(sm._this).used.defines += $($(sm._that).export.defines)
     $(sm._this).used.includes += $($(sm._that).export.includes)
     $(sm._this).used.compile.flags += $($(sm._that).export.compile.flags)
@@ -85,7 +86,8 @@ ifneq ($($(sm._this).using_list),)
   endef #sm.fun.compute-used-flags
   ${foreach sm.var.temp._use,$($(sm._this).using_list),\
     ${eval sm._that := sm.module.$(sm.var.temp._use)}\
-    $(sm.fun.compute-used-flags)}
+    ${if ${filter $(sm.var.temp._use),$($(sm._this).using_list.appended)},\
+        ,$(sm.fun.compute-used-flags)}}
 endif # $(sm._this).using_list != ""
 
 ifneq ($($(sm._this).using),)
