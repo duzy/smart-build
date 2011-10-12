@@ -616,8 +616,9 @@ ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(sm.fun.make-rules-compile)\
   $(if $(and $(call equal,$(strip $($(sm._this).lang)),),\
              $($(sm._this).sources.has.$(sm.var.temp._lang))),\
-         $(info smart: language choosed as "$(sm.var.temp._lang)" for "$($(sm._this).name)")\
-         $(eval $(sm._this).lang := $(sm.var.temp._lang)))}
+         $(no-info smart: language choosed as "$(sm.var.temp._lang)" for "$($(sm._this).name)")\
+         $(eval $(sm._this).lang := $(sm.var.temp._lang))\
+         $(eval sm.this.lang := $(sm.var.temp._lang)))}
 
 ## Make object rules for .t sources file
 ifeq ($($(sm._this).type),t)
