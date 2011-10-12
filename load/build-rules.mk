@@ -776,10 +776,6 @@ ifneq ($($(sm._this).headers.???),)
   headers-$($(sm._this).name) : $($(sm._this).headers.???)
 endif # $(sm._this).headers.copied != ""
 
-ifeq ($($(sm._this).name),openssl)
-  $(info headers: $($(sm._this).name): $($(sm._this).type): $($(sm._this).headers.???))
-endif
-
 sm.this.depends.copyfiles := $($(sm._this).depends.copyfiles)
 
 ##################################################
