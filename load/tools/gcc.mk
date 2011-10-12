@@ -20,7 +20,7 @@ sm.tool.gcc.cmd.asm := gcc
 sm.tool.gcc.cmd.ld := gcc
 sm.tool.gcc.cmd.ar := ar crs
 
-## Languages supported by this toolset, the order is important,
+## Languages supported by this toolset, the order is significant,
 ## the order defines the priority of linker
 sm.tool.gcc.langs := c++ c asm
 sm.tool.gcc.c.suffix := .c

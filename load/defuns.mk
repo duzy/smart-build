@@ -287,7 +287,7 @@ define sm-use
      $$(error smart: $(sm.this.name) already configured, cannot do using)
    endif
   )\
- $(info smart: use "$(sm.temp._name)" for "$(sm.this.name)"..)\
+ $(no-info smart: use "$(sm.temp._name)" for "$(sm.this.name)"..)\
  $(eval \
    ifneq ($($(sm._that).name),$(sm.temp._name))
      $$(error smart: module "$(sm.temp._name)" is misconfigured as "$($(sm._that).name)")
@@ -330,7 +330,7 @@ define sm-use-external
    endif
    sm.global.using += $(sm.this.name)
   )\
- $(info smart: use external "$(sm.temp._modir)" for "$(sm.this.name)"..)\
+ $(no-info smart: use external "$(sm.temp._modir)" for "$(sm.this.name)"..)\
  $(eval \
    $$(call sm-clone-module, sm.this, $(sm._this))
    sm-new-module = $$(sm-new-module-external)
@@ -401,7 +401,7 @@ endef #sm-compute-compile-num
 sm-compile-sources = $(sm-compile-sources-internal)
 define sm-compile-sources-internal
  $(if $(strip $(sm.this.sources) $(sm.this.sources.external)),\
-    $(info smart: intermediates for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
+    $(no-info smart: intermediates for '$(sm.this.name)' by $(strip $(sm-this-makefile)))\
     $(eval \
       ifeq ($(sm.this.name),)
         $$(error smart: internal: sm.this.name is empty)
