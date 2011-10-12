@@ -66,6 +66,20 @@ sm.tool.common.intermediate.suffix.noweb.LaTeX := .latex
 #sm.tool.common.intermediate.suffix.LaTeX := .dvi
 
 ##################################################
+## common commands
+sm.tool.common.CXX = g++
+sm.tool.common.CC = gcc
+sm.tool.common.CP = cp
+sm.tool.common.PERL = perl
+sm.tool.common.GPERF = gperf
+sm.tool.common.ASM = as
+sm.tool.common.FLEX = flex
+#sm.tool.common.YACC = yacc
+sm.tool.common.YACC = bison
+sm.tool.common.AWK = gawk
+sm.tool.common.MKDIR = mkdir
+
+##################################################
 
 ##
 ##

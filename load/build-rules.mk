@@ -648,6 +648,10 @@ sm.var.temp._should_make_targets := \
 ## make static, shared, exe, t targets
 ifneq ($($(sm._this).toolset),common)
 ifeq ($(sm.var.temp._should_make_targets),true)
+  ifeq ($($(sm._this).lang),)
+    $(error smart: $(sm._this).lang is empty)
+  endif
+
   ## Make rule for targets of the module
   $(if $($(sm._this).intermediates),,$(error smart: no intermediates for building '$($(sm._this).name)'))
 

@@ -476,7 +476,7 @@ $(foreach v, $(sm.temp._files),\
      $(patsubst $(sm.top)/%,%,$(sm.this.dir)/$v) ;\
        @( echo smart: copy: $$@ )\
        && ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@))\
-       && ($(CP) -u $$< $$@)
+       && ($(sm.tool.common.CP) -u $$< $$@)
     ))
 endef #sm-copy-files-internal
 #####

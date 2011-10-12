@@ -5,29 +5,33 @@
 ## This file is expected to be included in build/main.mk, and before any
 ## other files to be included.
 
-CXX = g++
-CC = gcc
-CP = cp
-PERL = perl
-GPERF = gperf
-ASM = as
-FLEX = flex
-#YACC = yacc
-YACC = bison
-AWK = gawk
-MKDIR = mkdir
-
-# ifeq ($(strip $(sm.out)),)
-#   $(info smart: ************************************************************)
-#   $(info smart:  The top level output directory is empty, maybe you changed)
-#   $(info smart:  the value of variable 'sm.out' by mistaken.)
-#   $(info smart: ************************************************************)
-#   $(error "Top level output directory unassigned.")
-# endif
+# CXX = g++
+# CC = gcc
+# CP = cp
+# PERL = perl
+# GPERF = gperf
+# ASM = as
+# FLEX = flex
+# #YACC = yacc
+# YACC = bison
+# AWK = gawk
+# MKDIR = mkdir
+CXX = $(error CXX deprecated)
+CC = $(error CC deprecated)
+CP = $(error CP deprecated)
+PERL = $(error PERL deprecated)
+GPERF = $(error GPERF deprecated)
+ASM = $(error ASM deprecated)
+FLEX = $(error FLEX deprecated)
+YACC = $(error YACC deprecated)
+AWK = $(error AWK deprecated)
+MKDIR = $(error MKDIR deprecated)
 
 # Detect custome config file and apply it.
 ifneq ($(wildcard $(sm.top)/custom-config),)
-  $(info smart: applying custom config...)
-  $(eval -include $(sm.top)/custom-config)
+  $(warning smart: "custom-config" should be renamred as "smart.config")
 endif
-
+ifneq ($(wildcard $(sm.top)/smart.config),)
+  $(info smart: apply smart.config..)
+  $(eval -include $(sm.top)/smart.config)
+endif
