@@ -846,7 +846,7 @@ ifeq ($(strip $($(sm._this).type)),depends)
   goal-$($(sm._this).name): \
     $($(sm._this).depends) \
     $($(sm._this).depends.copyfiles) \
-    $($(sm._this).targets) ; @echo "smart: $@, $^"
+    $($(sm._this).targets) #; @echo "smart: $@, $^"
   clean-$($(sm._this).name):
 	$(call sm.tool.common.rm, $($(sm._this).depends) $($(sm._this).depends.copyfiles))
 endif ## $(sm._this).type != depends
