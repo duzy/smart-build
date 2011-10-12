@@ -71,7 +71,9 @@ $(eval \
   sm.temp._src := $(strip $1)
   sm.temp._dst := $(strip $2)
  )\
-$(foreach sm.temp._, $(sm.module.properties),\
+$(foreach sm.temp._,\
+     $(sm.module.properties)\
+     $(foreach _,$($(sm.temp._src).headers.*), .headers.$_! .headers.$_),\
   $(eval sm.temp._flavor := $(flavor $(sm.temp._src)$(sm.temp._)))\
   $(eval \
     ifeq ($(sm.temp._flavor),simple)
@@ -467,16 +469,15 @@ $(eval \
     $$(error smart: target location(directory) must be specified)
   endif
   ##########
-  sm.var.temp._d := $(patsubst $(sm.top)/%,%,$(sm.temp._location))
+  sm.var.temp._d := $(sm.temp._location:$(sm.top)/%=%)
  )\
 $(foreach v, $(sm.temp._files),\
    $(eval \
      sm.this.depends.copyfiles += $(sm.var.temp._d)/$(notdir $v)
-     $(sm.var.temp._d)/$(notdir $v): \
-     $(patsubst $(sm.top)/%,%,$(sm.this.dir)/$v) ;\
-       @( echo smart: copy: $$@ )\
-       && ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@))\
-       && ($(sm.tool.common.CP) -u $$< $$@)
+     $(sm.var.temp._d)/$(notdir $v): $(sm.this.dir:$(sm.top)/%=%)/$v ;\
+       @( echo smart: copy: $$@ ) &&\
+       ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@)) &&\
+       ($(sm.tool.common.CP) -u $$< $$@)
     ))
 endef #sm-copy-files-internal
 #####
@@ -485,10 +486,11 @@ endef #sm-copy-files-external
 
 ## sm-copy-headers - copy headers into $(sm.out.inc)
 ## It's a shortcut for: $(call sm-copy-files, $1, $(sm.out.inc)/$2)
-define sm-copy-headers
- $(call sm-check-not-empty, sm.out.inc)\
- $(call sm-copy-files,$1,$(sm.out.inc)/$(strip $2))
-endef #sm-copy-headers
+# define sm-copy-headers
+#  $(call sm-check-not-empty, sm.out.inc)\
+#  $(call sm-copy-files,$1,$(sm.out.inc)/$(strip $2))
+# endef #sm-copy-headers
+sm-copy-headers = $(error "sm-copy-headers" is deprecated, use "sm.this.headers" and "sm.this.headers.*" instead)
 
 ## sm-build-this - Build the current module
 sm-build-this = $(sm-build-this-internal)

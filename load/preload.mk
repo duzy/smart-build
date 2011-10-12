@@ -4,6 +4,10 @@
 
 ## This file is expected to be included BEFORE including an 'smart.mk'(module).
 
+$(foreach _, $(sm.this.headers.*),\
+   $(eval sm.this.headers.$_! :=)\
+   $(eval sm.this.headers.$_ :=))
+
 sm.log.filename :=
 sm.this.clean-steps :=
 sm.this.compile.flags :=
@@ -14,6 +18,7 @@ sm.this.dir :=
 #sm.this.dirs :=
 sm.this.docs.format := .dvi
 sm.this.gen_deps := true
+sm.this.headers.* :=
 sm.this.headers :=
 sm.this.includes :=
 sm.this.intermediates :=

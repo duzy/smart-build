@@ -117,23 +117,27 @@ sm.var.action.exe := link
 sm.var.action.t := link
 sm.var.action := $(sm.var.action.$($(sm._this).type))
 
-sm.var.toolset := sm.tool.$($(sm._this).toolset)
-ifeq ($($(sm.var.toolset)),)
-  include $(sm.dir.buildsys)/loadtool.mk
-endif
-
-ifneq ($($(sm.var.toolset)),true)
-  $(error smart: $(sm.var.toolset) is not defined)
-endif
-
-ifneq ($($(sm._this).toolset),common)
-  ifeq ($($(sm._this).suffix),)
-    ${call sm-check-defined,$(sm.var.toolset).target.suffix.$(sm.os.name).$($(sm._this).type)}
-    $(sm._this).suffix := $($(sm.var.toolset).target.suffix.$(sm.os.name).$($(sm._this).type))
+ifneq ($(strip $($(sm._this).type)),depends)
+  sm.var.toolset := sm.tool.$($(sm._this).toolset)
+  ifeq ($($(sm.var.toolset)),)
+    include $(sm.dir.buildsys)/loadtool.mk
   endif
-endif
+
+  ifneq ($($(sm.var.toolset)),true)
+    $(error smart: $(sm.var.toolset) is not defined)
+  endif
+
+  ifneq ($($(sm._this).toolset),common)
+    ifeq ($($(sm._this).suffix),)
+      ${call sm-check-defined,$(sm.var.toolset).target.suffix.$(sm.os.name).$($(sm._this).type)}
+      $(sm._this).suffix := $($(sm.var.toolset).target.suffix.$(sm.os.name).$($(sm._this).type))
+    endif
+  endif # $(sm._this).toolset != common
+endif ## $(sm._this).type != depends
 
 ifeq (${strip \
+         $(foreach _, $($(sm._this).headers.*), $($(sm._this).headers.$_))\
+         $($(sm._this).depends)\
          $($(sm._this).sources)\
          $($(sm._this).sources.external)\
          $($(sm._this).intermediates)},)
@@ -152,9 +156,11 @@ endif
 ##################################################
 
 ## Clear compile options for all langs
+ifneq ($(strip $($(sm._this).type)),depends)
 ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   ${eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang) := }\
   ${eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang).computed := }}
+endif ## $(sm._this).type != depends
 
 $(sm._this)._link.flags :=
 $(sm._this)._link.flags.computed :=
@@ -238,6 +244,8 @@ ${eval \
            $$(sm.global.includes) \
            $$($(sm._this).includes) \
            $$($(sm._this).used.includes), -I, , -%)
+
+    #$(sm.var.temp._fvar_name) := $$(call unique-flags)
 
     ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
       $(call sm.code.shift-flags-to-file,$(sm.temp._fvar_prop))
@@ -596,8 +604,10 @@ sm.var.common.langs :=
 sm.var.common.langs.extra :=
 $(sm._this).sources.common :=
 $(sm._this).sources.unknown :=
-$(foreach sm.var.temp._source, $($(sm._this).sources) $($(sm._this).sources.external),\
-    $(sm.fun.check-strange-and-compute-common-source))
+ifneq ($(strip $($(sm._this).type)),depends)
+  $(foreach sm.var.temp._source, $($(sm._this).sources) $($(sm._this).sources.external),\
+      $(sm.fun.check-strange-and-compute-common-source))
+endif ## $(sm._this).type != depends
 
 ## Export computed common sources.
 $(sm._this).sources.common := $(strip $($(sm._this).sources.common))
@@ -607,6 +617,7 @@ $(sm._this).sources.common := $(strip $($(sm._this).sources.common))
 $(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs))
 $(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs.extra))
 
+ifneq ($(strip $($(sm._this).type)),depends)
 ## Make compile rules for sources of each lang supported by the selected toolset.
 ## E.g. $(sm._this).sources.$(sm.var.temp._lang)
 ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
@@ -619,6 +630,7 @@ ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
          $(no-info smart: language choosed as "$(sm.var.temp._lang)" for "$($(sm._this).name)")\
          $(eval $(sm._this).lang := $(sm.var.temp._lang))\
          $(eval sm.this.lang := $(sm.var.temp._lang)))}
+endif ## $(sm._this).type != depends
 
 ## Make object rules for .t sources file
 ifeq ($($(sm._this).type),t)
@@ -641,6 +653,7 @@ endif # $(sm._this).type == t
 
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $($(sm._this).sources.unknown)),),\
+            $(call equal,$(strip $($(sm._this).type)),depends),\
             $(call equal,$(strip $($(sm._this).intermediates)),),\
             $(call is-true,$($(sm._this)._intermediates_only)))\
         ,,true)
@@ -721,29 +734,86 @@ sm.this.sources.common := $($(sm._this).sources.common)
 sm.this.sources.unknown := $($(sm._this).sources.unknown)
 
 ##################################################
+# copy headers
 ##################################################
 
-ifeq ($(sm.var.temp._should_make_targets),true)
+## this is the final headers to be copied
+$(sm._this).headers.??? :=
 
-ifeq ($(strip $($(sm._this).intermediates)),)
-  $(warning smart: no intermediates)
+## sm-copy-files will append to this
+sm.this.depends.copyfiles :=
+
+## headers from sm.this.headers
+ifneq ($(call is-true,$($(sm._this).headers!)),true)
+  ifneq ($($(sm._this).headers),)
+    $(call sm-copy-files, $($(sm._this).headers), $(sm.out.inc))
+    $(sm._this).headers.??? += $(foreach _,$($(sm._this).headers),$(sm.out.inc)/$_)
+  endif # $(sm._this).headers != ""
+endif # $(sm._this).headers! == true
+
+## select multipart headers:
+##     sm.this.headers.* := foo bar
+##     sm.this.headers.foo := foo.h # copy to foo/foo.h
+##     sm.this.headers.bar := bar.h # copy to bar/bar.h
+ifneq ($($(sm._this).headers.*),)
+define sm.fun.copy-headers
+$(eval \
+    ifneq ($(call is-true,$($(sm._this).headers.$(sm.var.temp._hp)!)),true)
+    ifneq ($($(sm._this).headers.$(sm.var.temp._hp)),)
+      $$(call sm-copy-files, $($(sm._this).headers.$(sm.var.temp._hp)), $(sm.out.inc)/$(sm.var.temp._hp))
+      $(sm._this).headers.??? += $(foreach _, $($(sm._this).headers.$(sm.var.temp._hp)),$(sm.out.inc)/$(sm.var.temp._hp)/$_)
+    endif # $(sm._this).headers.$(sm.var.temp._hp)! != true
+    endif # $(sm._this).headers.$(sm.var.temp._hp) != ""
+ )
+endef #sm.fun.copy-headers
+  $(foreach sm.var.temp._hp, $($(sm._this).headers.*), $(sm.fun.copy-headers))
+  sm.fun.copy-headers = $(error smart: internal: sm.fun.copy-headers is private)
+endif # $(sm._this).headers.* != ""
+
+## export the final copy rule
+ifneq ($($(sm._this).headers.???),)
+  $(sm._this).depends.copyfiles += $(sm.this.depends.copyfiles)
+  headers-$($(sm._this).name) : $($(sm._this).headers.???)
+endif # $(sm._this).headers.copied != ""
+
+ifeq ($($(sm._this).name),openssl)
+  $(info headers: $($(sm._this).name): $($(sm._this).type): $($(sm._this).headers.???))
 endif
+
+sm.this.depends.copyfiles := $($(sm._this).depends.copyfiles)
+
+##################################################
+##################################################
+ifeq ($(strip $($(sm._this).type)),depends)
+  goal-$($(sm._this).name): \
+    $($(sm._this).depends) \
+    $($(sm._this).depends.copyfiles) \
+    $($(sm._this).targets) ; @echo "smart: $@, $^"
+  clean-$($(sm._this).name):
+	$(call sm.tool.common.rm, $($(sm._this).depends) $($(sm._this).depends.copyfiles))
+endif ## $(sm._this).type != depends
+
+ifeq ($(sm.var.temp._should_make_targets),true)
+  ifeq ($(strip $($(sm._this).intermediates)),)
+    $(warning smart: no intermediates)
+  endif
 
 ifeq ($(MAKECMDGOALS),clean)
   goal-$($(sm._this).name) : ; @true
   doc-$($(sm._this).name) : ; @true
+  headers-$($(sm._this).name) : ; @true
 else
-  goal-$($(sm._this).name) : \
-    $($(sm._this).depends) \
-    $($(sm._this).depends.copyfiles) \
-    $($(sm._this).targets)
-
   ifneq ($($(sm._this).documents),)
     doc-$($(sm._this).name) : $($(sm._this).documents)
   else
     doc-$($(sm._this).name) : ; @echo smart: No documents for $($(sm._this).name).
   endif
-endif
+
+  goal-$($(sm._this).name) : \
+    $($(sm._this).depends) \
+    $($(sm._this).depends.copyfiles) \
+    $($(sm._this).targets)
+endif # MAKECMDGOALS != clean
 
 ifeq ($($(sm._this).type),t)
   define sm.code.make-test-rules
@@ -752,38 +822,50 @@ ifeq ($($(sm._this).type),t)
 	@echo test: $($(sm._this).name) - $$< && $$<
   endef #sm.code.make-test-rules
   $(eval $(sm.code.make-test-rules))
-endif
+endif ## $($(sm._this).type) == t
 
 $(call sm-check-not-empty, sm.tool.common.rm)
 $(call sm-check-not-empty, sm.tool.common.rmdir)
-
-clean-$($(sm._this).name): \
-  clean-$($(sm._this).name)-flags \
-  clean-$($(sm._this).name)-targets \
-  clean-$($(sm._this).name)-intermediates \
-  clean-$($(sm._this).name)-depends \
-  $($(sm._this).clean-steps)
+define sm.fun.make-clean-rules
+$(eval \
+  clean-$($(sm._this).name): \
+    clean-$($(sm._this).name)-flags \
+    clean-$($(sm._this).name)-targets \
+    clean-$($(sm._this).name)-intermediates \
+    clean-$($(sm._this).name)-depends \
+    $($(sm._this).clean-steps)
 	@echo "'$(@:clean-%=%)' is cleaned."
 
-define sm.code.clean-rules
-sm.rules.phony.* += \
+  sm.rules.phony.* += \
     clean-$($(sm._this).name) \
     clean-$($(sm._this).name)-flags \
     clean-$($(sm._this).name)-targets \
     clean-$($(sm._this).name)-intermediates \
     clean-$($(sm._this).name)-depends \
     $($(sm._this).clean-steps)
-clean-$($(sm._this).name)-flags:
-	$(if $(call is-true,$($(sm._this).verbose)),,$$(info remove:$($(sm._this).targets))@)$$(call sm.tool.common.rm,$$($(sm._this).flag_files))
-clean-$($(sm._this).name)-targets:
-	$(if $(call is-true,$($(sm._this).verbose)),,$$(info remove:$($(sm._this).targets))@)$$(call sm.tool.common.rm,$$($(sm._this).targets))
-clean-$($(sm._this).name)-intermediates:
-	$(if $(call is-true,$($(sm._this).verbose)),,$$(info remove:$($(sm._this).intermediates))@)$$(call sm.tool.common.rm,$$($(sm._this).intermediates))
-clean-$($(sm._this).name)-depends:
-	$(if $(call is-true,$($(sm._this).verbose)),,$$(info remove:$($(sm._this).depends))@)$$(call sm.tool.common.rm,$$($(sm._this).depends))
-endef #sm.code.clean-rules
 
-$(eval $(sm.code.clean-rules))
+  ifeq ($(call is-true,$($(sm._this).verbose)),true)
+    clean-$($(sm._this).name)-flags:
+	$$(call sm.tool.common.rm,$$($(sm._this).flag_files))
+    clean-$($(sm._this).name)-targets:
+	$$(call sm.tool.common.rm,$$($(sm._this).targets))
+    clean-$($(sm._this).name)-intermediates:
+	$$(call sm.tool.common.rm,$$($(sm._this).intermediates))
+    clean-$($(sm._this).name)-depends:
+	$$(call sm.tool.common.rm,$$($(sm._this).depends))
+  else
+    clean-$($(sm._this).name)-flags:
+	@$$(info remove:$($(sm._this).targets))$$(call sm.tool.common.rm,$$($(sm._this).flag_files))
+    clean-$($(sm._this).name)-targets:
+	@$$(info remove:$($(sm._this).targets))$$(call sm.tool.common.rm,$$($(sm._this).targets))
+    clean-$($(sm._this).name)-intermediates:
+	@$$(info remove:$($(sm._this).intermediates))$$(call sm.tool.common.rm,$$($(sm._this).intermediates))
+    clean-$($(sm._this).name)-depends:
+	@$$(info remove:$($(sm._this).depends))$$(call sm.tool.common.rm,$$($(sm._this).depends))
+  endif
+ )
+endef #sm.fun.make-clean-rules
+$(sm.fun.make-clean-rules)
 
 endif # sm.var.temp._should_make_targets == true
 

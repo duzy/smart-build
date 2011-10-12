@@ -37,6 +37,8 @@ sm.this.libdirs := $(sm.this.dir)/../libs
 ##	-lNAME	-> -lNAME
 sm.this.libs := 
 
+sm.this.headers.* := foo
+sm.this.headers.foo := foobar.h
+
 $(call sm-copy-files, foobar.txt, $(sm.out))
-$(call sm-copy-headers, foobar.h, foo)
 $(sm-build-this)

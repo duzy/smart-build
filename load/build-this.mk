@@ -32,22 +32,12 @@ endif
 ifneq ($(filter $($(sm._this).type),$(sm.global.module_types)),)
   sm.global.goals += goal-$($(sm._this).name)
 
-  ifeq ($(strip $($(sm._this).type)),depends)
-    goal-$($(sm._this).name) : $($(sm._this).depends) $($(sm._this).depends.copyfiles)
-    clean-$($(sm._this).name):
-	$(call sm.tool.common.rm, $($(sm._this).depends) $($(sm._this).depends.copyfiles))
-  else
-    ifeq ($(strip $($(sm._this).toolset)),)
-      $(error smart: 'sm.this.toolset' is empty)
-    endif
+  # this duplicats in 'sm-build-this'
+  #$(sm._this)._cnum := 0
 
-    # this duplicats in 'sm-build-this'
-    #$(sm._this)._cnum := 0
+  include $(sm.dir.buildsys)/build-rules.mk
 
-    include $(sm.dir.buildsys)/build-rules.mk
-
-    $(sm._this)._already_built := true
-  endif
+  $(sm._this)._already_built := true
 else
   $(warning smart: "$($(sm._this).name)" will not be built)
 endif

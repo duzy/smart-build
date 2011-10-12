@@ -108,6 +108,9 @@ sm.module.properties := \
   .targets \
   .verbose \
   .makefile \
+  .headers.* \
+  .headers! \
+  .headers \
   .sources \
   .sources.external \
   .sources.common \
