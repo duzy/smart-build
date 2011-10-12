@@ -422,7 +422,6 @@ define sm-compile-sources-internal
 endef #sm-compile-sources-internal
 #####
 define sm-compile-sources-external
-$(warning TODO: external compile sources)
 endef #sm-compile-sources-external
 
 sm-generate-implib = $(sm-generate-implib-internal)
