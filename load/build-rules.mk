@@ -137,13 +137,14 @@ ifneq ($(strip $($(sm._this).type)),depends)
   endif # $(sm._this).toolset != common
 endif ## $(sm._this).type != depends
 
+## This is a second check, the first check is done in sm-build-this.
 ifeq (${strip \
          $(foreach _, $($(sm._this).headers.*), $($(sm._this).headers.$_))\
          $($(sm._this).depends)\
          $($(sm._this).sources)\
          $($(sm._this).sources.external)\
          $($(sm._this).intermediates)},)
-  $(error smart: no sources or intermediates for module '$($(sm._this).name)')
+  $(error smart: no sources or intermediates or depends for module '$($(sm._this).name)')
 endif
 
 ifeq ($($(sm._this).type),t)

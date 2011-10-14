@@ -500,13 +500,21 @@ $(eval \
     $$(error sm.this.name is empty)
   endif
   ######
-  #ifneq ($(sm.this.type),depends)
   ifeq ($(filter $(strip $(sm.this.type)),depends none),)
     ifeq ($(sm.this.toolset),)
       $$(error sm.this.toolset is empty)
     endif
-    ifeq ($(strip $(sm.this.sources)$(sm.this.sources.external)$(sm.this.intermediates)),)
+    ifeq (${strip \
+             $(sm.this.sources)\
+             $(sm.this.sources.external)\
+             $(sm.this.intermediates)},)
       $$(error no source or intermediates defined for '$(sm.this.name)')
+    endif
+  else
+    ifeq ($(strip $(sm.this.type)),depends)
+      ifeq (${strip $(sm.this.depends)},)
+        $$(error no dependencies defined for '$(sm.this.name)')
+      endif
     endif
   endif
   ######
