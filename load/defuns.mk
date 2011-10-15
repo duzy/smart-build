@@ -274,7 +274,11 @@ define sm-use
    sm.temp._name := $(strip $1)
 
    ifeq ($(sm.this.name),)
-     $$(error smart: sm.this.name is empty, must use sm-new-module first)
+     $$(error smart: sm.this.name is empty, must call sm-new-module first)
+   endif
+
+   ifeq ($$(sm.temp._name),)
+     $$(error smart: module name is empty)
    endif
 
    ifeq ($(sm.this.name),$$(sm.temp._name))
@@ -296,7 +300,7 @@ define sm-use
    endif
 
    ifeq ($(filter $(sm.temp._name),$($(sm._this).using_list)),$(sm.temp._name))
-     $$(error smart: module $(sm.temp._name) already been used)
+     $$(error smart: module "$(sm.temp._name)" already been used)
    endif
    $(sm._this).using_list += $($(sm._that).name)
   )
