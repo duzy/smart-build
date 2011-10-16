@@ -9,6 +9,8 @@ endif
 
 $(call sm-check-origin,sm-new-module,file,Broken smart build system)
 
+null :=
+
 # The project top level directory is where you type 'make' in.
 sm.top := $(if $(wildcard $(PWD)),$(PWD),$(shell pwd))
 ifeq ($(wildcard $(sm.top)),)
@@ -130,13 +132,14 @@ sm.module.properties := \
   .libs.infile \
   .clean-steps \
   .gen_deps \
+  .is_external \
   .export.includes \
   .export.defines \
   .export.compile.flags \
   .export.link.flags \
   .export.libdirs \
   .export.libs \
-  .is_external \
+  .export.use \
 
 $(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.common.langs)")
 $(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.XXX.langs)")

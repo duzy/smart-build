@@ -72,22 +72,22 @@ ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
 #-----------------------------------------------
 #-----------------------------------------------
 ifneq ($($(sm._this).using_list),)
-  define sm.fun.compute-used-flags
-  ${eval \
-   ${if ${filter $(sm.var.temp._use),$($(sm._this).using_list.appended)},,\
-     $(sm._this).using_list.appended += $(sm.var.temp._use)
-     $(sm._this).used.defines += $($(sm._that).export.defines)
-     $(sm._this).used.includes += $($(sm._that).export.includes)
-     $(sm._this).used.compile.flags += $($(sm._that).export.compile.flags)
-     $(sm._this).used.link.flags += $($(sm._that).export.link.flags)
-     $(sm._this).used.libdirs += $($(sm._that).export.libdirs)
-     $(sm._this).used.libs += $($(sm._that).export.libs)
-    }
-   }
-  endef #sm.fun.compute-used-flags
+  #ifeq ($(flavor $(sm._this).using_list.computed),undefine)
+  ## FIXME: it looks like a gmake bug:
+  ##   if these variables is not initialized using ":=", those "+=" in cused.mk
+  ##   will act like a ":=".
+  $(sm._this).using_list.computed :=
+  $(sm._this).used.defines        :=
+  $(sm._this).used.includes       :=
+  $(sm._this).used.compile.flags  :=
+  $(sm._this).used.link.flags     :=
+  $(sm._this).used.libdirs        :=
+  $(sm._this).used.libs           :=
+  #endif # $(sm._this).using_list.computed is undefine
   ${foreach sm.var.temp._use,$($(sm._this).using_list),\
     ${eval sm._that := sm.module.$(sm.var.temp._use)}\
-    $(sm.fun.compute-used-flags)}
+    ${eval include $(sm.dir.buildsys)/cused.mk}\
+   }
 endif # $(sm._this).using_list != ""
 
 ifneq ($($(sm._this).using),)
@@ -95,8 +95,8 @@ ifneq ($($(sm._this).using),)
 
   define sm.fun.using-module
     ${info smart: using $(sm.var.temp._modir)}\
-    ${if ${filter $(sm.var.temp._modir),$(sm.global.using.loaded)},,\
-        ${eval \
+    ${eval \
+      ${if ${filter $(sm.var.temp._modir),$(sm.global.using.loaded)},,\
           sm.global.using.loaded += $(sm.var.temp._modir)
           sm.var.temp._using := ${wildcard $(sm.var.temp._modir)/smart.mk}
           sm.rules.phony.* += using-$$(sm.var.temp._using)
@@ -105,7 +105,8 @@ ifneq ($($(sm._this).using),)
             $$(info smart: using $$@)\
 	    $$(call sm-load-module,$$(sm.var.temp._using))\
             echo using: $$@ -> $$(info $(sm.result.module.name))
-         }}
+       }
+     }
   endef #sm.fun.using-module
 
   ${foreach sm.var.temp._modir,$($(sm._this).using),$(sm.fun.using-module)}
