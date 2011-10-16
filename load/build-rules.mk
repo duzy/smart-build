@@ -13,7 +13,7 @@
 
 ifeq ($(sm._this),)
   $(error smart: internal: sm._this is empty)
-endif
+endif # sm._this == ""
 
 ## check module name
 ifeq ($($(sm._this).name),)
@@ -41,8 +41,6 @@ sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this)._intermediate_prefix := $(sm.var.temp._)
 
 ##
-## $(sm._this)._should_compute_sources will be "true" on each
-## sm-build-this and sm-compile-sources calling.
 define sm.fun.compute-sources-by-lang
   ${eval \
   sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.toolset).$(sm.var.temp._lang).suffix:%=\%%)
@@ -57,6 +55,7 @@ define sm.fun.compute-sources-by-lang
   }
 endef #sm.fun.compute-sources-by-lang
 
+##
 define sm.fun.compute-per-source-flags
   ${foreach sm.var.temp._source,\
      $(sm.this.sources.$(sm.var.temp._lang))\
@@ -75,19 +74,20 @@ ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
 ifneq ($($(sm._this).using_list),)
   define sm.fun.compute-used-flags
   ${eval \
-    $(sm._this).using_list.appended += $(sm.var.temp._use)
-    $(sm._this).used.defines += $($(sm._that).export.defines)
-    $(sm._this).used.includes += $($(sm._that).export.includes)
-    $(sm._this).used.compile.flags += $($(sm._that).export.compile.flags)
-    $(sm._this).used.link.flags += $($(sm._that).export.link.flags)
-    $(sm._this).used.libdirs += $($(sm._that).export.libdirs)
-    $(sm._this).used.libs += $($(sm._that).export.libs)
+   ${if ${filter $(sm.var.temp._use),$($(sm._this).using_list.appended)},,\
+     $(sm._this).using_list.appended += $(sm.var.temp._use)
+     $(sm._this).used.defines += $($(sm._that).export.defines)
+     $(sm._this).used.includes += $($(sm._that).export.includes)
+     $(sm._this).used.compile.flags += $($(sm._that).export.compile.flags)
+     $(sm._this).used.link.flags += $($(sm._that).export.link.flags)
+     $(sm._this).used.libdirs += $($(sm._that).export.libdirs)
+     $(sm._this).used.libs += $($(sm._that).export.libs)
+    }
    }
   endef #sm.fun.compute-used-flags
   ${foreach sm.var.temp._use,$($(sm._this).using_list),\
     ${eval sm._that := sm.module.$(sm.var.temp._use)}\
-    ${if ${filter $(sm.var.temp._use),$($(sm._this).using_list.appended)},\
-        ,$(sm.fun.compute-used-flags)}}
+    $(sm.fun.compute-used-flags)}
 endif # $(sm._this).using_list != ""
 
 ifneq ($($(sm._this).using),)
