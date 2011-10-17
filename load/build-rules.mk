@@ -894,7 +894,7 @@ $(eval \
     clean-$($(sm._this).name)-intermediates \
     clean-$($(sm._this).name)-depends \
     $($(sm._this).clean-steps)
-	@echo "'$(@:clean-%=%)' is cleaned."
+	@echo "smart: \"$$(@:clean-%=%)\" is clean"
 
   sm.rules.phony.* += \
     clean-$($(sm._this).name) \
