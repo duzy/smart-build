@@ -10,6 +10,13 @@ endif
 $(call sm-check-origin,sm-new-module,file,Broken smart build system)
 
 null :=
+define newline
+
+
+endef #newline
+define linefeed
+
+endef #linefeed
 
 # The project top level directory is where you type 'make' in.
 sm.top := $(if $(wildcard $(PWD)),$(PWD),$(shell pwd))

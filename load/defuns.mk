@@ -638,8 +638,35 @@ endef #sm-util-mkdir
 # define sm-relative-path
 # $(patsubst $(sm.top)/%,%,$(strip $1))
 # endef #sm-relative-path
-sm-relative-path = $(error sm-relative-path is deprecated)
+sm-relative-path = $(error sm-relative-path is deprecated, use $$(var:$$(sm.top)/%=%))
 sm-to-relative-path = $(error sm-to-relative-path is deprecated, use sm-relative-path)
+
+## Do a interpolation on a input file according to a set of variables
+define sm-interpolate
+$(eval \
+  sm.temp._vars := $(strip $1)
+  sm.temp._output := $(strip $2)
+  sm.temp._input := $(strip $3)
+  ifeq ($$(sm.temp._input),)
+    sm.temp._input := $$(sm.temp._output).in
+  endif
+  ifeq ($$(wildcard $$(sm.temp._input)),)
+    $$(error smart: $$(sm.temp._input) not found)
+  endif
+  ifeq ($$(sm.temp._vars),)
+    $$(error variable set name is empty)
+  endif
+ )\
+$(eval $(subst ;,,$($(sm.temp._vars))))\
+$(eval sm.temp._vars := $(subst $(newline),,$(subst $(linefeed),,$($(sm.temp._vars)))))\
+$(eval sm.temp._vars := $(subst ",\",$(sm.temp._vars))
+  #"
+ )\
+$(eval \
+  $(sm.temp._output) : $(sm.dir.buildsys)/scripts/interpolate.awk $(sm.temp._input)
+	awk -f $$< -- -vars "$(sm.temp._vars)" $(sm.temp._input) > $$@
+ )
+endef #sm-interpolate
 
 
 ################
