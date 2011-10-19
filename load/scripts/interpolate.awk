@@ -113,7 +113,7 @@ function line_record_based_processing()
         if (vars[arr[1]]) {
             $0 = substr($0, 0, RSTART-1) vars[arr[1]] substr($0, RSTART+RLENGTH)
         } else {
-            printf(FILENAME ":" NR ": \"" arr[1] "\" is not defined\n") > "/dev/stderr"
+            printf(FILENAME ":" NR ": \"" arr[1] "\" is undefined\n") > "/dev/stderr"
             exit(-1)
         }
     }
