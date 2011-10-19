@@ -647,8 +647,10 @@ $(eval \
   sm.temp._vars := $(strip $1)
   sm.temp._output := $(strip $2)
   sm.temp._input := $(strip $3)
-  ifeq ($$(sm.temp._input),)
-    sm.temp._input := $$(sm.temp._output).in
+  ifneq ($$(sm.temp._output),)
+    ifeq ($$(sm.temp._input),)
+      sm.temp._input := $$(sm.temp._output).in
+    endif
   endif
   ifeq ($$(wildcard $$(sm.temp._input)),)
     $$(error smart: $$(sm.temp._input) not found)
@@ -657,14 +659,8 @@ $(eval \
     $$(error variable set name is empty)
   endif
  )\
-$(eval $($(sm.temp._vars))
-  ifeq ($(suffix $(sm.temp._output)),.h)
-    ifeq ($(filter -header,$(sm.temp._flags)),)
-      #sm.temp._flags += -header
-    endif
-  endif
- )\
-$(eval \
+$(eval $($(sm.temp._vars)))\
+$(if $(sm.temp._output),$(eval \
   sm.temp._vars := $(subst $(newline),;,$(subst $(linefeed),,$(subst ",\",$(subst #,\#,$($(sm.temp._vars))))))
   #"
  )\
@@ -675,11 +671,11 @@ $(eval \
  )\
 $(eval \
   $(sm.temp._output) : $(sm.dir.buildsys)/scripts/interpolate.awk $(sm.temp._input)
-	echo "smart: interpolate $(sm.temp._input)" &&\
+	@echo "smart: interpolate $(sm.temp._input)" &&\
 	awk -f $$< -- $(sm.temp._flags)-vars "$(sm.temp._vars)" $(sm.temp._input) > $$@ ||\
 	(rm $$@ ; false)
   sm.temp._flags :=
- )
+ ))
 endef #sm-interpolate
 
 define sm-interpolate-header
