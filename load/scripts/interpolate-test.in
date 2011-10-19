@@ -1,0 +1,14 @@
+/** -*- mode: c++ -*-
+ *
+ *  @BLAH@ 
+ */
+
+#undef FOOBAR
+
+#if @FOO@
+#  undef BAR
+#endif
+
+#if @BAR@
+#  undef FOO
+#endef
