@@ -55,7 +55,7 @@ function parse_command_line_vars(vars_string)
         n = index(vars_string, ";")
         if (n == 0) {
             ## the last config item is EMPTY
-            printf("last-var: %d: %s=%s\n", n, var_name, vars_string)
+            #printf("last-var: %d: %s=%s\n", n, var_name, vars_string)
             vars[var_name] = substr(vars_string, n)
             continue
         }
@@ -64,18 +64,25 @@ function parse_command_line_vars(vars_string)
             if (nn = index(substr(vars_string, n + 1), ";"))
             {
                 n += nn
-                printf("test: %d, %d\n", n, nn)
+                #printf("test: %d, %d\n", n, nn)
+            } else {
+                n = length(vars_string) + 1
+                break
             }
         }
 
         var_value = substr(vars_string, 0, n - 1)
-        vars_string = substr(vars_string, n + 1)
-
         gsub(/^[[:space:]]+/, "", var_value) # remove leading spaces
         sub("\\\\;", ";", var_value) # replace "\;" with ";"
 
-        printf("var: %d: %s=%s\n", n, var_name, var_value)
+        #printf("var: %d: %s=%s\n", n, var_name, var_value)
         vars[var_name] = var_value
+
+        if (length(vars_string) <= n) {
+            break
+        } else {
+            vars_string = substr(vars_string, n + 1)
+        }
     }
 
     vars_string = var_name = var_value = ""
