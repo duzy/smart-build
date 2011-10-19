@@ -12,3 +12,4 @@
 #if @BAR@
 #  undef FOO
 #endef
+

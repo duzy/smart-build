@@ -110,7 +110,12 @@ function default_record_based_processing()
 function line_record_based_processing()
 {
     while (match($0, /@([^@]+)@/, arr)) {
-        $0 = substr($0, 0, RSTART-1) vars[arr[1]] substr($0, RSTART+RLENGTH)
+        if (vars[arr[1]]) {
+            $0 = substr($0, 0, RSTART-1) vars[arr[1]] substr($0, RSTART+RLENGTH)
+        } else {
+            printf(FILENAME ":" NR ": \"" arr[1] "\" is not defined\n") > "/dev/stderr"
+            exit(-1)
+        }
     }
 
     if (opts["Header"]) {
