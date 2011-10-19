@@ -56,7 +56,9 @@ function parse_command_line_vars(vars_string)
         if (n == 0) {
             ## the last config item is EMPTY
             #printf("last-var: %d: %s=%s\n", n, var_name, vars_string)
-            vars[var_name] = substr(vars_string, n)
+            var_value = substr(vars_string, n)
+            gsub(/^[[:space:]]+/, "", var_value) # remove leading spaces
+            vars[var_name] = var_value
             continue
         }
 
@@ -73,6 +75,7 @@ function parse_command_line_vars(vars_string)
 
         var_value = substr(vars_string, 0, n - 1)
         gsub(/^[[:space:]]+/, "", var_value) # remove leading spaces
+        #gsub(/[[:space:]]+$/, "", var_value) # remove tailing spaces
         sub("\\\\;", ";", var_value) # replace "\;" with ";"
 
         #printf("var: %d: %s=%s\n", n, var_name, var_value)
@@ -119,11 +122,16 @@ function line_record_based_processing()
     }
 
     if (opts["Header"]) {
-        if (match($0, /#[[:space:]]*undef[[:space:]]+([[:alnum:]_]+)/, arr)) {
-            if (arr[1] in vars) {
-                $0 = "#define " arr[1] " " vars[arr[1]]
-            } else {
-                $0 = "/* " $0 " */"
+        if (match($0, /([[:space:]]*)#([[:space:]]*)undef[[:space:]]+([[:alnum:]_]+)/, arr)) {
+            def_space0 = arr[1]
+            def_space1 = arr[2]
+            def_name = arr[3]
+            if (def_name in vars) {
+                if (vars[def_name] == "#undef") {
+                    $0 = "/* " $0 " */"
+                } else {
+                    $0 = def_space0 "#" def_space1 "define " def_name " " vars[def_name]
+                }
             }
         }
     }
