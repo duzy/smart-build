@@ -15,7 +15,7 @@ BEGIN {
     opts["Header"] = 0
     
     for (argn = 0; argn < ARGC; ++argn) {
-        if (ARGV[argn] == "-h" || ARGV[argn] == "-header") {
+        if (ARGV[argn] == "-header") {
             opts["Header"] = 1
             delete ARGV[argn]
         }

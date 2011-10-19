@@ -657,14 +657,26 @@ $(eval \
     $$(error variable set name is empty)
   endif
  )\
-$(eval $(subst ;,,$($(sm.temp._vars))))\
+$(eval $(subst ;,,$($(sm.temp._vars)))
+  ifeq ($(suffix $(sm.temp._output)),.h)
+    ifeq ($(filter -header,$(sm.temp._flags)),)
+      sm.temp._flags += -header
+    endif
+  endif
+ )\
 $(eval sm.temp._vars := $(subst $(newline),,$(subst $(linefeed),,$($(sm.temp._vars)))))\
 $(eval sm.temp._vars := $(subst ",\",$(sm.temp._vars))
   #"
+  ifneq ($(strip $(sm.temp._flags)),)
+    sm.temp._flags := $(strip $(sm.temp._flags)) $(null)
+  endif
  )\
 $(eval \
   $(sm.temp._output) : $(sm.dir.buildsys)/scripts/interpolate.awk $(sm.temp._input)
-	awk -f $$< -- -vars "$(sm.temp._vars)" $(sm.temp._input) > $$@
+	@echo "smart: interpolate $(sm.temp._input)" &&\
+	awk -f $$< -- $(sm.temp._flags)-vars "$(sm.temp._vars)" $(sm.temp._input) > $$@ ||\
+	(rm $$@ ; false)
+  sm.temp._flags :=
  )
 endef #sm-interpolate
 
