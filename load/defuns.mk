@@ -660,7 +660,7 @@ $(eval \
 $(eval $(subst ;,,$($(sm.temp._vars)))
   ifeq ($(suffix $(sm.temp._output)),.h)
     ifeq ($(filter -header,$(sm.temp._flags)),)
-      sm.temp._flags += -header
+      #sm.temp._flags += -header
     endif
   endif
  )\
@@ -679,6 +679,12 @@ $(eval \
   sm.temp._flags :=
  )
 endef #sm-interpolate
+
+define sm-interpolate-header
+$(eval \
+  sm.temp._flags := -header
+ )$(sm-interpolate)
+endef #sm-interpolate-header
 
 
 ################

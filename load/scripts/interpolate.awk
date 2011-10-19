@@ -120,7 +120,7 @@ function line_record_based_processing()
 
     if (opts["Header"]) {
         if (match($0, /#[[:space:]]*undef[[:space:]]+([[:alnum:]_]+)/, arr)) {
-            if (vars[arr[1]]) {
+            if (arr[1] in vars) {
                 $0 = "#define " arr[1] " " vars[arr[1]]
             } else {
                 $0 = "/* " $0 " */"
