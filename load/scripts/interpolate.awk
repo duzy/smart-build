@@ -114,7 +114,8 @@ function default_record_based_processing()
 # 
 function line_record_based_processing()
 {
-    while (match($0, /@([^@[:space:]]+)@/, arr)) {
+    # /@([^@[:space:]]+)@/
+    while (match($0, /@([A-Za-z0-9_]+)@/, arr)) {
         if (vars[arr[1]]) {
             $0 = substr($0, 0, RSTART-1) vars[arr[1]] substr($0, RSTART+RLENGTH)
         } else {

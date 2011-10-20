@@ -78,6 +78,7 @@ sm.tool.common.FLEX = flex
 sm.tool.common.YACC = bison
 sm.tool.common.AWK = gawk
 sm.tool.common.MKDIR = mkdir
+sm.tool.common.SED = sed
 
 ##################################################
 
