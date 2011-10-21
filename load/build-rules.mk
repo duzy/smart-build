@@ -361,7 +361,7 @@ ${eval \
     $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, \
            $$(sm.global.libs) \
            $$($(sm._this).libs) \
-           $$($(sm._this).used.libs), -l, , -% -Wl%)
+           $$($(sm._this).used.libs), -l, , -% -Wl% %.so %.dll)
 
     $$(call sm.fun.remove-sequence-duplicates,$(sm._this)._link.libs)
 
