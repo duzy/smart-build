@@ -653,7 +653,7 @@ $(eval \
     endif
   endif
   ifeq ($$(wildcard $$(sm.temp._input)),)
-    $$(error smart: $$(sm.temp._input) not found)
+    #$$(error smart: $$(sm.temp._input) not found)
   endif
   ifeq ($$(sm.temp._vars),)
     $$(error variable set name is empty)

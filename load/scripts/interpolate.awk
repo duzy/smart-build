@@ -116,10 +116,14 @@ function line_record_based_processing()
 {
     # /@([^@[:space:]]+)@/
     while (match($0, /@([A-Za-z0-9_]+)@/, arr)) {
-        if (vars[arr[1]]) {
-            $0 = substr($0, 0, RSTART-1) vars[arr[1]] substr($0, RSTART+RLENGTH)
+        var_name = arr[1]
+        if (vars[var_name]) {
+            var_value = vars[var_name]
+            gsub(/^[[:space:]]*"/, "", var_value)
+            gsub(/"[[:space:]]*$/, "", var_value)
+            $0 = substr($0, 0, RSTART-1) var_value substr($0, RSTART+RLENGTH)
         } else {
-            printf(FILENAME ":" NR ": \"" arr[1] "\" is undefined\n") > "/dev/stderr"
+            printf(FILENAME ":" NR ": \"" var_name "\" is undefined\n") > "/dev/stderr"
             exit(-1)
         }
     }
@@ -130,10 +134,11 @@ function line_record_based_processing()
             def_space1 = arr[2]
             def_name = arr[3]
             if (def_name in vars) {
-                if (vars[def_name] == "#undef") {
+                def_value = vars[def_name]
+                if (def_value == "#undef") {
                     $0 = "/* " $0 " */"
                 } else {
-                    $0 = def_space0 "#" def_space1 "define " def_name " " vars[def_name]
+                    $0 = def_space0 "#" def_space1 "define " def_name " " def_value
                 }
             }
         }
