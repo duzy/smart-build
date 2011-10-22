@@ -189,19 +189,19 @@ endef #sm-new-module-external
 ## NOTE: The build script should definitely defined a module using sm-new-module.
 define sm-load-module
 $(eval \
-   sm.temp._smartfile := $(strip $(wildcard $1))
+   sm.temp._smartfile := $(strip $1)
  )\
-$(info smart: load '$(sm.temp._smartfile)'..)\
 $(eval \
   ######
   ifeq ($(sm.temp._smartfile),)
-    $$(error must specify the smart.mk file for the module)
+    $$(error smart file is empty)
   endif
   ######
   ifeq ($(wildcard $(sm.temp._smartfile)),)
-    $$(error module build script '$(sm.temp._smartfile)' missed)
+    $$(error smart file '$(sm.temp._smartfile)' missed)
   endif
   ##########
+  $$(info smart: load '$(sm.temp._smartfile)'..)
   include $(sm.dir.buildsys)/preload.mk
   include $(sm.temp._smartfile)
   sm.result.module.name := $$(sm.this.name)
@@ -671,7 +671,7 @@ $(eval \
  )\
 $(eval \
   $(sm.temp._output) : $(sm.dir.buildsys)/scripts/interpolate.awk $(sm.temp._input)
-	@echo "smart: interpolate $(sm.temp._input)" &&\
+	echo "smart: interpolate $(sm.temp._input)" &&\
 	awk -f $$< -- $(sm.temp._flags)-vars "$(sm.temp._vars)" $(sm.temp._input) > $$@ ||\
 	(rm $$@ ; false)
   sm.temp._flags :=

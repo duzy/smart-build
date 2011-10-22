@@ -294,9 +294,10 @@ ${eval \
        $($(sm._this).compile.flags.$(sm.var.temp._lang)))
 
     $$(call sm.fun.append-items-with-fix, $(sm.var.temp._fvar_name), \
-           $$(sm.global.includes) \
            $$($(sm._this).includes) \
-           $$($(sm._this).used.includes), -I, , -%)
+           $$($(sm._this).used.includes)\
+           $$(sm.global.includes) \
+          , -I, , -%)
 
     $$(call sm.fun.remove-duplicates,$(sm.var.temp._fvar_name))
 
@@ -352,16 +353,18 @@ ${eval \
     $(sm._this)._link.libs :=
 
     $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libdirs, \
-           $$(sm.global.libdirs) \
            $$($(sm._this).libdirs) \
-           $$($(sm._this).used.libdirs), -L, , -% -Wl%)
+           $$($(sm._this).used.libdirs)\
+           $$(sm.global.libdirs) \
+         , -L, , -% -Wl%)
 
     $$(call sm.fun.remove-duplicates,$(sm._this)._link.libdirs)
 
     $$(call sm.fun.append-items-with-fix, $(sm._this)._link.libs, \
            $$(sm.global.libs) \
            $$($(sm._this).libs) \
-           $$($(sm._this).used.libs), -l, , -% -Wl% %.a %.so %.dll)
+           $$($(sm._this).used.libs)\
+        , -l, , -% -Wl% %.a %.so %.lib %.dll)
 
     $$(call sm.fun.remove-sequence-duplicates,$(sm._this)._link.libs)
 
@@ -641,7 +644,7 @@ $(foreach _,$(sm.var.temp._check_common_langs),\
         )))\
 $(eval \
   ifeq ($(sm.var.temp._is_strange_source),true)
-    $$(warning warning: "$(sm.var.temp._source)" is unsupported by toolset "$($(sm._this).toolset)")
+    $$(warning error: "$(sm.var.temp._source)" is not supported by toolset "$($(sm._this).toolset)")
     $(sm._this).sources.unknown += $(sm.var.temp._source)
   endif
  )
