@@ -70,4 +70,3 @@ endef
 define sm.tool.clang.link.asm
 $(sm.tool.clang.cmd.asm) $(strip $3) -o $(strip $1) $(strip $2) $(strip $4)
 endef
-

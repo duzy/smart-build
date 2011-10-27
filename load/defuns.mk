@@ -211,12 +211,31 @@ $(eval \
 endef #sm-load-module
 
 ##
+##
+define sm-export-this
+$(eval \
+  ifeq ($(sm.this.name),)
+    $$(error $$(sm.this.name) is empty, must call sm-new-module first)
+  endif
+  ifeq ($(sm.this.suffix),)
+    $$(error $$(sm.this.suffix) is empty)
+  endif
+  ifeq ($(sm.this.type),shared)
+  else
+  endif
+  $$(info export:1: $(strip $1))
+  $$(info export:2: $(strip $2))
+  $$(info export:3: $(strip $3))
+ )
+endef #sm-export-this
+
+##
 ## This is a alternative option for sm.this.using.
 ##
 ## The sm.this.using alt is now failed because of this error:
 ## foobar/bar/smart.mk:13: *** prerequisites cannot be defined in command scripts
 ##
-## Import and smart build script and use it for the current module.
+## Import an smart build script and use it for the current module.
 sm-use-module = $(call sm-deprecated, sm-use-module, sm-import)
 define sm-import
  $(eval \
@@ -430,7 +449,8 @@ endef #sm-compile-sources-internal
 define sm-compile-sources-external
 endef #sm-compile-sources-external
 
-sm-generate-implib = $(sm-generate-implib-internal)
+sm-generate-implib = $(error sm-generate-implib is deprecated)
+#sm-generate-implib = $(sm-generate-implib-internal)
 ## sm-generate-implib - Generate import library for shared objects.
 define sm.code.generate-implib-win32
   sm.this.depends += $(sm.out.lib)
@@ -462,6 +482,7 @@ define sm-copy-files-internal
 $(eval \
   sm.temp._files := $(strip $1)
   sm.temp._location := $(strip $2)
+  sm.temp._mode := $(strip $3)
  )\
 $(eval \
   ######
@@ -478,10 +499,11 @@ $(eval \
 $(foreach v, $(sm.temp._files),\
    $(eval \
      sm.this.depends.copyfiles += $(sm.var.temp._d)/$(notdir $v)
-     $(sm.var.temp._d)/$(notdir $v): $(sm.this.dir:$(sm.top)/%=%)/$v ;\
-       @( echo smart: copy: $$@ ) &&\
-       ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@)) &&\
-       ($(sm.tool.common.CP) -u $$< $$@)
+     $(sm.var.temp._d)/$(notdir $v): $(sm.this.dir:$(sm.top)/%=%)/$v
+	@( echo smart: copy: $$@ ) &&\
+	 ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@)) &&\
+	 ($(sm.tool.common.CP) -u $$< $$@) &&\
+	$(if $(sm.temp._mode), (chmod +x $$@), true)
     ))
 endef #sm-copy-files-internal
 #####
@@ -659,10 +681,10 @@ $(eval \
     $$(error variable set name is empty)
   endif
  )\
-$(eval $($(sm.temp._vars)))\
+$(eval $(subst #,\#,$($(sm.temp._vars)))
+ )\
 $(if $(sm.temp._output),$(eval \
-  sm.temp._vars := $(subst $(newline),;,$(subst $(linefeed),,$(subst ",\",$(subst #,\#,$($(sm.temp._vars))))))
-  #"
+  sm.temp._vars := $(subst $(newline),;,$(subst $(linefeed),,$(subst #,\#,$(subst ",\",$($(sm.temp._vars))))))
  )\
 $(eval \
   ifneq ($(strip $(sm.temp._flags)),)
@@ -671,7 +693,7 @@ $(eval \
  )\
 $(eval \
   $(sm.temp._output) : $(sm.dir.buildsys)/scripts/interpolate.awk $(sm.temp._input)
-	echo "smart: interpolate $(sm.temp._input)" &&\
+	@echo "smart: interpolate $(sm.temp._input)" &&\
 	awk -f $$< -- $(sm.temp._flags)-vars "$(sm.temp._vars)" $(sm.temp._input) > $$@ ||\
 	(rm $$@ ; false)
   sm.temp._flags :=

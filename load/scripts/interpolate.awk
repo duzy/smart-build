@@ -59,6 +59,9 @@ function parse_command_line_vars(vars_string)
 
             var_value = substr(vars_string, n)
             gsub(/^[[:space:]]+/, "", var_value) # remove leading spaces
+            #gsub(/[[:space:]]+$/, "", var_value) # remove tailing spaces
+            while (sub("\\\\;",  ";", var_value)) {} # replace "\;" with ";"
+            while (sub("\\\\n", "\n", var_value)) {} # replace "\n" with newline
 
             vars[var_name] = var_value
             continue
@@ -78,9 +81,10 @@ function parse_command_line_vars(vars_string)
         var_value = substr(vars_string, 0, n - 1)
         gsub(/^[[:space:]]+/, "", var_value) # remove leading spaces
         #gsub(/[[:space:]]+$/, "", var_value) # remove tailing spaces
-        sub("\\\\;", ";", var_value) # replace "\;" with ";"
+        while (sub("\\\\;",  ";", var_value)) {} # replace "\;" with ";"
+        while (sub("\\\\n", "\n", var_value)) {} # replace "\n" with newline
 
-        #printf("var: %d: %s=%s\n", n, var_name, var_value)
+        #printf("var: %d: %s=%s\n", n, var_name, var_value) > "/dev/stderr"
         vars[var_name] = var_value
 
         if (length(vars_string) <= n) {
@@ -117,7 +121,7 @@ function line_record_based_processing()
     # /@([^@[:space:]]+)@/
     while (match($0, /@([A-Za-z0-9_]+)@/, arr)) {
         var_name = arr[1]
-        if (vars[var_name]) {
+        if (var_name in vars) {
             var_value = vars[var_name]
             gsub(/^[[:space:]]*"/, "", var_value)
             gsub(/"[[:space:]]*$/, "", var_value)

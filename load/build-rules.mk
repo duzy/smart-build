@@ -869,7 +869,7 @@ else
   ifneq ($($(sm._this).documents),)
     doc-$($(sm._this).name) : $($(sm._this).documents)
   else
-    doc-$($(sm._this).name) : ; @echo smart: No documents for $($(sm._this).name).
+    doc-$($(sm._this).name) : ; @echo "smart: No documents for $($(sm._this).name)."
   endif
 
   goal-$($(sm._this).name) : \
