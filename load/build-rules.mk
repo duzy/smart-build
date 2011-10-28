@@ -314,9 +314,12 @@ ${eval \
     $(sm._this)._link.flags.computed := true
     $(sm._this)._link.flags := $(filter %,\
        $($(sm.var.toolset).link.flags)\
+       $($(sm.var.toolset).link.flags.$($(sm._this).lang))\
        $(sm.global.link.flags)\
+       $(sm.global.link.flags.$($(sm._this).lang))\
        $($(sm._this).used.link.flags)\
-       $($(sm._this).link.flags))
+       $($(sm._this).link.flags)\
+       $($(sm._this).link.flags.$($(sm._this).lang)))
 
     ifeq ($($(sm._this).type),shared)
       $$(if $$(filter -shared,$$($(sm._this)._link.flags)),,\

@@ -121,8 +121,10 @@ sm.tool.clang.archive.asm = $(sm.tool.clang.archive)
 ######################################################################
 # Options
 
-sm.tool.clang.compile.flags := -stdlib=libc++
-sm.tool.clang.link.flags := -stdlib=libc++
+sm.tool.clang.compile.flags :=
+sm.tool.clang.link.flags :=
+sm.tool.clang.compile.flags.c++ := -stdlib=libc++
+sm.tool.clang.link.flags.c++ := -stdlib=libc++
 
 ifeq ($(strip $(sm.config.variant)),debug)
   sm.tool.clang.compile.flags += -g -ggdb

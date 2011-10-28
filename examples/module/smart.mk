@@ -9,7 +9,7 @@ $(call sm-check-not-empty,sm.this.makefile)
 $(call sm-check-in-list,foo,sm.global.modules)
 $(call sm-check-equal,$(sm.this.name),foo)
 $(call sm-check-equal,$(sm.this.type),exe)
-$(call sm-check-equal,$(sm.this.toolset),gcc)
+#$(call sm-check-equal,$(sm.this.toolset),gcc)
 $(call sm-check-equal,$(sm.this.suffix),$(if $(sm.os.name.win32),.exe))
 
 sm.this.verbose := false
