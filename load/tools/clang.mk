@@ -18,7 +18,7 @@ sm.tool.clang.cmd.ll := llvmc
 sm.tool.clang.cmd.ld := clang
 sm.tool.clang.cmd.ar := ar crs
 
-sm.tool.clang.langs := c c++ asm ll
+sm.tool.clang.langs := c++ c asm ll
 sm.tool.clang.c.suffix := .c
 sm.tool.clang.c++.suffix := .cpp .c++ .cc .CC .C
 sm.tool.clang.asm.suffix := .s .S
@@ -79,11 +79,13 @@ sm.tool.clang.compile.ll = $(eval sm.args.lang:=ll)$(sm.tool.clang.compile)
 # Denpendencies
 
 define sm.tool.clang.dependency.c
-gcc -MM -MT $(strip $2) -MF $(strip $1) $(strip $4) $(strip $3)
+$(sm.tool.clang.cmd.c) -MM -MT $(sm.args.target) $(sm.args.flags.0) $(sm.args.sources) \
+  > $(sm.args.output)
 endef
 
 define sm.tool.clang.dependency.c++
-g++ -MM -MT $(strip $2) -MF $(strip $1) $(strip $4) $(strip $3)
+$(sm.tool.clang.cmd.c++) -MM -MT $(sm.args.target) $(sm.args.flags.0) $(sm.args.sources) \
+  > $(sm.args.output)
 endef
 
 define sm.tool.clang.dependency.ll

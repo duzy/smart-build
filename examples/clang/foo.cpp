@@ -1,7 +1,4 @@
-#include <iostream>
-
-int main(int argc, char**argv)
+int foo()
 {
-  std::cout<<"Hi, clang!"<<std::endl;
-  return 0;
+  return 1;
 }
