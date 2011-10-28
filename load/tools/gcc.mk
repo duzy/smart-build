@@ -9,8 +9,6 @@
 ## make sure that gcc.mk is included only once
 $(call sm-check-origin, sm.tool.gcc, undefined)
 
-null :=
-
 sm.tool.gcc := true
 
 ## basic command names
@@ -140,25 +138,28 @@ sm.tool.gcc.archive.asm = $(sm.tool.gcc.archive)
 ######################################################################
 # Options
 
+sm.tool.gcc.compile.flags :=
+sm.tool.gcc.link.flags :=
+
 ifeq ($(strip $(sm.config.variant)),debug)
-  sm.tool.gcc.compile.options := -g -ggdb
-  sm.tool.gcc.link.options :=
+  sm.tool.gcc.compile.flags += -g -ggdb
+  sm.tool.gcc.link.flags +=
 else
 ifeq ($(strip $(sm.config.variant)),release)
-  sm.tool.gcc.compile.options := -O3
-  sm.tool.gcc.link.options :=
+  sm.tool.gcc.compile.flags += -O3
+  sm.tool.gcc.link.flags +=
 endif
 endif
 
 ifeq ($(sm.os.name),linux)
 else
 ifeq ($(sm.os.name),win32)
-  sm.tool.gcc.compile.options += -mwindows
-  sm.tool.gcc.link.options += -mwindows \
+  sm.tool.gcc.compile.flags += -mwindows
+  sm.tool.gcc.link.flags += -mwindows \
     -Wl,--enable-runtime-pseudo-reloc \
     -Wl,--enable-auto-import \
     $(null)
 endif#win32
 endif#linux
 
-sm.tool.gcc.link.options += -Wl,--no-undefined
+sm.tool.gcc.link.flags += -Wl,--no-undefined
