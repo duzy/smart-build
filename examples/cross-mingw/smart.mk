@@ -23,3 +23,5 @@ sm.this.libdirs := $(sm.this.dir)/../libs
 sm.this.libs := 
 
 $(sm-build-this)
+
+$(info objects: $(sm.module.foo.intermediates))

@@ -21,26 +21,26 @@ sm.tool.gcc.cmd.ar := ar crs
 ## Languages supported by this toolset, the order is significant,
 ## the order defines the priority of linker
 sm.tool.gcc.langs := c++ c asm
-sm.tool.gcc.c.suffix := .c
-sm.tool.gcc.c++.suffix := .cpp .c++ .cc .CC .C
-sm.tool.gcc.asm.suffix := .s .S
+sm.tool.gcc.suffix.c := .c
+sm.tool.gcc.suffix.c++ := .cpp .c++ .cc .CC .C
+sm.tool.gcc.suffix.asm := .s .S
 
 ## Compilation output files(objects) suffixes.
-sm.tool.gcc.intermediate.suffix.c := .o
-sm.tool.gcc.intermediate.suffix.c++ := .o
-sm.tool.gcc.intermediate.suffix.asm := .o
+sm.tool.gcc.suffix.intermediate.c := .o
+sm.tool.gcc.suffix.intermediate.c++ := .o
+sm.tool.gcc.suffix.intermediate.asm := .o
 
 ## Target link output file suffix.
-sm.tool.gcc.target.suffix.win32.static := .a
-sm.tool.gcc.target.suffix.win32.shared := .so
-sm.tool.gcc.target.suffix.win32.exe := .exe
-sm.tool.gcc.target.suffix.win32.t := .test.exe
-sm.tool.gcc.target.suffix.win32.depends :=
-sm.tool.gcc.target.suffix.linux.static := .a
-sm.tool.gcc.target.suffix.linux.shared := .so
-sm.tool.gcc.target.suffix.linux.exe :=
-sm.tool.gcc.target.suffix.linux.t := .test
-sm.tool.gcc.target.suffix.linux.depends :=
+sm.tool.gcc.suffix.target.static.win32 := .a
+sm.tool.gcc.suffix.target.shared.win32 := .so
+sm.tool.gcc.suffix.target.exe.win32 := .exe
+sm.tool.gcc.suffix.target.t.win32 := .test.exe
+sm.tool.gcc.suffix.target.depends.win32 :=
+sm.tool.gcc.suffix.target.static.linux := .a
+sm.tool.gcc.suffix.target.shared.linux := .so
+sm.tool.gcc.suffix.target.exe.linux :=
+sm.tool.gcc.suffix.target.t.linux := .test
+sm.tool.gcc.suffix.target.depends.linux :=
 
 ######################################################################
 # Compiles

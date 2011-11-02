@@ -19,28 +19,28 @@ sm.tool.clang.cmd.ld := clang
 sm.tool.clang.cmd.ar := ar crs
 
 sm.tool.clang.langs := c++ c asm ll
-sm.tool.clang.c.suffix := .c
-sm.tool.clang.c++.suffix := .cpp .c++ .cc .CC .C
-sm.tool.clang.asm.suffix := .s .S
-sm.tool.clang.ll.suffix := .ll
+sm.tool.clang.suffix.c := .c
+sm.tool.clang.suffix.c++ := .cpp .c++ .cc .CC .C
+sm.tool.clang.suffix.asm := .s .S
+sm.tool.clang.suffix.ll := .ll
 
 ## Compilation output files(objects) suffixes.
-sm.tool.clang.intermediate.suffix.c := .o
-sm.tool.clang.intermediate.suffix.c++ := .o
-sm.tool.clang.intermediate.suffix.asm := .o
-sm.tool.clang.intermediate.suffix.ll := .o
+sm.tool.clang.suffix.intermediate.c := .o
+sm.tool.clang.suffix.intermediate.c++ := .o
+sm.tool.clang.suffix.intermediate.asm := .o
+sm.tool.clang.suffix.intermediate.ll := .o
 
 ## Target link output file suffix.
-sm.tool.clang.target.suffix.win32.static := .a
-sm.tool.clang.target.suffix.win32.shared := .so
-sm.tool.clang.target.suffix.win32.exe := .exe
-sm.tool.clang.target.suffix.win32.t := .test.exe
-sm.tool.clang.target.suffix.win32.depends :=
-sm.tool.clang.target.suffix.linux.static := .a
-sm.tool.clang.target.suffix.linux.shared := .so
-sm.tool.clang.target.suffix.linux.exe :=
-sm.tool.clang.target.suffix.linux.t := .test
-sm.tool.clang.target.suffix.linux.depends :=
+sm.tool.clang.suffix.target.static.win32 := .a
+sm.tool.clang.suffix.target.shared.win32 := .so
+sm.tool.clang.suffix.target.exe.win32 := .exe
+sm.tool.clang.suffix.target.t.win32 := .test.exe
+sm.tool.clang.suffix.target.depends.win32 :=
+sm.tool.clang.suffix.target.static.linux := .a
+sm.tool.clang.suffix.target.shared.linux := .so
+sm.tool.clang.suffix.target.exe.linux :=
+sm.tool.clang.suffix.target.t.linux := .test
+sm.tool.clang.suffix.target.depends.linux :=
 
 ######################################################################
 # Compilation

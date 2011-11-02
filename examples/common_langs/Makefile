@@ -1,1 +1,1 @@
-include ../../../build/load/main.mk
+include ../../load/main.mk

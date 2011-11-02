@@ -35,5 +35,4 @@ sm.this.export.includes := $(sm.this.dir)
 sm.this.export.libdirs := $(sm.this.dir)/$(sm.out.lib)
 sm.this.export.libs := foo
 
-$(sm-generate-implib)
 $(sm-build-this)

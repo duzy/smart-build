@@ -21,7 +21,7 @@ define sm.code.init-toolset-lang
   $(call sm.code.set-rule,archive)
   $(call sm.code.set-rule,link)
   sm.toolset.for.$(sm.var.temp._lang) := $(sm.this.toolset)
-  $(foreach _,$(sm.tool.$(sm.this.toolset).$(sm.var.temp._lang).suffix),\
+  $(foreach _,$(sm.tool.$(sm.this.toolset).suffix.$(sm.var.temp._lang)),\
       $(eval sm.toolset.for.file$_ := $(sm.this.toolset)))
 endef #sm.code.init-toolset-lang
 

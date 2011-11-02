@@ -162,8 +162,8 @@ define sm-new-module-internal
      endif
      ######
      ifeq ($$(sm.this.suffix),)
-       $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
-       sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).target.suffix.$(sm.os.name).$(sm.this.type))
+       $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).suffix.target.$(sm.this.type).$(sm.os.name))
+       sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).suffix.target.$(sm.this.type).$(sm.os.name))
      endif
    endif
   ))\

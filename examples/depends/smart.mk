@@ -10,5 +10,4 @@ sm.this.depends := $(sm.out)/foo.txt
 
 $(sm.out)/foo.txt: ; mkdir -p $(@D) && echo foo > $@
 
-$(sm-generate-implib)
 $(sm-build-this)

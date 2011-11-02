@@ -14,5 +14,4 @@ sm.this.export.link.flags := -DTEST_BAR_LINK=\\"defined by foobar/bar\\"
 sm.this.export.libdirs := $(sm.out.lib)
 sm.this.export.libs := bar
 
-$(sm-generate-implib)
 $(sm-build-this)
