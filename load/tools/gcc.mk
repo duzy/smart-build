@@ -48,47 +48,41 @@ sm.tool.gcc.suffix.target.depends.linux :=
 ##
 ##  Produce compile commands for c language
 ##
-define sm.tool.gcc.compile.c.private
+define sm.tool.gcc.compile.c
 $(sm.tool.gcc.cmd.c) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.gcc.compile.c.private
+endef #sm.tool.gcc.compile.c
 
 ##
 ##
 ##
-define sm.tool.gcc.compile.c++.private
+define sm.tool.gcc.compile.c++
 $(sm.tool.gcc.cmd.c++) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.gcc.compile.c++.private
+endef #sm.tool.gcc.compile.c++
 
 ##
 ##
 ##
-define sm.tool.gcc.compile.asm.private
+define sm.tool.gcc.compile.asm
 $(sm.tool.gcc.cmd.asm) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.gcc.compile.asm.private
+endef #sm.tool.gcc.compile.asm
 
 ##
 ##
 ##
-sm.tool.gcc.compile     = $(call sm.tool.gcc.compile.$(sm.args.lang).private)
-sm.tool.gcc.compile.c   = $(eval sm.args.lang:=c)$(sm.tool.gcc.compile)
-sm.tool.gcc.compile.c++ = $(eval sm.args.lang:=c++)$(sm.tool.gcc.compile)
-sm.tool.gcc.compile.asm = $(eval sm.args.lang:=asm)$(sm.tool.gcc.compile)
+sm.tool.gcc.compile     = $(call sm.tool.gcc.compile.$(sm.args.lang))
 
 ##################################################
 # Denpendencies
 
-define sm.tool.gcc.dependency.c.private
+define sm.tool.gcc.dependency.c
 $(sm.tool.gcc.cmd.c) -MM -MT $(sm.args.target) -MF $(sm.args.output) $(sm.args.flags.0) $(sm.args.sources)
-endef #sm.tool.gcc.dependency.c.private
+endef #sm.tool.gcc.dependency.c
 
-define sm.tool.gcc.dependency.c++.private
+define sm.tool.gcc.dependency.c++
 $(sm.tool.gcc.cmd.c++) -MM -MT $(sm.args.target) -MF $(sm.args.output) $(sm.args.flags.0) $(sm.args.sources)
-endef #sm.tool.gcc.dependency.c++.private
+endef #sm.tool.gcc.dependency.c++
 
-sm.tool.gcc.dependency     = $(call sm.tool.gcc.dependency.$(sm.args.lang).private)
-sm.tool.gcc.dependency.c   = $(eval sm.args.lang:=c)$(sm.tool.gcc.dependency)
-sm.tool.gcc.dependency.c++ = $(eval sm.args.lang:=c++)$(sm.tool.gcc.dependency)
-sm.tool.gcc.dependency.asm = $(eval sm.args.lang:=casm)$(sm.tool.gcc.dependency)
+sm.tool.gcc.dependency     = $(call sm.tool.gcc.dependency.$(sm.args.lang))
 
 
 ##################################################
