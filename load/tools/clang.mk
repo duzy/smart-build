@@ -43,80 +43,25 @@ sm.tool.clang.suffix.target.t.linux := .test
 sm.tool.clang.suffix.target.depends.linux :=
 
 ######################################################################
-# Compilation
+# define sm.tool.clang.compile.c
+# define sm.tool.clang.compile.c++
+# define sm.tool.clang.compile.asm
+# define sm.tool.clang.compile.ll
 
-##
-##  Produce compile commands for c language
-##
-define sm.tool.clang.compile.c.private
-$(sm.tool.clang.cmd.c) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.clang.compile.c.private
-
-##
-##
-##
-define sm.tool.clang.compile.c++.private
-$(sm.tool.clang.cmd.c++) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.clang.compile.c++.private
-
-##
-##
-##
-define sm.tool.clang.compile.asm.private
-$(sm.tool.clang.cmd.asm) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.clang.compile.asm.private
-
-##
-##
-##
-sm.tool.clang.compile     = $(call sm.tool.clang.compile.$(sm.args.lang).private)
-sm.tool.clang.compile.c   = $(eval sm.args.lang:=c)$(sm.tool.clang.compile)
-sm.tool.clang.compile.c++ = $(eval sm.args.lang:=c++)$(sm.tool.clang.compile)
-sm.tool.clang.compile.asm = $(eval sm.args.lang:=asm)$(sm.tool.clang.compile)
-sm.tool.clang.compile.ll = $(eval sm.args.lang:=ll)$(sm.tool.clang.compile)
-
-##################################################
-# Denpendencies
-
-define sm.tool.clang.dependency.c
-$(sm.tool.clang.cmd.c) -MM -MT $(sm.args.target) $(sm.args.flags.0) $(sm.args.sources) \
-  > $(sm.args.output)
-endef
-
-define sm.tool.clang.dependency.c++
-$(sm.tool.clang.cmd.c++) -MM -MT $(sm.args.target) $(sm.args.flags.0) $(sm.args.sources) \
-  > $(sm.args.output)
-endef
+# define sm.tool.clang.dependency.c
+# define sm.tool.clang.dependency.c++
 
 define sm.tool.clang.dependency.ll
 echo TODO:dependency: $1 $2 $3
 endef
 
-##################################################
-# Link
+# define sm.tool.clang.link.c
+# define sm.tool.clang.link.c++
+# define sm.tool.clang.link.asm
 
-define sm.tool.clang.link.c
-$(sm.tool.clang.cmd.c) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef
-
-define sm.tool.clang.link.c++
-$(sm.tool.clang.cmd.c++) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef
-
-define sm.tool.clang.link.asm
-$(sm.tool.clang.cmd.asm) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef
-
-##################################################
-# Archive
-
-define sm.tool.clang.archive
-$(sm.tool.clang.cmd.ar) $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.clang.archive
-
-sm.tool.clang.archive.c   = $(sm.tool.clang.archive)
-sm.tool.clang.archive.c++ = $(sm.tool.clang.archive)
-sm.tool.clang.archive.asm = $(sm.tool.clang.archive)
+# define sm.tool.clang.archive.c
+# define sm.tool.clang.archive.c++
+# define sm.tool.clang.archive.asm
 
 ######################################################################
 # Options

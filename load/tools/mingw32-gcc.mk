@@ -48,73 +48,21 @@ sm.tool.mingw32-gcc.suffix.target.depends.linux :=
 ######################################################################
 # Compiles
 
-define sm.tool.mingw32-gcc.compile.c.private
-$(info $(sm.args.target) $(sm.args.sources))
-$(sm.tool.mingw32-gcc.cmd.c) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.mingw32-gcc.compile.c.private
+# define sm.tool.mingw32-gcc.compile.c
+# define sm.tool.mingw32-gcc.compile.c++
+# define sm.tool.mingw32-gcc.compile.asm
 
-define sm.tool.mingw32-gcc.compile.c++.private
-$(sm.tool.mingw32-gcc.cmd.c++) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.mingw32-gcc.compile.c++.private
+# define sm.tool.mingw32-gcc.dependency.c
+# define sm.tool.mingw32-gcc.dependency.c++
+# define sm.tool.mingw32-gcc.dependency.asm
 
-define sm.tool.mingw32-gcc.compile.asm.private
-$(sm.tool.mingw32-gcc.cmd.asm) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.mingw32-gcc.compile.asm.private
+# define sm.tool.mingw32-gcc.link.c
+# define sm.tool.mingw32-gcc.link.c++
+# define sm.tool.mingw32-gcc.link.asm
 
-sm.tool.mingw32-gcc.compile     = $(call sm.tool.mingw32-gcc.compile.$(sm.args.lang).private)
-sm.tool.mingw32-gcc.compile.c   = $(eval sm.args.lang:=c)$(sm.tool.mingw32-gcc.compile)
-sm.tool.mingw32-gcc.compile.c++ = $(eval sm.args.lang:=c++)$(sm.tool.mingw32-gcc.compile)
-sm.tool.mingw32-gcc.compile.asm = $(eval sm.args.lang:=asm)$(sm.tool.mingw32-gcc.compile)
-
-
-##################################################
-# Denpendencies
-
-define sm.tool.mingw32-gcc.dependency.c.private
-$(sm.tool.mingw32-gcc.cmd.c) -MM -MT $(sm.args.target) -MF $(sm.args.output) $(sm.args.flags.0) $(sm.args.sources)
-endef #sm.tool.mingw32-gcc.dependency.c.private
-
-define sm.tool.mingw32-gcc.dependency.c++.private
-$(sm.tool.mingw32-gcc.cmd.c++) -MM -MT $(sm.args.target) -MF $(sm.args.output) $(sm.args.flags.0) $(sm.args.sources)
-endef #sm.tool.mingw32-gcc.dependency.c++.private
-
-sm.tool.mingw32-gcc.dependency     = $(call sm.tool.mingw32-gcc.dependency.$(sm.args.lang).private)
-sm.tool.mingw32-gcc.dependency.c   = $(eval sm.args.lang:=c)$(call sm.tool.mingw32-gcc.dependency)
-sm.tool.mingw32-gcc.dependency.c++ = $(eval sm.args.lang:=c++)$(call sm.tool.mingw32-gcc.dependency)
-sm.tool.mingw32-gcc.dependency.asm = $(eval sm.args.lang:=asm)$(call sm.tool.mingw32-gcc.dependency)
-
-
-##################################################
-# Links
-
-define sm.tool.mingw32-gcc.link.c
-$(sm.tool.mingw32-gcc.cmd.c) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef #sm.tool.mingw32-gcc.link.c
-
-define sm.tool.mingw32-gcc.link.c++
-$(sm.tool.mingw32-gcc.cmd.c++) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef #sm.tool.mingw32-gcc.link.c++
-
-define sm.tool.mingw32-gcc.link.asm
-$(sm.tool.mingw32-gcc.cmd.as) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef #sm.tool.mingw32-gcc.link.asm
-
-define sm.tool.mingw32-gcc.link
-$(sm.tool.mingw32-gcc.cmd.ld) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef #sm.tool.mingw32-gcc.link
-
-
-##################################################
-# Archive
-
-define sm.tool.mingw32-gcc.archive
-$(sm.tool.mingw32-gcc.cmd.ar) $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.mingw32-gcc.archive
-
-sm.tool.mingw32-gcc.archive.c   = $(sm.tool.mingw32-gcc.archive)
-sm.tool.mingw32-gcc.archive.c++ = $(sm.tool.mingw32-gcc.archive)
-sm.tool.mingw32-gcc.archive.asm = $(sm.tool.mingw32-gcc.archive)
-
+# define sm.tool.mingw32-gcc.archive.c
+# define sm.tool.mingw32-gcc.archive.c++
+# define sm.tool.mingw32-gcc.archive.asm
 
 ######################################################################
 # Options

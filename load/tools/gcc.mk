@@ -43,92 +43,22 @@ sm.tool.gcc.suffix.target.t.linux := .test
 sm.tool.gcc.suffix.target.depends.linux :=
 
 ######################################################################
-# Compiles
-
-##
-##  Produce compile commands for c language
-##
-define sm.tool.gcc.compile.c
-$(sm.tool.gcc.cmd.c) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.gcc.compile.c
-
-##
-##
-##
-define sm.tool.gcc.compile.c++
-$(sm.tool.gcc.cmd.c++) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.gcc.compile.c++
-
-##
-##
-##
-define sm.tool.gcc.compile.asm
-$(sm.tool.gcc.cmd.asm) $(sm.args.flags.0) -c -o $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.gcc.compile.asm
-
-##
-##
-##
-sm.tool.gcc.compile     = $(call sm.tool.gcc.compile.$(sm.args.lang))
-
-##################################################
-# Denpendencies
-
-define sm.tool.gcc.dependency.c
-$(sm.tool.gcc.cmd.c) -MM -MT $(sm.args.target) -MF $(sm.args.output) $(sm.args.flags.0) $(sm.args.sources)
-endef #sm.tool.gcc.dependency.c
-
-define sm.tool.gcc.dependency.c++
-$(sm.tool.gcc.cmd.c++) -MM -MT $(sm.args.target) -MF $(sm.args.output) $(sm.args.flags.0) $(sm.args.sources)
-endef #sm.tool.gcc.dependency.c++
-
-sm.tool.gcc.dependency     = $(call sm.tool.gcc.dependency.$(sm.args.lang))
-
-
-##################################################
-# Links
-
-##
-##
-##
-define sm.tool.gcc.link.c
-$(sm.tool.gcc.cmd.c) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef #sm.tool.gcc.link.c
-
-##
-##
-##
-define sm.tool.gcc.link.c++
-$(sm.tool.gcc.cmd.c++) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef #sm.tool.gcc.link.c++
-
-##
-##
-##
-define sm.tool.gcc.link.asm
-$(sm.tool.gcc.cmd.asm) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef #sm.tool.gcc.link.asm
-
-##
-##
-## eg. $(call sm.tool.gcc.link, foo, foo.c, options, libs)
-define sm.tool.gcc.link
-$(sm.tool.gcc.cmd.ld) $(sm.args.flags.0) -o $(sm.args.target) $(sm.args.sources) $(sm.args.flags.1)
-endef #sm.tool.gcc.link
-
-
-##################################################
-# Archive
-
-define sm.tool.gcc.archive
-$(sm.tool.gcc.cmd.ar) $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.gcc.archive
-
-sm.tool.gcc.archive.c   = $(sm.tool.gcc.archive)
-sm.tool.gcc.archive.c++ = $(sm.tool.gcc.archive)
-sm.tool.gcc.archive.asm = $(sm.tool.gcc.archive)
-
-
+# define sm.tool.gcc.compile.c
+# define sm.tool.gcc.compile.c++
+# define sm.tool.gcc.compile.asm
+#
+# define sm.tool.gcc.dependency.c
+# define sm.tool.gcc.dependency.c++
+# define sm.tool.gcc.dependency.asm
+#
+# define sm.tool.gcc.link.c
+# define sm.tool.gcc.link.c++
+# define sm.tool.gcc.link.asm
+#
+# sm.tool.gcc.archive.c
+# sm.tool.gcc.archive.c++
+# sm.tool.gcc.archive.asm
+#
 ######################################################################
 # Options
 

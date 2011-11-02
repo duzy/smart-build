@@ -296,6 +296,7 @@ ${eval \
     $$(call sm.fun.append-items-with-fix, $(sm.var.temp._fvar_name), \
            $$($(sm._this).includes) \
            $$($(sm._this).used.includes)\
+           $($(sm.var.toolset).includes)\
            $$(sm.global.includes) \
           , -I, , -%)
 
