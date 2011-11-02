@@ -58,11 +58,28 @@ $(if $(call equal,$1,dynamic),shared,\
 endef #sm-module-type-name
 
 ##
-define sm-reset-module
+define sm-reset-module__deprecated
 $(eval \
   sm.temp._mod := $(strip $1)
  )$(foreach sm.temp._, $(sm.module.properties),\
     $(eval $(sm.temp._mod)$(sm.temp._) :=))
+endef #sm-reset-module
+##
+define sm-reset-module
+$(eval sm.temp._mod := $(strip $1))\
+$(eval \
+  ifneq ($(words $(sm.temp._mod)),1)
+    $$(error smart: prefix contains spaces: $(sm.temp._mod))
+  endif
+
+  ifeq ($(filter sm.module.%, $(sm.temp._mod)),)
+    ifneq (sm.this,$(sm.temp._mod))
+      $$(error smart: bad prefix: '$(sm.temp._mod)')
+    endif
+  endif
+
+  sm.temp._mod_vars := $(filter $(sm.temp._mod).%,$(.VARIABLES))
+ )$(foreach sm.temp._, $(sm.temp._mod_vars),$(eval $(sm.temp._) :=))
 endef #sm-reset-module
 
 ##
@@ -71,19 +88,31 @@ $(eval \
   sm.temp._src := $(strip $1)
   sm.temp._dst := $(strip $2)
  )\
-$(foreach sm.temp._,\
-     $(sm.module.properties)\
-     $(foreach _,$($(sm.temp._src).headers.*), .headers.$_! .headers.$_),\
-  $(eval sm.temp._flavor := $(flavor $(sm.temp._src)$(sm.temp._)))\
+$(eval \
+  ifneq ($(words $(sm.temp._src)),1)
+    $$(error smart: prefix contains spaces: $(sm.temp._src))
+  endif
+
+  ifeq ($(filter sm.module.%, $(sm.temp._src)),)
+    ifneq (sm.this,$(sm.temp._src))
+      $$(error smart: bad prefix: '$(sm.temp._src)')
+    endif
+  endif
+ )\
+$(call sm-reset-module, $(sm.temp._dst))\
+$(eval sm.temp._properties := $(filter $(sm.temp._src).%,$(.VARIABLES)))\
+$(eval sm.temp._properties := $(sm.temp._properties:$(sm.temp._src).%=%))\
+$(foreach sm.temp._, $(sm.temp._properties),\
+  $(eval sm.temp._flavor := $(flavor $(sm.temp._src).$(sm.temp._)))\
   $(eval \
     ifeq ($(sm.temp._flavor),simple)
-      $(sm.temp._dst)$(sm.temp._) := $($(sm.temp._src)$(sm.temp._))
+      $(sm.temp._dst).$(sm.temp._) := $($(sm.temp._src).$(sm.temp._))
     else
-    ifeq ($(sm.temp._flavor),recursive)
-      $(sm.temp._dst)$(sm.temp._) = $(value $(sm.temp._src)$(sm.temp._))
-    else
-      #(undefine $(sm.temp._dst)$(sm.temp._))
-    endif
+      ifeq ($(sm.temp._flavor),recursive)
+        $(sm.temp._dst).$(sm.temp._) = $(value $(sm.temp._src).$(sm.temp._))
+      else
+        #(undefine $(sm.temp._dst).$(sm.temp._))
+      endif
     endif
    ))
 endef #sm-clone-module

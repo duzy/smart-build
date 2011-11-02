@@ -111,7 +111,7 @@ endif
 ###
 sm.global.using :=
 ## NOTE: sm.module.properties should not include .using_list
-sm.module.properties := \
+sm.module.properties__deprecated := \
   .dir \
   .name \
   .type \
@@ -153,7 +153,9 @@ sm.module.properties := \
   .export.libs \
   .export.use \
 
-$(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.common.langs)")
-$(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.XXX.langs)")
+# $(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.common.langs)")
+# $(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.XXX.langs)")
+
+sm.module.properties = $(error sm.module.properties is deprecated)
 
 sm.var.Q := @
