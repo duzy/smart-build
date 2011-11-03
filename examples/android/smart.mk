@@ -2,7 +2,7 @@
 #
 #$(call sm-new-module, native-activity, shared, android-ndk:armeabi:android-9)
 #$(call sm-new-module, native-activity, shared, android-ndk armeabi android-9)
-$(call sm-new-module, native-activity, shared, android-ndk ARCH_ABI=armeabi PLATFORM=android-9)
+$(call sm-new-module, native-activity, shared, android-ndk ABI=armeabi PLATFORM=android-9)
 
 ## TODO: get rid of the usage of android-ndk-import-module
 $(call android-ndk-import-module, android/native_app_glue)

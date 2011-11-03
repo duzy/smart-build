@@ -19,8 +19,8 @@ ifdef sm.tool.android-ndk.args
     TARGET_PLATFORM := $(lastword $(TARGET_PLATFORM))
   endif #TARGET_PLATFORM
 
-  TARGET_ARCH_ABI := $(filter ARCH_ABI=%,$(sm.tool.android-ndk.args))
-  TARGET_ARCH_ABI := $(patsubst ARCH_ABI=%,%,$(TARGET_ARCH_ABI))
+  TARGET_ARCH_ABI := $(filter ABI=%,$(sm.tool.android-ndk.args))
+  TARGET_ARCH_ABI := $(patsubst ABI=%,%,$(TARGET_ARCH_ABI))
   ifndef TARGET_ARCH_ABI
     TARGET_ARCH_ABI := $(filter armeabi% x86,$(sm.tool.android-ndk.args))
     TARGET_ARCH_ABI := $(lastword $(TARGET_ARCH_ABI))
