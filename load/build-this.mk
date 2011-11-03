@@ -32,10 +32,31 @@ endif
 ifneq ($(filter $($(sm._this).type),$(sm.global.module_types)),)
   sm.global.goals += goal-$($(sm._this).name)
 
-  # this duplicats in 'sm-build-this'
-  #$(sm._this)._cnum := 0
-
   include $(sm.dir.buildsys)/build-rules.mk
+
+  ## make alias to sm.this.sources.LANGs
+  ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+    $(eval sm.this.sources.$(sm.var.temp._lang)          = $$($(sm._this).sources.$(sm.var.temp._lang)))\
+    $(eval sm.this.sources.external.$(sm.var.temp._lang) = $$($(sm._this).sources.external.$(sm.var.temp._lang)))\
+    $(eval sm.this.sources.has.$(sm.var.temp._lang)      = $$($(sm._this).sources.has.$(sm.var.temp._lang)))\
+   }
+
+  ifeq ($($(sm._this).type),t)
+    sm.var.temp._lang := $($(sm._this).lang)
+    sm.this.sources.$(sm.var.temp._lang).t = $($(sm._this).sources.$(sm.var.temp._lang).t)
+    sm.this.sources.external.$(sm.var.temp._lang).t = $($(sm._this).sources.external.$(sm.var.temp._lang).t)
+    sm.this.sources.has.$(sm.var.temp._lang).t = $($(sm._this).sources.has.$(sm.var.temp._lang).t)
+  endif
+
+  sm.this.lang             = $(sm._this).lang
+  sm.this.intermediates    = $($(sm._this).intermediates)
+  sm.this.inters           = $($(sm._this).intermediates)
+  sm.this.depends         := $($(sm._this).depends)
+  sm.this.targets         := $($(sm._this).targets)
+  sm.this.documents       := $($(sm._this).documents)
+  sm.this.sources.common  := $($(sm._this).sources.common)
+  sm.this.sources.unknown := $($(sm._this).sources.unknown)
+  sm.this.depends.copyfiles = $($(sm._this).depends.copyfiles)
 
   $(sm._this)._already_built := true
 else
