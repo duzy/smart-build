@@ -62,9 +62,29 @@ sm.tool.android-ndk.suffix.target.depends.linux :=
 # define sm.tool.android-ndk.dependency.c++
 # define sm.tool.android-ndk.dependency.asm
 
-# define sm.tool.android-ndk.link.c
-# define sm.tool.android-ndk.link.c++
-# define sm.tool.android-ndk.link.asm
+##
+define sm.tool.android-ndk.link
+$(eval \
+  PRIVATE_OBJECTS := $(sm.args.sources)
+  PRIVATE_WHOLE_STATIC_LIBRARIES :=
+  PRIVATE_STATIC_LIBRARIES :=
+  PRIVATE_SHARED_LIBRARIES :=
+  PRIVATE_LDFLAGS := $(sm.args.flags.0)
+  PRIVATE_LDLIBS := $(sm.args.flags.1)
+  @ := $(sm.args.target)
+  ^ := $(sm.args.sources)
+  < := $(firstword $(sm.args.sources))
+
+  sm.temp._class := executable
+  ifneq ($(filter -shared,$(sm.args.flags.0)),)
+    sm.temp._class := shared-library
+    PRIVATE_LDFLAGS += -Wl,-no-undefined
+  endif # is shared library
+ )$(cmd-build-$(sm.temp._class))
+endef #sm.tool.android-ndk.link
+sm.tool.android-ndk.link.c   = $(sm.tool.android-ndk.link)
+sm.tool.android-ndk.link.c++ = $(sm.tool.android-ndk.link)
+sm.tool.android-ndk.link.asm = $(sm.tool.android-ndk.link)
 
 # define sm.tool.android-ndk.archive.c
 # define sm.tool.android-ndk.archive.c++
@@ -75,4 +95,5 @@ sm.tool.android-ndk.suffix.target.depends.linux :=
 sm.tool.android-ndk.includes := $(TARGET_C_INCLUDES)
 sm.tool.android-ndk.compile.flags := -DANDROID $(TARGET_CFLAGS)
 sm.tool.android-ndk.link.flags := $(TARGET_LD_FLAGS)
-
+sm.tool.android-ndk.libdirs := 
+sm.tool.android-ndk.libs :=
