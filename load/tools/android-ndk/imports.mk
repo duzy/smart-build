@@ -83,7 +83,7 @@ $(eval \
   $(sm.temp._sm).export.libs := $($(sm.temp._m).MODULE) $($(sm.temp._m).EXPORT_LDLIBS)
   $(sm.temp._sm).export.libdirs := $(sm.out.lib)
   $(sm.temp._sm).sources := $($(sm.temp._m).SRC_FILES)
-  $(sm.temp._sm).verbose := true
+  $(sm.temp._sm).verbose :=
 
   sm._this := sm.module.$($(sm.temp._m).MODULE)
   include $(sm.dir.buildsys)/build-rules.mk

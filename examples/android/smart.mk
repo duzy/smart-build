@@ -12,7 +12,7 @@ $(info libs: $(sm.module.android_native_app_glue.export.libs))
 $(call sm-use, android_native_app_glue)
 $(info using_list: $(sm.module.native-activity.using_list))
 
-sm.this.verbose := true
+sm.this.verbose :=
 sm.this.sources := na.c
 sm.this.libs := log android EGL GLESv1_CM
 
