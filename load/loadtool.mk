@@ -10,6 +10,7 @@ ifeq ($(wildcard $(sm.temp._toolset_mk)),)
   $(error smart: toolset '$(strip $3)' unsupported.)
 endif
 
+sm.tool.$(sm.this.toolset).args := $(strip $(sm.this.toolset.args))
 include $(sm.temp._toolset_mk)
 ################################################## default commands
 ifndef sm.tool.$(sm.this.toolset).archive

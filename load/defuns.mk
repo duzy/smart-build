@@ -125,6 +125,7 @@ define sm-new-module-internal
    sm.temp._name := $(strip $1)
    sm.temp._type := $(strip $2)
    sm.temp._toolset := $(strip $3)
+   sm.temp._toolset_args := $$(subst :, ,$$(sm.temp._toolset))
 
    ifeq ($$(sm.temp._name),)
      $$(error module name(as arg 1) required)
@@ -172,6 +173,9 @@ define sm-new-module-internal
    endif
   )\
  $(if $(sm.temp._toolset),$(eval \
+   sm.temp._toolset := $(firstword $(sm.temp._toolset_args))
+   sm.temp._toolset_args := $(wordlist 2,$(words $(sm.temp._toolset_args)),$(sm.temp._toolset_args))
+   )$(eval \
    ifeq ($(sm.this.type),depends)
      ifeq ($(wildcard $(sm.dir.buildsys)/tools/$(sm.temp._toolset).mk),)
        $$(error smart: toolset $(sm.temp._toolset) not unknown)
@@ -179,6 +183,7 @@ define sm-new-module-internal
    endif
    ######
    sm.this.toolset := $(sm.temp._toolset)
+   sm.this.toolset.args := $(sm.temp._toolset_args)
    ######
    ifeq ($$(sm.this.toolset),common)
      #$$(warning TODO: common toolset...)
