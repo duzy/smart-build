@@ -12,9 +12,11 @@ endif
 
 include $(sm.temp._toolset_mk)
 ################################################## default commands
-define sm.tool.$(sm.this.toolset).archive
-$(sm.tool.gcc.cmd.ar) $(sm.args.target) $(sm.args.sources)
-endef #sm.tool.$(sm.this.toolset).archive
+ifndef sm.tool.$(sm.this.toolset).archive
+  define sm.tool.$(sm.this.toolset).archive
+    $(sm.tool.$(sm.this.toolset).cmd.ar) $(sm.args.target) $(sm.args.sources)
+  endef
+endif #sm.tool.$(sm.this.toolset).archive
 
 ##
 ## Provide default build commands if the toolset donnot have them defined.
