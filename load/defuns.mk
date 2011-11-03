@@ -156,7 +156,8 @@ define sm-new-module-internal
    sm.this.gen_deps := true
 
    sm.global.modules += $(sm.temp._name)
-   sm.global.modules.$(sm.temp._name) := $$(sm.this.makefile)
+   #sm.global.modules.$(sm.temp._name) := $$(sm.this.makefile)
+   sm.global.modules.$(sm.temp._name) = $$(error sm.global.modules.XXX is deprecated)
 
    ifeq ($$(sm.this.type),shared)
      sm.this.out_implib := $$(sm.this.name)
@@ -351,6 +352,7 @@ define sm-use
      $$(error smart: module "$(sm.temp._name)" already been used)
    endif
    $(sm._this).using_list += $($(sm._that).name)
+   sm.this.using_list := $$($(sm._this).using_list)
   )
 endef #sm-use
 
