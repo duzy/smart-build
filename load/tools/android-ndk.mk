@@ -32,6 +32,7 @@ sm.tool.android-ndk.langs := c++ c asm
 sm.tool.android-ndk.cmd.c := $(TOOLCHAIN_PREFIX)gcc
 sm.tool.android-ndk.cmd.c++ := $(TOOLCHAIN_PREFIX)g++
 sm.tool.android-ndk.cmd.asm := $(TOOLCHAIN_PREFIX)gcc
+sm.tool.android-ndk.cmd.ar := $(TOOLCHAIN_PREFIX)ar
 
 sm.tool.android-ndk.suffix.c := .c
 sm.tool.android-ndk.suffix.c++ := .cpp .c++ .cc .CC .C
@@ -86,9 +87,17 @@ sm.tool.android-ndk.link.c   = $(sm.tool.android-ndk.link)
 sm.tool.android-ndk.link.c++ = $(sm.tool.android-ndk.link)
 sm.tool.android-ndk.link.asm = $(sm.tool.android-ndk.link)
 
-# define sm.tool.android-ndk.archive.c
-# define sm.tool.android-ndk.archive.c++
-# define sm.tool.android-ndk.archive.asm
+define sm.tool.android-ndk.archive
+$(eval \
+  PRIVATE_OBJECTS := $(sm.args.sources)
+  @ := $(sm.args.target)
+  ^ := $(sm.args.sources)
+  < := $(firstword $(sm.args.sources))
+ )$(cmd-build-static-library)
+endef #sm.tool.android-ndk.archive
+sm.tool.android-ndk.archive.c   = $(sm.tool.android-ndk.archive)
+sm.tool.android-ndk.archive.c++ = $(sm.tool.android-ndk.archive)
+sm.tool.android-ndk.archive.asm = $(sm.tool.android-ndk.archive)
 
 ######################################################################
 # Options
