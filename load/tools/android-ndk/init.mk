@@ -10,16 +10,37 @@ include $(NDK_ROOT)/build/core/init.mk
 ##	2. $(NDK_ROOT)/build/core/setup-abi.mk
 ##	3. $(NDK_ROOT)/build/core/setup-toolchain.mk
 ##	4. $(NDK_ROOT)/build/core/build-binary.mk
-## 
-TARGET_PLATFORM := android-9
-TARGET_ARCH_ABI := armeabi
+##
+ifdef sm.tool.android-ndk.args
+  TARGET_PLATFORM := $(filter PLATFORM=%,$(sm.tool.android-ndk.args))
+  TARGET_PLATFORM := $(patsubst PLATFORM=%,%,$(TARGET_PLATFORM))
+  ifndef TARGET_PLATFORM
+    TARGET_PLATFORM := $(filter android-%,$(sm.tool.android-ndk.args))
+    TARGET_PLATFORM := $(lastword $(TARGET_PLATFORM))
+  endif #TARGET_PLATFORM
+
+  TARGET_ARCH_ABI := $(filter ARCH_ABI=%,$(sm.tool.android-ndk.args))
+  TARGET_ARCH_ABI := $(patsubst ARCH_ABI=%,%,$(TARGET_ARCH_ABI))
+  ifndef TARGET_ARCH_ABI
+    TARGET_ARCH_ABI := $(filter armeabi% x86,$(sm.tool.android-ndk.args))
+    TARGET_ARCH_ABI := $(lastword $(TARGET_ARCH_ABI))
+  endif #TARGET_ARCH_ABI
+endif #sm.tool.android-ndk.args
+
+ifndef TARGET_PLATFORM
+  TARGET_PLATFORM := android-10
+endif #TARGET_PLATFORM
+ifndef TARGET_ARCH_ABI
+  TARGET_ARCH_ABI := armeabi
+endif #TARGET_ARCH_ABI
+
+$(info smart: Android NDK: Build for $(TARGET_PLATFORM) using ABI "$(TARGET_ARCH_ABI)")
 
 ##
 ## See setup-abi.mk for these:
 TARGET_ARCH_for_armeabi     := arm
 TARGET_ARCH_for_armeabi-v7a := arm
 TARGET_ARCH_for_x86         := x86
-
 TARGET_ARCH := $(TARGET_ARCH_for_$(TARGET_ARCH_ABI))
 
 ##
