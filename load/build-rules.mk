@@ -916,6 +916,11 @@ $(eval \
 endef #sm.fun.make-clean-rules
 $(sm.fun.make-clean-rules)
 
+sm.var.temp._built_mk := $(sm.dir.buildsys)/tools/$($(sm._this).toolset)/built-target.mk
+sm.var.temp._built_mk := $(wildcard $(sm.var.temp._built_mk))
+ifdef sm.var.temp._built_mk
+  include $(sm.var.temp._built_mk)
+endif #sm.var.temp._built_mk
 endif # sm.var.temp._should_make_targets == true
 
 ##################################################
