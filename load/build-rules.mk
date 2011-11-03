@@ -47,27 +47,14 @@ define sm.fun.compute-sources-by-lang
   $(sm._this).sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources))
   $(sm._this).sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources.external))
   $(sm._this).sources.has.$(sm.var.temp._lang)      := $$(if $$($(sm._this).sources.$(sm.var.temp._lang))$$($(sm._this).sources.external.$(sm.var.temp._lang)),true)
-
-  ## make alias to sm.this.sources.LANGs
-  sm.this.sources.$(sm.var.temp._lang) = $$($(sm._this).sources.$(sm.var.temp._lang))
-  sm.this.sources.external.$(sm.var.temp._lang) = $$($(sm._this).sources.external.$(sm.var.temp._lang))
-  sm.this.sources.has.$(sm.var.temp._lang) = $$($(sm._this).sources.has.$(sm.var.temp._lang))
   }
 endef #sm.fun.compute-sources-by-lang
-
-##
-define sm.fun.compute-per-source-flags
-  ${foreach sm.var.temp._source,\
-     $(sm.this.sources.$(sm.var.temp._lang))\
-     $(sm.this.sources.external.$(sm.var.temp._lang)),\
-    ${eval $(sm._this).compile.flags-$(sm.var.temp._source) := $(sm.this.compile.flags-$(sm.var.temp._source))}}
-endef #sm.fun.compute-per-source-flags
 
 ## Compute sources of each language supported by the toolset.
 sm.var.toolset := sm.tool.$($(sm._this).toolset)
 ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
   $(sm.fun.compute-sources-by-lang)\
-  $(sm.fun.compute-per-source-flags)}
+ }
 
 #-----------------------------------------------
 #-----------------------------------------------
@@ -138,6 +125,7 @@ ifneq ($(strip $($(sm._this).type)),depends)
   endif # $(sm._this).toolset != common
 endif ## $(sm._this).type != depends
 
+
 ## This is a second check, the first check is done in sm-build-this.
 ifeq (${strip \
          $(foreach _, $($(sm._this).headers.*), $($(sm._this).headers.$_))\
@@ -157,6 +145,7 @@ ifeq ($(sm.args.docs_format),)
   sm.args.docs_format := .dvi
 endif
 
+
 ##################################################
 
 ## Clear compile options for all langs
@@ -174,6 +163,7 @@ $(sm._this)._link.libs :=
 $(sm._this)._link.libs.computed :=
 
 $(sm._this).flag_files :=
+
 
 ##################################################
 
@@ -700,7 +690,8 @@ ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
              $($(sm._this).sources.has.$(sm.var.temp._lang))),\
          $(no-info smart: language choosed as "$(sm.var.temp._lang)" for "$($(sm._this).name)")\
          $(eval $(sm._this).lang := $(sm.var.temp._lang))\
-         $(eval sm.this.lang := $(sm.var.temp._lang)))}
+   )\
+ }
 endif ## $(sm._this).type != depends
 
 ## Make object rules for .t sources file
@@ -716,10 +707,6 @@ ifeq ($($(sm._this).type),t)
     ${foreach sm.var.temp._source,$($(sm._this).sources.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile)}
     ${foreach sm.var.temp._source,$($(sm._this).sources.external.$(sm.var.temp._lang).t),$(call sm.fun.make-rule-compile,external)}
   endif
-
-  sm.this.sources.$(sm.var.temp._lang).t = $($(sm._this).sources.$(sm.var.temp._lang).t)
-  sm.this.sources.external.$(sm.var.temp._lang).t = $($(sm._this).sources.external.$(sm.var.temp._lang).t)
-  sm.this.sources.has.$(sm.var.temp._lang).t = $($(sm._this).sources.has.$(sm.var.temp._lang).t)
 endif # $(sm._this).type == t
 
 sm.var.temp._should_make_targets := \
@@ -796,13 +783,6 @@ endif #$($(sm._this).toolset) != common
 $(sm._this).module_targets := $($(sm._this).targets)
 $(sm._this).targets += $($(sm._this).user_defined_targets)
 $(sm._this).inters = $($(sm._this).intermediates)
-sm.this.intermediates := $($(sm._this).intermediates)
-sm.this.inters = $(sm.this.intermediates)
-sm.this.depends := $($(sm._this).depends)
-sm.this.targets := $($(sm._this).targets)
-sm.this.documents := $($(sm._this).documents)
-sm.this.sources.common := $($(sm._this).sources.common)
-sm.this.sources.unknown := $($(sm._this).sources.unknown)
 
 ##################################################
 # copy headers
@@ -812,6 +792,7 @@ sm.this.sources.unknown := $($(sm._this).sources.unknown)
 $(sm._this).headers.??? :=
 
 ## sm-copy-files will append to this
+sm.this.depends.copyfiles_saved := $(sm.this.depends.copyfiles)
 sm.this.depends.copyfiles :=
 
 ## headers from sm.this.headers
@@ -847,7 +828,8 @@ ifneq ($($(sm._this).headers.???),)
   headers-$($(sm._this).name) : $($(sm._this).headers.???)
 endif # $(sm._this).headers.copied != ""
 
-sm.this.depends.copyfiles := $($(sm._this).depends.copyfiles)
+## must restore sm.this.depends.copyfiles
+sm.this.depends.copyfiles := $(sm.this.depends.copyfiles_saved)
 
 ##################################################
 ##################################################
@@ -938,9 +920,3 @@ endif # sm.var.temp._should_make_targets == true
 
 ##################################################
 ##################################################
-
-sm._this.fun :=
-sm._this :=
-
-#undefine sm._this.fun
-#undefine sm._this

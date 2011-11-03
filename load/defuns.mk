@@ -99,7 +99,7 @@ $(eval \
     endif
   endif
  )\
-$(call sm-reset-module, $(sm.temp._dst))\
+$(no-call sm-reset-module, $(sm.temp._dst))\
 $(eval sm.temp._properties := $(filter $(sm.temp._src).%,$(.VARIABLES)))\
 $(eval sm.temp._properties := $(sm.temp._properties:$(sm.temp._src).%=%))\
 $(foreach sm.temp._, $(sm.temp._properties),\
@@ -472,6 +472,7 @@ define sm-compile-sources-internal
         $(sm._this)._intermediates_only := true
         include $(sm.dir.buildsys)/build-rules.mk
         $(sm._this)._intermediates_only :=
+        sm.this.intermediates := $$($(sm._this).intermediates)
       endif
      )\
    ,$(error smart: No sources defined))

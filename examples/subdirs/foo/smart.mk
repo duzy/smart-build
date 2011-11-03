@@ -9,5 +9,4 @@ sm.this.verbose := true
 sm.this.sources := foo.cpp
 sm.this.compile.flags := -fPIC
 
-$(sm-generate-implib)
 $(sm-build-this)
