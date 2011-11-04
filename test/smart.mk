@@ -43,16 +43,26 @@ $(call test-check-defined, sm.this.dir)
 $(call test-check-defined, sm-load-subdirs)
 $(call test-check-flavor,  sm-load-subdirs, recursive)
 ########## case in
-$(call sm-load-subdirs, subdirs)
+$(call sm-load-subdirs, subdirs subdir)
 ########## case out
 $(call test-check-undefined,sm.this.dirs)
 $(call test-check-value,$(sm.this.dirs),)
 $(call test-check-value-of,test.case.subdirs-loaded,1)
+$(call test-check-value-of,test.case.subdir-loaded,1)
 $(call test-check-not-value,$(sm.this.dir),$(test.temp.this-dir))
+$(call test-check-defined,sm.this.dir) ## should not be empty
+$(call test-check-value-pat,$(sm.this.dir),%/test/subdir)
+$(call test-check-value,$(filter subdir-foo,$(sm.global.modules)),subdir-foo)
+$(call test-check-defined, sm.module.subdir-foo.name)
+$(call test-check-defined, sm.module.subdir-foo.type)
+$(call test-check-defined, sm.module.subdir-foo.dir)
+$(call test-check-value-of,sm.module.subdir-foo.name,subdir-foo)
+$(call test-check-value-of,sm.module.subdir-foo.type,none)
+$(call test-check-value-of,sm.module.subdir-foo.dir,$(test.temp.this-dir)/subdir)
 
 $(call test-check-undefined,test.case.fake-module-loaded)
 ########## case in
 $(call sm-load-module, $(test.temp.this-dir)/fake-module.mk)
 ########## case out
 $(call test-check-value-of,test.case.fake-module-loaded,1)
-$(call test-check-undefined, sm.this.dir)
+$(call test-check-undefined, sm.this.dir) ## fake-module make nothing, sm-load-module unset this
