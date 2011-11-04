@@ -10,8 +10,10 @@ $(call sm-check-origin, sm.tool.android-ndk, undefined)
 
 this.dir := $(call sm-this-dir)
 
+ANDROID_NDK_PATH := $(wildcard ~/open/android-ndk-r6)
+
 sm.tool.android-ndk := true
-sm.tool.android-ndk.path := $(wildcard ~/open/android-ndk-r6)
+sm.tool.android-ndk.path := $(ANDROID_NDK_PATH)
 
 ################################################## Android NDK setup
 ## The variable "sm.tool.android-ndk.path" must be defined first!!
