@@ -2,7 +2,11 @@
 #
 NDK_ROOT := $(sm.tool.android-ndk.path)
 NDK_ROOT := $(NDK_ROOT:%/=%)
-include $(NDK_ROOT)/build/core/init.mk
+ifeq ($(wildcard $(NDK_ROOT)/build/core/init.mk),)
+  $(error invalid Android NDK path "$(NDK_ROOT)")
+else
+  include $(NDK_ROOT)/build/core/init.mk
+endif
 
 ##
 ## References:
