@@ -28,7 +28,7 @@ ifdef sm.tool.android-ndk.args
 endif #sm.tool.android-ndk.args
 
 ifndef TARGET_PLATFORM
-  TARGET_PLATFORM := android-10
+  TARGET_PLATFORM := android-$(NDK_MAX_PLATFORM_LEVEL)
 endif #TARGET_PLATFORM
 ifndef TARGET_ARCH_ABI
   TARGET_ARCH_ABI := armeabi
