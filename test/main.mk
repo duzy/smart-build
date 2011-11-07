@@ -37,7 +37,7 @@ $(eval \
     $$(error "$(strip $1)" is undefined)
   endif
   ifneq ($($(strip $1)),$2)
-    $$(error $$$$($(strip $1)) != "$2")
+    $$(error $$$$($(strip $1)) != "$2", ("$($(strip $1))"))
   endif
  )
 endef #test-check-value-of
@@ -54,7 +54,7 @@ $(eval \
     $$(error $$$$(words $$$$($(strip $1))) != 1)
   endif
   ifeq ($(filter $2,$($(strip $1))),)
-    $$(error $$$$($(strip $1)) != "$2")
+    $$(error $$$$($(strip $1)) != "$2", ("$($(strip $1))"))
   endif
  )
 endef #test-check-value-pat-of

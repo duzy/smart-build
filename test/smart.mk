@@ -12,7 +12,7 @@ $(call test-check-defined, sm-new-module)
 $(call test-check-flavor,  sm-new-module, recursive)
 $(call test-check-value,$(sm.this.name),)
 $(call test-check-value,$(sm.this.type),)
-########## case in
+########## case in -- new module
 $(call sm-new-module, foobar, none) ## make a new module
 ########## case out
 $(call test-check-value-of,sm.this.name,foobar)
@@ -26,7 +26,7 @@ test.temp.this-dir := $(sm.this.dir)
 
 $(call test-check-defined, sm-build-this)
 $(call test-check-flavor,  sm-build-this, recursive)
-########## case in
+########## case in -- build module
 $(sm-build-this)
 ########## case out
 $(call test-check-value-of,sm.module.foobar.name,foobar)
@@ -34,15 +34,22 @@ $(call test-check-value-of,sm.module.foobar.type,none)
 
 $(call test-check-defined, sm.this.dir)
 $(call test-check-flavor,  sm-load-module, recursive)
-########## case in
+########## case in  -- load a single module
 $(call sm-load-module, $(sm.this.dir)/module-of-type-none.mk)
 ########## case out
 $(call test-check-value-of,test.case.module-of-type-none-mk-loaded,1)
 
 $(call test-check-defined, sm.this.dir)
+$(call test-check-flavor,  sm-load-module, recursive)
+########## case in  -- load a single module
+$(call sm-load-module, $(sm.this.dir)/module-of-type-static.mk)
+########## case out
+$(call test-check-value-of,test.case.module-of-type-static-mk-loaded,1)
+
+$(call test-check-defined, sm.this.dir) ## defined by last loaded module
 $(call test-check-defined, sm-load-subdirs)
 $(call test-check-flavor,  sm-load-subdirs, recursive)
-########## case in
+########## case in -- load module in sub-directories
 $(call sm-load-subdirs, subdirs subdir)
 ########## case out
 $(call test-check-undefined,sm.this.dirs)
