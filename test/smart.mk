@@ -35,9 +35,9 @@ $(call test-check-value-of,sm.module.foobar.type,none)
 $(call test-check-defined, sm.this.dir)
 $(call test-check-flavor,  sm-load-module, recursive)
 ########## case in
-$(call sm-load-module, $(sm.this.dir)/another-module.mk)
+$(call sm-load-module, $(sm.this.dir)/module-of-type-none.mk)
 ########## case out
-$(call test-check-value-of,test.case.another-module-mk-loaded,1)
+$(call test-check-value-of,test.case.module-of-type-none-mk-loaded,1)
 
 $(call test-check-defined, sm.this.dir)
 $(call test-check-defined, sm-load-subdirs)
@@ -60,9 +60,9 @@ $(call test-check-value-of,sm.module.subdir-foo.name,subdir-foo)
 $(call test-check-value-of,sm.module.subdir-foo.type,none)
 $(call test-check-value-of,sm.module.subdir-foo.dir,$(test.temp.this-dir)/subdir)
 
-$(call test-check-undefined,test.case.fake-module-loaded)
+$(call test-check-undefined,test.case.module-nothing-loaded)
 ########## case in
-$(call sm-load-module, $(test.temp.this-dir)/fake-module.mk)
+$(call sm-load-module, $(test.temp.this-dir)/module-nothing.mk)
 ########## case out
-$(call test-check-value-of,test.case.fake-module-loaded,1)
+$(call test-check-value-of,test.case.module-nothing-loaded,1)
 $(call test-check-undefined, sm.this.dir) ## fake-module make nothing, sm-load-module unset this
