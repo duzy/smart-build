@@ -6,7 +6,7 @@ OUT_INTERS=out/gcc/debug/intermediates
 
 function test-log
 {
-    echo "${BASH_SOURCE}:$1:$2: $3"
+    echo "$1:$2: $3"
 }
 
 function test-check-file
@@ -25,7 +25,7 @@ function test-load-scripts-recursively
     for S in $D/*.mk ; do
         S=`basename $S .mk`-$T.sh
         [[ -f $S ]] && {
-            test-log ${LINENO} info "check \"`basename $S -$T.sh`\".."
+            test-log ${BASH_SOURCE}:${LINENO} info "check \"`basename $S -$T.sh`\".."
             . $S
         }
     done
@@ -33,7 +33,7 @@ function test-load-scripts-recursively
     GLOBIGNORE=$TOP/out
     for S in $D/* ; do
         [[ -d $S ]] && {
-            test-log ${LINENO} info "in $S"
+            test-log ${BASH_SOURCE}:${LINENO} info "in $S"
             test-load-check-scripts $S
         }
     done
