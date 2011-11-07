@@ -30,12 +30,14 @@ function test-load-scripts-recursively
         }
     done
 
+    GLOBIGNORE=$TOP/out
     for S in $D/* ; do
-        [[ -d $S ]] && [[ "x$S" != "x./out" ]] && {
+        [[ -d $S ]] && {
             test-log ${LINENO} info "in $S"
             test-load-check-scripts $S
         }
     done
+    GLOBIGNORE=
 }
 
 function test-load-precondition-scripts
