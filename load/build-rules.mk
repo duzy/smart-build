@@ -130,6 +130,7 @@ endif ## $(sm._this).type != depends
 ifeq (${strip \
          $(foreach _, $($(sm._this).headers.*), $($(sm._this).headers.$_))\
          $($(sm._this).depends)\
+         $($(sm._this).depends.copyfiles)\
          $($(sm._this).sources)\
          $($(sm._this).sources.external)\
          $($(sm._this).intermediates)},)
@@ -376,9 +377,15 @@ endef #sm.fun.compute-libs-link
 ##################################################
 
 ## Compute the intermediate name without suffix.
-define sm.fun.compute-intermediate-name
+define sm.fun.compute-intermediate-name-base
 $($(sm._this)._intermediate_prefix)$(basename $(subst ..,_,$(patsubst $(sm.top)/%,%,$(sm.var.temp._source))))
-endef #sm.fun.compute-intermediate-name
+endef #sm.fun.compute-intermediate-name-base
+
+ifeq ($($(sm._this).type),t)
+  sm.fun.compute-intermediate-name = $(sm.fun.compute-intermediate-name-base).t
+else
+  sm.fun.compute-intermediate-name = $(sm.fun.compute-intermediate-name-base)
+endif
 
 ##
 ##

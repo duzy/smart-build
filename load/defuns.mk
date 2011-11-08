@@ -575,7 +575,7 @@ $(eval \
     endif
   else
     ifeq ($(strip $(sm.this.type)),depends)
-      ifeq (${strip $(sm.this.depends)},)
+      ifeq (${strip $(sm.this.depends)$(sm.this.depends.copyfiles)$(sm.this.sources)},)
         $$(error no dependencies defined for '$(sm.this.name)')
       endif
     endif
