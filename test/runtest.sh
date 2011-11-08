@@ -49,7 +49,7 @@ function test-load-precondition-scripts
 function test-load-check-scripts
 {
     local D=$1
-    test-load-scripts-recursively check $D
+    test-load-scripts-recursively post $D
 }
 
 test-load-precondition-scripts .
