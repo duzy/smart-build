@@ -108,6 +108,8 @@ ifeq ($(sm.config.variant),release)
   sm.global.compile.flags += -O2
 endif
 
+sm.global.hooks.build :=
+
 ###
 sm.global.using :=
 ## NOTE: sm.module.properties should not include .using_list
