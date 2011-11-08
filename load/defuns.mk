@@ -597,6 +597,8 @@ $(eval \
     $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
   endif
   ##########
+  $(foreach _,$(sm.global.hooks.build),$($_))
+  ##########
   sm._this := sm.module.$(sm.this.name)
   $$(call sm-clone-module, sm.this, $$(sm._this))
   ifneq ($$($$(sm._this).type),none)
@@ -619,9 +621,26 @@ endef #sm-build-this-internal
 define sm-build-this-external
 $(eval \
   sm._this := sm.module.$(sm.this.name)
+  $(foreach _,$(sm.global.hooks.build),$($_))
  )\
 $(call sm-clone-module, sm.this, $(sm._this))
 endef #sm-build-this-external
+
+####
+define sm-add-module-build-hook
+$(eval \
+  sm.temp._name := $(strip $1)
+ )\
+$(eval \
+  ifneq ($(flavor $(sm.temp._name)),recursive)
+    $$(error a hook must be a recursive macro)
+  endif
+  ifneq ($(filter $(sm.temp._name),$(sm.global.hooks.build)),)
+    $$(error hook $(sm.temp._name) already setup)
+  endif
+  sm.global.hooks.build += $(sm.temp._name)
+ )
+endef #sm-add-module-build-hook
 
 ## sm-build-depends  - Makefile code for sm-build-depends
 ## args: 1: module name (required, for sm-new-module)
