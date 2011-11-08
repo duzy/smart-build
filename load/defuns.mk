@@ -563,6 +563,19 @@ $(eval \
     $$(error sm.this.name is empty)
   endif
   ######
+  ifdef sm.this.headers.*
+    $$(error "sm.this.headers.* := XXX" is deprecated, using sm.this.headers.XXX directly)
+  endif
+  ifdef sm.this.archive.flags
+    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
+  endif
+  ifdef sm.this.archive.flags.infile
+    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
+  endif
+  ifdef sm.this.archive.libs
+    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
+  endif
+  ######
   ifeq ($(filter $(strip $(sm.this.type)),depends none),)
     ifeq ($(sm.this.toolset),)
       $$(error sm.this.toolset is empty)
@@ -575,7 +588,13 @@ $(eval \
     endif
   else
     ifeq ($(strip $(sm.this.type)),depends)
-      ifeq (${strip $(sm.this.depends)},)
+      ifeq (${strip \
+               $(sm.this.depends)\
+               $(sm.this.depends.copyfiles)\
+               $(sm.this.sources)\
+               $(sm.this.headers)\
+               $(foreach _,$(filter sm.this.headers.%,$(.VARIABLES)),$($(_)))\
+             },)
         $$(error no dependencies defined for '$(sm.this.name)')
       endif
     endif
@@ -586,16 +605,8 @@ $(eval \
       $$(error sm.this.lang must be defined for tests module)
     endif
   endif
-  ######
-  ifneq ($(sm.this.archive.flags),)
-    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
-  endif
-  ifneq ($(sm.this.archive.flags.infile),)
-    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
-  endif
-  ifneq ($(sm.this.archive.libs),)
-    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
-  endif
+  ##########
+  $(foreach _,$(sm.global.hooks.build),$($_))
   ##########
   sm._this := sm.module.$(sm.this.name)
   $$(call sm-clone-module, sm.this, $$(sm._this))
@@ -619,9 +630,26 @@ endef #sm-build-this-internal
 define sm-build-this-external
 $(eval \
   sm._this := sm.module.$(sm.this.name)
+  $(foreach _,$(sm.global.hooks.build),$($_))
  )\
 $(call sm-clone-module, sm.this, $(sm._this))
 endef #sm-build-this-external
+
+####
+define sm-add-module-build-hook
+$(eval \
+  sm.temp._name := $(strip $1)
+ )\
+$(eval \
+  ifneq ($(flavor $(sm.temp._name)),recursive)
+    $$(error a hook must be a recursive macro)
+  endif
+  ifneq ($(filter $(sm.temp._name),$(sm.global.hooks.build)),)
+    $$(error hook $(sm.temp._name) already setup)
+  endif
+  sm.global.hooks.build += $(sm.temp._name)
+ )
+endef #sm-add-module-build-hook
 
 ## sm-build-depends  - Makefile code for sm-build-depends
 ## args: 1: module name (required, for sm-new-module)
