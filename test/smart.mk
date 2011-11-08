@@ -12,7 +12,7 @@ $(call test-check-defined, sm-new-module)
 $(call test-check-flavor,  sm-new-module, recursive)
 $(call test-check-value,$(sm.this.name),)
 $(call test-check-value,$(sm.this.type),)
-########## case in
+########## case in -- new module
 $(call sm-new-module, foobar, none) ## make a new module
 ########## case out
 $(call test-check-value-of,sm.this.name,foobar)
@@ -26,7 +26,7 @@ test.temp.this-dir := $(sm.this.dir)
 
 $(call test-check-defined, sm-build-this)
 $(call test-check-flavor,  sm-build-this, recursive)
-########## case in
+########## case in -- build module
 $(sm-build-this)
 ########## case out
 $(call test-check-value-of,sm.module.foobar.name,foobar)
@@ -34,15 +34,65 @@ $(call test-check-value-of,sm.module.foobar.type,none)
 
 $(call test-check-defined, sm.this.dir)
 $(call test-check-flavor,  sm-load-module, recursive)
-########## case in
-$(call sm-load-module, $(sm.this.dir)/another-module.mk)
+########## case in  -- load a single module
+$(call sm-load-module, $(sm.this.dir)/module-of-type-none.mk)
 ########## case out
-$(call test-check-value-of,test.case.another-module-mk-loaded,1)
+$(call test-check-value-of,test.case.module-of-type-none-mk-loaded,1)
 
 $(call test-check-defined, sm.this.dir)
+$(call test-check-value-pat-of,sm.this.dir,%/test)
+$(call test-check-flavor,  sm-load-module, recursive)
+########## case in  -- load a single module
+$(call sm-load-module, $(sm.this.dir)/module-of-type-static.mk)
+########## case out
+$(call test-check-value-of,test.case.module-of-type-static-mk-loaded,1)
+
+$(call test-check-defined, sm.this.dir)
+$(call test-check-value-pat-of,sm.this.dir,%/test)
+$(call test-check-flavor,  sm-load-module, recursive)
+########## case in  -- load a single module
+$(call sm-load-module, $(sm.this.dir)/module-of-type-shared.mk)
+########## case out
+$(call test-check-value-of,test.case.module-of-type-shared-mk-loaded,1)
+
+$(call test-check-defined, sm.this.dir)
+$(call test-check-value-pat-of,sm.this.dir,%/test)
+$(call test-check-flavor,  sm-load-module, recursive)
+########## case in  -- load a single module
+$(call sm-load-module, $(sm.this.dir)/module-of-type-exe-use-static.mk)
+########## case out
+$(call test-check-value-of,test.case.module-of-type-exe-use-static-mk-loaded,1)
+
+$(call test-check-defined, sm.this.dir)
+$(call test-check-value-pat-of,sm.this.dir,%/test)
+$(call test-check-flavor,  sm-load-module, recursive)
+########## case in  -- load a single module
+$(call sm-load-module, $(sm.this.dir)/module-of-type-exe-use-shared.mk)
+########## case out
+$(call test-check-value-of,test.case.module-of-type-exe-use-shared-mk-loaded,1)
+
+$(call test-check-defined, sm.this.dir)
+$(call test-check-value-pat-of,sm.this.dir,%/test)
+$(call test-check-flavor,  sm-load-module, recursive)
+########## case in  -- load a single module
+$(call sm-load-module, $(sm.this.dir)/module-of-type-depends.mk)
+########## case out
+$(call test-check-value-of,test.case.module-of-type-depends-mk-loaded,1)
+
+$(call test-check-defined, sm.this.dir)
+$(call test-check-value-pat-of,sm.this.dir,%/test)
+$(call test-check-flavor,  sm-load-module, recursive)
+########## case in  -- load a single module
+$(call sm-load-module, $(sm.this.dir)/module-of-type-t.mk)
+########## case out
+$(call test-check-value-of,test.case.module-of-type-t-mk-loaded,1)
+
+##################################################
+
+$(call test-check-defined, sm.this.dir) ## defined by last loaded module
 $(call test-check-defined, sm-load-subdirs)
 $(call test-check-flavor,  sm-load-subdirs, recursive)
-########## case in
+########## case in -- load module in sub-directories
 $(call sm-load-subdirs, subdirs subdir)
 ########## case out
 $(call test-check-undefined,sm.this.dirs)
@@ -60,9 +110,14 @@ $(call test-check-value-of,sm.module.subdir-foo.name,subdir-foo)
 $(call test-check-value-of,sm.module.subdir-foo.type,none)
 $(call test-check-value-of,sm.module.subdir-foo.dir,$(test.temp.this-dir)/subdir)
 
-$(call test-check-undefined,test.case.fake-module-loaded)
+$(call test-check-undefined,test.case.module-nothing-loaded)
 ########## case in
-$(call sm-load-module, $(test.temp.this-dir)/fake-module.mk)
+$(call sm-load-module, $(test.temp.this-dir)/module-nothing.mk)
 ########## case out
-$(call test-check-value-of,test.case.fake-module-loaded,1)
+$(call test-check-value-of,test.case.module-nothing-loaded,1)
 $(call test-check-undefined, sm.this.dir) ## fake-module make nothing, sm-load-module unset this
+
+##################################################
+
+features := $(wildcard $(test.temp.this-dir)/features/*.mk)
+$(foreach feature, $(features),$(call sm-load-module, $(feature)))
