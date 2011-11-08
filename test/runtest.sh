@@ -28,6 +28,15 @@ function test-check-value
     [[ "x$lhs" == "x$rhs" ]] || ( echo "$loc: \"$lhs\" != \"$rhs\"" && exit -1 )
 }
 
+function test-check-value-contains
+{
+    local loc=$1
+    local lhs=$2
+    local rhs=$3
+    local sub=`echo "$lhs" | grep -e "$rhs"`
+    [[ "x$sub" != "x" ]] || ( echo "$loc: \"$lhs\" !contains \"$rhs\"" && exit -1 )
+}
+
 function test-load-scripts-recursively
 {
     local S

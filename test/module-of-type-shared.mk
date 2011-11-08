@@ -14,7 +14,7 @@ $(call test-check-value-of,sm.this.suffix,.so)
 
 sm.this.sources := foo.c
 
-sofilename := $(sm.out.lib)/$(sm.this.name)$(sm.this.suffix)
+sofilename := $(sm.out.bin)/$(sm.this.name)$(sm.this.suffix)
 sm.this.export.libs := $(sofilename)
 
 $(call test-check-undefined,sm.module.module-of-type-shared.name)
