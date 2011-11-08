@@ -2,6 +2,7 @@
 TOP=.
 OUT_BIN=out/gcc/debug/bin
 OUT_LIB=out/gcc/debug/lib
+OUT_TEMP=out/gcc/debug/temp
 OUT_INTERS=out/gcc/debug/intermediates
 
 EXE=.exe
@@ -39,11 +40,11 @@ function test-check-value-contains
 
 function test-load-scripts-recursively
 {
-    local S
     local T=$1
     local D=$2
+    local S
     for S in $D/*.mk ; do
-        S=`basename $S .mk`-$T.sh
+        S=$D/`basename $S .mk`-$T.sh
         [[ -f $S ]] && {
             test-log ${BASH_SOURCE}:${LINENO} info "check \"`basename $S -$T.sh`\".."
             . $S
@@ -54,7 +55,7 @@ function test-load-scripts-recursively
     for S in $D/* ; do
         [[ -d $S ]] && {
             test-log ${BASH_SOURCE}:${LINENO} info "in $S"
-            test-load-check-scripts $S
+            test-load-scripts-recursively $T $S
         }
     done
     GLOBIGNORE=

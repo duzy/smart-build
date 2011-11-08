@@ -116,3 +116,8 @@ $(call sm-load-module, $(test.temp.this-dir)/module-nothing.mk)
 ########## case out
 $(call test-check-value-of,test.case.module-nothing-loaded,1)
 $(call test-check-undefined, sm.this.dir) ## fake-module make nothing, sm-load-module unset this
+
+##################################################
+
+features := $(wildcard $(test.temp.this-dir)/features/*.mk)
+$(foreach feature, $(features),$(call sm-load-module, $(feature)))
