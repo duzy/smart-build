@@ -125,14 +125,20 @@ ifneq ($(strip $($(sm._this).type)),depends)
   endif # $(sm._this).toolset != common
 endif ## $(sm._this).type != depends
 
+sm.var.temp._header_vars := $(filter $(sm._this).headers.%,$(.VARIABLES))
+sm.var.temp._header_vars := $(filter-out \
+    %.headers.* \
+    %.headers.??? \
+   ,$(sm.var.temp._header_vars))
 
 ## This is a second check, the first check is done in sm-build-this.
 ifeq (${strip \
-         $(foreach _, $($(sm._this).headers.*), $($(sm._this).headers.$_))\
-         $($(sm._this).depends)\
-         $($(sm._this).depends.copyfiles)\
+         $(foreach _,$(sm.var.temp._header_vars),$($_))\
+         $($(sm._this).headers)\
          $($(sm._this).sources)\
          $($(sm._this).sources.external)\
+         $($(sm._this).depends)\
+         $($(sm._this).depends.copyfiles)\
          $($(sm._this).intermediates)},)
   $(error smart: no sources or intermediates or depends for module '$($(sm._this).name)')
 endif
@@ -809,6 +815,9 @@ ifneq ($(call is-true,$($(sm._this).headers!)),true)
     $(sm._this).headers.??? += $(foreach _,$($(sm._this).headers),$(sm.out.inc)/$_)
   endif # $(sm._this).headers != ""
 endif # $(sm._this).headers! == true
+
+$(sm._this).headers.* := $(filter-out * ???,\
+    $(sm.var.temp._header_vars:$(sm._this).headers.%=%))
 
 ## select multipart headers:
 ##     sm.this.headers.* := foo bar

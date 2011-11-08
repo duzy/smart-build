@@ -563,6 +563,19 @@ $(eval \
     $$(error sm.this.name is empty)
   endif
   ######
+  ifdef sm.this.headers.*
+    $$(error "sm.this.headers.* := XXX" is deprecated, using sm.this.headers.XXX directly)
+  endif
+  ifdef sm.this.archive.flags
+    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
+  endif
+  ifdef sm.this.archive.flags.infile
+    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
+  endif
+  ifdef sm.this.archive.libs
+    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
+  endif
+  ######
   ifeq ($(filter $(strip $(sm.this.type)),depends none),)
     ifeq ($(sm.this.toolset),)
       $$(error sm.this.toolset is empty)
@@ -575,7 +588,13 @@ $(eval \
     endif
   else
     ifeq ($(strip $(sm.this.type)),depends)
-      ifeq (${strip $(sm.this.depends)$(sm.this.depends.copyfiles)$(sm.this.sources)},)
+      ifeq (${strip \
+               $(sm.this.depends)\
+               $(sm.this.depends.copyfiles)\
+               $(sm.this.sources)\
+               $(sm.this.headers)\
+               $(foreach _,$(filter sm.this.headers.%,$(.VARIABLES)),$($(_)))\
+             },)
         $$(error no dependencies defined for '$(sm.this.name)')
       endif
     endif
@@ -585,16 +604,6 @@ $(eval \
     ifeq ($(sm.this.lang),)
       $$(error sm.this.lang must be defined for tests module)
     endif
-  endif
-  ######
-  ifneq ($(sm.this.archive.flags),)
-    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
-  endif
-  ifneq ($(sm.this.archive.flags.infile),)
-    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
-  endif
-  ifneq ($(sm.this.archive.libs),)
-    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
   endif
   ##########
   $(foreach _,$(sm.global.hooks.build),$($_))
