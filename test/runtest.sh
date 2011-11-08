@@ -4,6 +4,9 @@ OUT_BIN=out/gcc/debug/bin
 OUT_LIB=out/gcc/debug/lib
 OUT_INTERS=out/gcc/debug/intermediates
 
+EXE=.exe
+EXE=
+
 function test-log
 {
     echo "$1:$2: $3"
@@ -15,6 +18,14 @@ function test-check-file
     local loc=$1
     local fn=$2
     [[ -f $fn ]] || ( echo "$loc: missing \"$fn\"" && exit -1 )
+}
+
+function test-check-value
+{
+    local loc=$1
+    local lhs=$2
+    local rhs=$3
+    [[ "x$lhs" == "x$rhs" ]] || ( echo "$loc: \"$lhs\" != \"$rhs\"" && exit -1 )
 }
 
 function test-load-scripts-recursively

@@ -40,6 +40,7 @@ $(call sm-load-module, $(sm.this.dir)/module-of-type-none.mk)
 $(call test-check-value-of,test.case.module-of-type-none-mk-loaded,1)
 
 $(call test-check-defined, sm.this.dir)
+$(call test-check-value-pat-of,sm.this.dir,%/test)
 $(call test-check-flavor,  sm-load-module, recursive)
 ########## case in  -- load a single module
 $(call sm-load-module, $(sm.this.dir)/module-of-type-static.mk)
@@ -47,11 +48,21 @@ $(call sm-load-module, $(sm.this.dir)/module-of-type-static.mk)
 $(call test-check-value-of,test.case.module-of-type-static-mk-loaded,1)
 
 $(call test-check-defined, sm.this.dir)
+$(call test-check-value-pat-of,sm.this.dir,%/test)
 $(call test-check-flavor,  sm-load-module, recursive)
 ########## case in  -- load a single module
 $(call sm-load-module, $(sm.this.dir)/module-of-type-shared.mk)
 ########## case out
 $(call test-check-value-of,test.case.module-of-type-shared-mk-loaded,1)
+
+$(call test-check-defined, sm.this.dir)
+$(call test-check-value-pat-of,sm.this.dir,%/test)
+$(call test-check-flavor,  sm-load-module, recursive)
+########## case in  -- load a single module
+$(call sm-load-module, $(sm.this.dir)/module-of-type-exe-use-static.mk)
+########## case out
+$(call test-check-value-of,test.case.module-of-type-exe-use-static-mk-loaded,1)
+
 
 $(call test-check-defined, sm.this.dir) ## defined by last loaded module
 $(call test-check-defined, sm-load-subdirs)
