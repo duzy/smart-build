@@ -168,7 +168,7 @@ sm.var.common.langs.extra :=
 $(sm._this).sources.common :=
 $(sm._this).sources.unknown :=
 ifneq ($(strip $($(sm._this).type)),depends)
-  $(foreach sm.var.temp._source, $($(sm._this).sources) $($(sm._this).sources.external),\
+  $(foreach sm.var.source, $($(sm._this).sources) $($(sm._this).sources.external),\
       $(sm.fun.check-strange-and-compute-common-source))
 endif ## $(sm._this).type != depends
 
@@ -206,8 +206,8 @@ ifeq ($($(sm._this).type),t)
   $(sm._this).sources.has.$(sm.var.lang).t := $(if $($(sm._this).sources.$(sm.var.lang).t)$($(sm._this).sources.external.$(sm.var.lang).t),true)
 
   ifeq ($(or $($(sm._this).sources.has.$(sm.var.lang)),$($(sm._this).sources.has.$(sm.var.lang).t)),true)
-    ${foreach sm.var.temp._source,$($(sm._this).sources.$(sm.var.lang).t),$(call sm.fun.make-rule-compile)}
-    ${foreach sm.var.temp._source,$($(sm._this).sources.external.$(sm.var.lang).t),$(call sm.fun.make-rule-compile,external)}
+    ${foreach sm.var.source,$($(sm._this).sources.$(sm.var.lang).t),$(call sm.fun.make-rule-compile)}
+    ${foreach sm.var.source,$($(sm._this).sources.external.$(sm.var.lang).t),$(call sm.fun.make-rule-compile,external)}
   endif
 endif # $(sm._this).type == t
 
