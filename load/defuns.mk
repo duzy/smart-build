@@ -758,7 +758,7 @@ $(eval \
  )\
 $(eval \
   $(sm.temp._output) : $(sm.dir.buildsys)/scripts/interpolate.awk $(sm.temp._input)
-	@echo "smart: interpolate $(sm.temp._input)" &&\
+	@echo "smart: interpolate $(sm.temp._input)" && mkdir -p $$(@D) &&\
 	awk -f $$< -- $(sm.temp._flags)-vars "$(sm.temp._vars)" $(sm.temp._input) > $$@ ||\
 	(rm $$@ ; false)
   sm.temp._flags :=
