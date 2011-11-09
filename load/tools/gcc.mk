@@ -14,20 +14,23 @@ sm.tool.gcc := true
 ## basic command names
 sm.tool.gcc.cmd.c := gcc
 sm.tool.gcc.cmd.c++ := g++
+sm.tool.gcc.cmd.go := gccgo
 sm.tool.gcc.cmd.asm := gcc
 sm.tool.gcc.cmd.ld := gcc
 sm.tool.gcc.cmd.ar := ar crs
 
 ## Languages supported by this toolset, the order is significant,
 ## the order defines the priority of linker
-sm.tool.gcc.langs := c++ c asm
+sm.tool.gcc.langs := c++ go c asm
 sm.tool.gcc.suffix.c := .c
 sm.tool.gcc.suffix.c++ := .cpp .c++ .cc .CC .C
+sm.tool.gcc.suffix.go := .go
 sm.tool.gcc.suffix.asm := .s .S
 
 ## Compilation output files(objects) suffixes.
 sm.tool.gcc.suffix.intermediate.c := .o
 sm.tool.gcc.suffix.intermediate.c++ := .o
+sm.tool.gcc.suffix.intermediate.go := .o
 sm.tool.gcc.suffix.intermediate.asm := .o
 
 ## Target link output file suffix.
