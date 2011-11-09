@@ -1,5 +1,6 @@
 #
 #
+$(call test-check-undefined, sm.this.dir)
 $(call sm-new-module, feature-per-source-compile-flags, exe, gcc)
 
 sm.this.sources := foo.c bar.c foobar.c

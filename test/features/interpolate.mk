@@ -1,5 +1,6 @@
 #
 #
+$(call test-check-undefined, sm.this.dir)
 $(call sm-new-module, features-interpolate, depends)
 
 sm.this.depends := $(sm.out.tmp)/features-interpolate.txt
