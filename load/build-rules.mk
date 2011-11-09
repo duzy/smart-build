@@ -382,27 +382,24 @@ endef #sm.fun.compute-libs-link
 
 ##################################################
 
-## Compute the intermediate name without suffix.
-define sm.fun.compute-intermediate-name-base-no-suffix
-$($(sm._this)._intermediate_prefix)$(basename $(subst ..,_,$(patsubst $(sm.top)/%,%,$(sm.var.temp._source))))
-endef #sm.fun.compute-intermediate-name-base-no-suffix
-define sm.fun.compute-intermediate-name-base-with-suffix
-$($(sm._this)._intermediate_prefix)$(subst ..,_,$(patsubst $(sm.top)/%,%,$(sm.var.temp._source)))
-endef #sm.fun.compute-intermediate-name-base-with-suffix
-
-sm.fun.compute-intermediate-name-base = $(sm.fun.compute-intermediate-name-base-with-suffix)
-
-ifeq ($($(sm._this).type),t)
-  #sm.fun.compute-intermediate-name = $(sm.fun.compute-intermediate-name-base).t
-  sm.fun.compute-intermediate-name = $(sm.fun.compute-intermediate-name-base)
-else
-  sm.fun.compute-intermediate-name = $(sm.fun.compute-intermediate-name-base)
-endif
+## Compute the intermediate name
+define sm.fun.compute-intermediate-name
+$(strip \
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.top)/%=%))\
+  $(eval sm.var.temp._inter_name := $(subst ..,_,$(sm.var.temp._inter_name)))\
+$($(sm._this)._intermediate_prefix)$(sm.var.temp._inter_name))
+endef #sm.fun.compute-intermediate-name
 
 ##
 ##
 define sm.fun.compute-intermediate.
-$(sm.out.inter)/$(sm.fun.compute-intermediate-name)$(sm.tool.$($(sm._this).toolset).suffix.intermediate.$(sm.var.temp._lang))
+$(strip \
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._source))\
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.out.inter)/%=%))\
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$($(sm._this)._intermediate_prefix)%=%))\
+  $(eval sm.var.temp._inter_name := $(sm.fun.compute-intermediate-name))\
+  $(eval sm.var.temp._inter_suff := $(sm.tool.$($(sm._this).toolset).suffix.intermediate.$(sm.var.temp._lang)))\
+$(sm.out.inter)/$(sm.var.temp._inter_name)$(sm.var.temp._inter_suff))
 endef #sm.fun.compute-intermediate.
 
 define sm.fun.compute-intermediate.external
@@ -410,7 +407,13 @@ $(sm.fun.compute-intermediate.)
 endef #sm.fun.compute-intermediate.external
 
 define sm.fun.compute-intermediate.common
-$(sm.out.inter)/common/$(sm.fun.compute-intermediate-name)$(sm.tool.common.suffix.intermediate.$(sm.var.temp._lang).$($(sm._this).lang))
+$(strip \
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._source))\
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.out.inter)/common/%=%))\
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$($(sm._this)._intermediate_prefix)%=%))\
+  $(eval sm.var.temp._inter_name := $(sm.fun.compute-intermediate-name))\
+  $(eval sm.var.temp._inter_suff := $(sm.tool.common.suffix.intermediate.$(sm.var.temp._lang).$($(sm._this).lang)))\
+$(sm.out.inter)/common/$(sm.var.temp._inter_name)$(sm.var.temp._inter_suff))
 endef #sm.fun.compute-intermediate.common
 
 ##
@@ -862,6 +865,7 @@ ifeq ($(strip $($(sm._this).type)),depends)
     $($(sm._this).targets) #; @echo "smart: $@, $^"
   clean-$($(sm._this).name):
 	$(call sm.tool.common.rm, $($(sm._this).depends) $($(sm._this).depends.copyfiles))
+  $(eval doc-$($(sm._this).name) : ; @echo "smart: No documents for $($(sm._this).name).")
 endif ## $(sm._this).type != depends
 
 ifeq ($(sm.var.temp._should_make_targets),true)
@@ -877,7 +881,7 @@ else
   ifneq ($($(sm._this).documents),)
     doc-$($(sm._this).name) : $($(sm._this).documents)
   else
-    doc-$($(sm._this).name) : ; @echo "smart: No documents for $($(sm._this).name)."
+    $(eval doc-$($(sm._this).name) : ; @echo "smart: No documents for $($(sm._this).name).")
   endif
 
   goal-$($(sm._this).name) : \

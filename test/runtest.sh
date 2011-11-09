@@ -76,6 +76,6 @@ function test-load-check-scripts
 
 test-load-precondition-scripts .
 
-rm -rf out && make -f main.mk
+rm -rf out && make -f main.mk && make -f main.mk doc
 
 test-load-check-scripts $TOP
