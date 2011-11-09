@@ -35,17 +35,17 @@ ifneq ($(filter $($(sm._this).type),$(sm.global.module_types)),)
   include $(sm.dir.buildsys)/build-rules.mk
 
   ## make alias to sm.this.sources.LANGs
-  ${foreach sm.var.temp._lang, $(sm.var.langs),\
-    $(eval sm.this.sources.$(sm.var.temp._lang)          = $$($(sm._this).sources.$(sm.var.temp._lang)))\
-    $(eval sm.this.sources.external.$(sm.var.temp._lang) = $$($(sm._this).sources.external.$(sm.var.temp._lang)))\
-    $(eval sm.this.sources.has.$(sm.var.temp._lang)      = $$($(sm._this).sources.has.$(sm.var.temp._lang)))\
+  ${foreach sm.var.lang, $(sm.var.langs),\
+    $(eval sm.this.sources.$(sm.var.lang)          = $$($(sm._this).sources.$(sm.var.lang)))\
+    $(eval sm.this.sources.external.$(sm.var.lang) = $$($(sm._this).sources.external.$(sm.var.lang)))\
+    $(eval sm.this.sources.has.$(sm.var.lang)      = $$($(sm._this).sources.has.$(sm.var.lang)))\
    }
 
   ifeq ($($(sm._this).type),t)
-    sm.var.temp._lang := $($(sm._this).lang)
-    sm.this.sources.$(sm.var.temp._lang).t = $($(sm._this).sources.$(sm.var.temp._lang).t)
-    sm.this.sources.external.$(sm.var.temp._lang).t = $($(sm._this).sources.external.$(sm.var.temp._lang).t)
-    sm.this.sources.has.$(sm.var.temp._lang).t = $($(sm._this).sources.has.$(sm.var.temp._lang).t)
+    sm.var.lang := $($(sm._this).lang)
+    sm.this.sources.$(sm.var.lang).t = $($(sm._this).sources.$(sm.var.lang).t)
+    sm.this.sources.external.$(sm.var.lang).t = $($(sm._this).sources.external.$(sm.var.lang).t)
+    sm.this.sources.has.$(sm.var.lang).t = $($(sm._this).sources.has.$(sm.var.lang).t)
   endif
 
   sm.this.lang             = $(sm._this).lang
