@@ -11,13 +11,12 @@
 #  requires sm.this.lang to be specified.
 #  
 
-ifeq ($(sm._this),)
-  $(error smart: internal: sm._this is empty)
+ifndef sm._this
+  $(error sm._this is empty)
 endif # sm._this == ""
 
-## check module name
-ifeq ($($(sm._this).name),)
-  $(error smart: internal: $(sm._this).name is empty)
+ifndef $(sm._this).name
+  $(error $(sm._this).name is empty)
 endif # $(sm._this).name == ""
 
 ##################################################

@@ -778,82 +778,86 @@ endef #sm-interpolate-header
 check-exists = $(call sm-deprecated, check-exists, sm-check-target-exists)
 sm-check-exists = $(call sm-deprecated, sm-check-exists, sm-check-target-exists)
 define sm-check-target-exists
-$(if $(wildcard $(strip $1)),,$(error $(or $(strip $2),target '$(strip $1)' is not ready)))
+$(foreach _,$1,$(if $(wildcard $_),\
+    ,$(error $(or $(strip $2),target $_ is not ready))))
 endef #sm-check-target-exists
 
 define sm-check-directory
-$(if $(shell [[ -d $1 ]] && echo true),,\
-  $(error $(or $(strip $2),directory '$(strip 1)' is not ready)))
+$(foreach _,$1,$(if $(shell [[ -d $_ ]] && echo true),\
+    ,$(error $(or $(strip $2),directory '$(strip 1)' is not ready))))
 endef #sm-check-directory
 
 define sm-check-file
-$(if $(shell [[ -d $1 ]] && echo true),,\
-  $(error $(or $(strip $2),file '$(strip 1)' is not ready)))
+$(foreach _,$1,$(if $(shell [[ -f $_ ]] && echo true),\
+    ,$(error $(or $(strip $2),file '$(strip 1)' is not ready))))
 endef #sm-check-file
 
 ## Ensure not empty of var, eg. $(call sm-check-not-empty, sm.top)
 define sm-check-not-empty
-$(if $(strip $1),,$(error sm-check-not-empty accept a var-name))\
-$(if $($(strip $1)),,$(error $(or $(strip $2),$(strip $1) is empty)))
+$(foreach _,$1,$(if $($_),,$(error $(or $(strip $2),'$_' is empty))))
 endef #sm-check-not-empty
 
 ## Ensure empty of var, eg. $(call sm-check-empty, sm.var.blah)
 define sm-check-empty
-$(if $(strip $1),,$(error sm-check-not-empty accept a var-name))\
-$(if $($(strip $1)),$(error $(or $(strip $2),$(strip $1) is not empty)))
+$(foreach _,$1,$(if $($_),$(error $(or $(strip $2),'$_' is not empty))))
 endef #sm-check-empty
 
 ## eg. $(call sm-check-value, sm.top, foo/bar)
 define sm-check-value
 $(if $(call equal,$(origin $(strip $1)),undefined),\
-  $(error $(or $(strip $3),smart: '$(strip $1)' is undefined)))\
+  $(error $(or $(strip $3),'$(strip $1)' is undefined)))\
 $(if $(call equal,$($(strip $1)),$(strip $2)),,\
-  $(error $(or $(strip $3),smart: $$($(strip $1)) != '$(strip $2)', but '$($(strip $1))')))
+  $(error $(or $(strip $3),$$($(strip $1)) != '$(strip $2)', but '$($(strip $1))')))
 endef #sm-check-value
 
 ## Equals of two vars, eg. $(call sm-check-equal, foo, foo)
 define sm-check-equal
 $(if $(call equal,$(strip $1),$(strip $2)),,\
-  $(error $(or $(strip $3),smart: '$(strip $1)' != '$(strip $2)')))
+  $(error $(or $(strip $3),'$(strip $1)' != '$(strip $2)')))
 endef #sm-check-equal
 
 ## Not-Equals of two vars, eg. $(call sm-check-not-equal, foo, foo)
 define sm-check-not-equal
 $(if $(call equal,$(strip $1),$(strip $2)),\
-  $(error $(or $(strip $3),smart: '$(strip $1)' == '$(strip $2)')))
+  $(error $(or $(strip $3),'$(strip $1)' == '$(strip $2)')))
 endef #sm-check-not-equal
 
 ## eg. $(call sm-check-origin, sm.top, file)
 define sm-check-origin
 $(if $(call equal,$(origin $(strip $1)),$(strip $2)),,\
-  $(error $(or $(strip $3),smart: '$(strip $1)' is not '$(strip $2)', but of '$(origin $(strip $1))')))
+  $(error $(or $(strip $3),'$(strip $1)' is not '$(strip $2)', but of '$(origin $(strip $1))')))
 endef #sm-check-origin
 
 ## eg. $(call sm-check-defined, sm.top)
 define sm-check-defined
-$(if $(call equal,$(origin $(strip $1)),undefined),\
-  $(error $(or $(strip $2),smart: '$(strip $1)' is undefined)))
+$(foreach _,$1,$(if $(call equal,$(origin $_),undefined),\
+     $(error $(or $(strip $2),'$_' is undefined))))
 endef #sm-check-defined
 
 ## eg. $(call sm-check-undefined, sm.top)
 define sm-check-undefined
-$(if $(call equal,$(origin $(strip $1)),undefined),,\
-  $(error $(or $(strip $2),smart: '$(strip $1)' must no be defined)))
+$(foreach _,$1,$(if $(call equal,$(origin $_),undefined),\
+     ,$(error $(or $(strip $2),'$_' must no be defined))))
 endef #sm-check-defined
 
 ## Check the flavor of a var (undefined, recursive, simple)
 ## eg. $(call sm-check-flavor, sm.top, simple, Bad sm.top var)
 define sm-check-flavor
-$(if $(call equal,$(flavor $(strip $1)),$(strip $2)),,\
-  $(error $(or $(strip $3),smart: '$(strip $1)' is not '$(strip $2)', but '$(flavor $(strip $1))')))
+$(foreach _,$1,$(if $(call equal,$(flavor $_),$(strip $2)),,\
+     $(error $(or $(strip $3),'$_' is not '$(strip $2)', but '$(flavor $_)'))))
 endef #sm-check-flavor
+
+## eg. $(call sm-check-in, find1 find2, item1 item2 item3 item4...)
+define sm-check-in
+$(foreach _,$1,\
+  $(if $(filter $_,$2),\
+   ,\
+      $(error $(or $(strip $3),'$_' is not in '$2'))
+   )\
+ )
+endef #sm-check-in
 
 ## eg. $(call sm-check-in-list,item,list-name)
 define sm-check-in-list
-$(if $(strip $1),\
-    $(if $(strip $2),\
-        $(if $(filter $1,$($(strip $2))),,\
-          $(error $(or $(strip $3),smart: '$(strip $1)' not in '$(strip $2)'))),\
-      $(error $(or $(strip $3),smart: list name is empty))),\
-  $(error $(or $(strip $3),smart: item is empty)))
+$(call sm-check-in,$1,$($(strip $2)),$3)
 endef #sm-check-in-list
