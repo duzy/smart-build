@@ -82,6 +82,15 @@ $$(eval $$(call sm.code.shift-flags-to-file-r,$(strip $1),$(strip $2)))
 endef #sm.code.shift-flags-to-file
 
 ####################
+##
+define sm.fun.compute-sources-by-lang
+  ${eval \
+  sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.toolset).suffix.$(sm.var.temp._lang):%=\%%)
+  $(sm._this).sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources))
+  $(sm._this).sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources.external))
+  $(sm._this).sources.has.$(sm.var.temp._lang)      := $$(if $$($(sm._this).sources.$(sm.var.temp._lang))$$($(sm._this).sources.external.$(sm.var.temp._lang)),true)
+  }
+endef #sm.fun.compute-sources-by-lang
 
 define sm.fun.compute-flags-compile
 ${eval \

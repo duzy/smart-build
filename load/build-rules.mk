@@ -34,16 +34,6 @@ sm.var.temp._ := $(sm.var.temp._:/%=%)
 sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this)._intermediate_prefix := $(sm.var.temp._)
 
-##
-define sm.fun.compute-sources-by-lang
-  ${eval \
-  sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.toolset).suffix.$(sm.var.temp._lang):%=\%%)
-  $(sm._this).sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources))
-  $(sm._this).sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources.external))
-  $(sm._this).sources.has.$(sm.var.temp._lang)      := $$(if $$($(sm._this).sources.$(sm.var.temp._lang))$$($(sm._this).sources.external.$(sm.var.temp._lang)),true)
-  }
-endef #sm.fun.compute-sources-by-lang
-
 ## Compute sources of each language supported by the toolset.
 sm.var.toolset := sm.tool.$($(sm._this).toolset)
 ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
