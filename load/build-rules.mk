@@ -31,6 +31,7 @@ $(sm._this).targets :=
 
 ## get toolset name
 sm.var.tool := sm.tool.$($(sm._this).toolset)
+sm.var.langs := $($(sm.var.tool).langs)
 
 sm.var.temp._ := $($(sm._this).dir:$(sm.top)%=%)
 sm.var.temp._ := $(sm.var.temp._:%.=%)
@@ -39,7 +40,7 @@ sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this)._intermediate_prefix := $(sm.var.temp._)
 
 ## Compute sources of each language supported by the toolset.
-${foreach sm.var.temp._lang, $($(sm.var.tool).langs),\
+${foreach sm.var.temp._lang, $(sm.var.langs),\
   $(sm.fun.compute-sources-by-lang)\
  }
 
@@ -142,7 +143,7 @@ endif
 
 ## Clear compile options for all langs
 ifneq ($(strip $($(sm._this).type)),depends)
-${foreach sm.var.temp._lang,$($(sm.var.tool).langs),\
+${foreach sm.var.temp._lang,$(sm.var.langs),\
   ${eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang) := }\
   ${eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang).computed := }}
 endif ## $(sm._this).type != depends
@@ -182,7 +183,7 @@ $(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs.extra))
 ifneq ($(strip $($(sm._this).type)),depends)
 ## Make compile rules for sources of each lang supported by the selected toolset.
 ## E.g. $(sm._this).sources.$(sm.var.temp._lang)
-${foreach sm.var.temp._lang,$($(sm.var.tool).langs),\
+${foreach sm.var.temp._lang, $(sm.var.langs),\
   $(if $($(sm.var.tool).suffix.$(sm.var.temp._lang)),\
       ,$(error smart: toolset $($(sm._this).toolset)/$(sm.var.temp._lang) has no suffixes))\
   $(call sm.fun.compute-flags-compile)\

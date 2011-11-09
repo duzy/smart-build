@@ -400,7 +400,7 @@ define sm.fun.make-rule-compile-common
       #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
       $(sm._this).sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
       $(sm._this).sources.has.$(sm.var.temp._literal_lang) := true
-      ifeq ($$(filter $(sm.var.temp._literal_lang),$$($(sm.var.tool).langs) $$(sm.var.common.langs) $$(sm.var.common.langs.extra)),)
+      ifeq ($$(filter $(sm.var.temp._literal_lang),$$(sm.var.langs) $$(sm.var.common.langs) $$(sm.var.common.langs.extra)),)
         sm.var.common.langs.extra += $(sm.var.temp._literal_lang)
       endif
       ifeq ($(sm.global.has.rule.$(sm.args.target)),)
