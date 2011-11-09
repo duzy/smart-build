@@ -247,7 +247,7 @@ define sm.code.shift-flags-to-file-r
   $(sm._this).$1 := @$($(sm._this).out.tmp)/$(1:_%=%)
   $(sm._this).flag_files += $($(sm._this).out.tmp)/$(1:_%=%)
   $($(sm._this).out.tmp)/$(1:_%=%): $($(sm._this).makefile)
-	@$$(info smart: flag file: $$@)
+	@$$(info smart: flags: $$@)
 	@mkdir -p $($(sm._this).out.tmp) && echo $$($(sm._this).$1.flat) > $$@
 endef #sm.code.shift-flags-to-file-r
 ##
