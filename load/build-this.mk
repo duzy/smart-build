@@ -35,7 +35,7 @@ ifneq ($(filter $($(sm._this).type),$(sm.global.module_types)),)
   include $(sm.dir.buildsys)/build-rules.mk
 
   ## make alias to sm.this.sources.LANGs
-  ${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+  ${foreach sm.var.temp._lang, $($(sm.var.tool).langs),\
     $(eval sm.this.sources.$(sm.var.temp._lang)          = $$($(sm._this).sources.$(sm.var.temp._lang)))\
     $(eval sm.this.sources.external.$(sm.var.temp._lang) = $$($(sm._this).sources.external.$(sm.var.temp._lang)))\
     $(eval sm.this.sources.has.$(sm.var.temp._lang)      = $$($(sm._this).sources.has.$(sm.var.temp._lang)))\

@@ -15,9 +15,11 @@ ifndef sm._this
   $(error sm._this is empty)
 endif # sm._this == ""
 
-ifndef $(sm._this).name
-  $(error $(sm._this).name is empty)
-endif # $(sm._this).name == ""
+$(call sm-check-not-empty,	\
+    $(sm._this).dir		\
+    $(sm._this).name		\
+    $(sm._this).type		\
+ )
 
 ##################################################
 
@@ -27,6 +29,9 @@ $(sm._this).out.tmp := $(sm.out.tmp)/$($(sm._this).name)
 $(sm._this).user_defined_targets := $($(sm._this).targets)
 $(sm._this).targets :=
 
+## get toolset name
+sm.var.tool := sm.tool.$($(sm._this).toolset)
+
 sm.var.temp._ := $($(sm._this).dir:$(sm.top)%=%)
 sm.var.temp._ := $(sm.var.temp._:%.=%)
 sm.var.temp._ := $(sm.var.temp._:/%=%)
@@ -34,14 +39,13 @@ sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this)._intermediate_prefix := $(sm.var.temp._)
 
 ## Compute sources of each language supported by the toolset.
-sm.var.toolset := sm.tool.$($(sm._this).toolset)
-${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+${foreach sm.var.temp._lang, $($(sm.var.tool).langs),\
   $(sm.fun.compute-sources-by-lang)\
  }
 
 #-----------------------------------------------
 #-----------------------------------------------
-ifneq ($($(sm._this).using_list),)
+ifdef $(sm._this).using_list
   #ifeq ($(flavor $(sm._this).using_list.computed),undefine)
   ## FIXME: it looks like a gmake bug:
   ##   if these variables is not initialized using ":=", those "+=" in cused.mk
@@ -60,7 +64,7 @@ ifneq ($($(sm._this).using_list),)
    }
 endif # $(sm._this).using_list != ""
 
-ifneq ($($(sm._this).using),)
+ifdef $(sm._this).using
   ${warning "sm.this.using" is not working with GNU Make!}
 
   define sm.fun.using-module
@@ -91,19 +95,18 @@ sm.var.action.t := link
 sm.var.action := $(sm.var.action.$($(sm._this).type))
 
 ifneq ($(strip $($(sm._this).type)),depends)
-  sm.var.toolset := sm.tool.$($(sm._this).toolset)
-  ifeq ($($(sm.var.toolset)),)
+  ifeq ($($(sm.var.tool)),)
     include $(sm.dir.buildsys)/loadtool.mk
   endif
 
-  ifneq ($($(sm.var.toolset)),true)
-    $(error smart: $(sm.var.toolset) is not defined)
+  ifneq ($($(sm.var.tool)),true)
+    $(error smart: $(sm.var.tool) is not defined)
   endif
 
   ifneq ($($(sm._this).toolset),common)
     ifeq ($($(sm._this).suffix),)
-      ${call sm-check-defined,$(sm.var.toolset).suffix.target.$($(sm._this).type).$(sm.os.name)}
-      $(sm._this).suffix := $($(sm.var.toolset).suffix.target.$($(sm._this).type).$(sm.os.name))
+      ${call sm-check-defined,$(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name)}
+      $(sm._this).suffix := $($(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name))
     endif
   endif # $(sm._this).toolset != common
 endif ## $(sm._this).type != depends
@@ -131,16 +134,15 @@ ifeq ($($(sm._this).type),t)
 endif
 
 sm.args.docs_format := ${strip $($(sm._this).docs.format)}
-ifeq ($(sm.args.docs_format),)
+ifndef sm.args.docs_format
   sm.args.docs_format := .dvi
 endif
-
 
 ##################################################
 
 ## Clear compile options for all langs
 ifneq ($(strip $($(sm._this).type)),depends)
-${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
+${foreach sm.var.temp._lang,$($(sm.var.tool).langs),\
   ${eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang) := }\
   ${eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.temp._lang).computed := }}
 endif ## $(sm._this).type != depends
@@ -180,8 +182,8 @@ $(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs.extra))
 ifneq ($(strip $($(sm._this).type)),depends)
 ## Make compile rules for sources of each lang supported by the selected toolset.
 ## E.g. $(sm._this).sources.$(sm.var.temp._lang)
-${foreach sm.var.temp._lang,$($(sm.var.toolset).langs),\
-  $(if $($(sm.var.toolset).suffix.$(sm.var.temp._lang)),\
+${foreach sm.var.temp._lang,$($(sm.var.tool).langs),\
+  $(if $($(sm.var.tool).suffix.$(sm.var.temp._lang)),\
       ,$(error smart: toolset $($(sm._this).toolset)/$(sm.var.temp._lang) has no suffixes))\
   $(call sm.fun.compute-flags-compile)\
   $(sm.fun.make-rules-compile)\
@@ -226,14 +228,16 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   ## Make rule for targets of the module
   $(if $($(sm._this).intermediates),,$(error smart: no intermediates for building '$($(sm._this).name)'))
 
-  $(call sm-check-defined,$(sm._this)._link.flags)
-  $(call sm-check-defined,$(sm._this)._link.intermediates)
-  $(call sm-check-defined,$(sm._this)._link.libs)
-  $(call sm-check-defined,sm-rule-$(sm.var.action)-$($(sm._this).lang))
-  $(call sm-check-defined,sm.fun.compute-flags-link)
-  $(call sm-check-defined,sm.fun.compute-intermediates-link)
-  $(call sm-check-defined,sm.fun.compute-libs-link)
-  $(call sm-check-defined,sm.fun.compute-module-targets-$($(sm._this).type))
+  $(call sm-check-defined,				\
+      $(sm._this)._link.flags				\
+      $(sm._this)._link.intermediates			\
+      $(sm._this)._link.libs				\
+      sm.fun.compute-flags-link				\
+      sm.fun.compute-intermediates-link			\
+      sm.fun.compute-libs-link				\
+      sm.fun.compute-module-targets-$($(sm._this).type)	\
+      sm-rule-$(sm.var.action)-$($(sm._this).lang)	\
+   )
 
   $(sm._this).targets := $(sm.fun.compute-module-targets-$($(sm._this).type))
   $(sm._this).targets := $(strip $($(sm._this).targets))

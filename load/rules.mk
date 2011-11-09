@@ -12,8 +12,8 @@ endef #sm.fun.get-target-type
 
 define sm-rule
 $(call sm-check-flavor,\
-   $(sm.var.toolset).$(sm.args.action).$(sm.args.lang),recursive,\
-   broken toolset '$($(sm._this).toolset)': '$(sm.var.toolset).$(sm.args.action).$(sm.args.lang)' is not recursive)\
+   $(sm.var.tool).$(sm.args.action).$(sm.args.lang),recursive,\
+   broken toolset '$($(sm._this).toolset)': '$(sm.var.tool).$(sm.args.action).$(sm.args.lang)' is not recursive)\
 $(eval \
   ifeq ($(sm._this),)
     $$(error smart: internal: sm._this is empty)
@@ -24,14 +24,14 @@ $(eval \
    $(sm.args.target) : $(sm.args.prerequisites)
 	$$(call sm-util-mkdir,$$(@D))
     ifeq ($(call is-true,$($(sm._this).verbose)),true)
-	$($(sm.var.toolset).$(sm.args.action).$(sm.args.lang))
+	$($(sm.var.tool).$(sm.args.action).$(sm.args.lang))
     else
       ifeq ($(sm.args.action),compile)
 	$$(info $(sm.args.lang): $($(sm._this).name) += $(sm.args.sources:$(sm.top)/%=%))
       else
 	$$(info $(sm.fun.get-target-type): $($(sm._this).name) -> $(sm.args.target))
       endif
-	$(sm.var.Q)$(filter %, $($(sm.var.toolset).$(sm.args.action).$(sm.args.lang)))
+	$(sm.var.Q)$(filter %, $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)))
     endif
   endif
   )

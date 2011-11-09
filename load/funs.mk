@@ -85,7 +85,7 @@ endef #sm.code.shift-flags-to-file
 ##
 define sm.fun.compute-sources-by-lang
   ${eval \
-  sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.toolset).suffix.$(sm.var.temp._lang):%=\%%)
+  sm.var.temp._suffix_pat.$(sm.var.temp._lang)  := $($(sm.var.tool).suffix.$(sm.var.temp._lang):%=\%%)
   $(sm._this).sources.$(sm.var.temp._lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources))
   $(sm._this).sources.external.$(sm.var.temp._lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.temp._lang)),$($(sm._this).sources.external))
   $(sm._this).sources.has.$(sm.var.temp._lang)      := $$(if $$($(sm._this).sources.$(sm.var.temp._lang))$$($(sm._this).sources.external.$(sm.var.temp._lang)),true)
@@ -108,10 +108,10 @@ ${eval \
     endif
 
     $(sm.var.temp._fvar_name) += $(filter %,\
-       $($(sm.var.toolset).defines)\
-       $($(sm.var.toolset).defines.$(sm.var.temp._lang))\
-       $($(sm.var.toolset).compile.flags)\
-       $($(sm.var.toolset).compile.flags.$(sm.var.temp._lang))\
+       $($(sm.var.tool).defines)\
+       $($(sm.var.tool).defines.$(sm.var.temp._lang))\
+       $($(sm.var.tool).compile.flags)\
+       $($(sm.var.tool).compile.flags.$(sm.var.temp._lang))\
        $(sm.global.defines)\
        $(sm.global.defines.$(sm.var.temp._lang))\
        $(sm.global.compile.flags)\
@@ -128,7 +128,7 @@ ${eval \
     $$(call sm.fun.append-items-with-fix, $(sm.var.temp._fvar_name), \
            $$($(sm._this).includes) \
            $$($(sm._this).used.includes)\
-           $($(sm.var.toolset).includes)\
+           $($(sm.var.tool).includes)\
            $$(sm.global.includes) \
           , -I, , -%)
 
@@ -146,8 +146,8 @@ ${eval \
   ifeq ($($(sm._this)._link.flags.computed),)
     $(sm._this)._link.flags.computed := true
     $(sm._this)._link.flags := $(filter %,\
-       $($(sm.var.toolset).link.flags)\
-       $($(sm.var.toolset).link.flags.$($(sm._this).lang))\
+       $($(sm.var.tool).link.flags)\
+       $($(sm.var.tool).link.flags.$($(sm._this).lang))\
        $(sm.global.link.flags)\
        $(sm.global.link.flags.$($(sm._this).lang))\
        $($(sm._this).used.link.flags)\
@@ -400,7 +400,7 @@ define sm.fun.make-rule-compile-common
       #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
       $(sm._this).sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
       $(sm._this).sources.has.$(sm.var.temp._literal_lang) := true
-      ifeq ($$(filter $(sm.var.temp._literal_lang),$$($(sm.var.toolset).langs) $$(sm.var.common.langs) $$(sm.var.common.langs.extra)),)
+      ifeq ($$(filter $(sm.var.temp._literal_lang),$$($(sm.var.tool).langs) $$(sm.var.common.langs) $$(sm.var.common.langs.extra)),)
         sm.var.common.langs.extra += $(sm.var.temp._literal_lang)
       endif
       ifeq ($(sm.global.has.rule.$(sm.args.target)),)
