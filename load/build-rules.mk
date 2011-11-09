@@ -28,7 +28,7 @@ $(sm._this)._configured := true
 sm.var.depend.suffixes.static := .d
 sm.var.depend.suffixes.shared := .d
 sm.var.depend.suffixes.exe := .d
-sm.var.depend.suffixes.t := .t.d
+sm.var.depend.suffixes.t := .d
 $(sm._this).depend.suffixes := $(sm.var.depend.suffixes.$($(sm._this).type))
 $(sm._this).out.tmp := $(sm.out.tmp)/$($(sm._this).name)
 $(sm._this).user_defined_targets := $($(sm._this).targets)
@@ -383,12 +383,18 @@ endef #sm.fun.compute-libs-link
 ##################################################
 
 ## Compute the intermediate name without suffix.
-define sm.fun.compute-intermediate-name-base
+define sm.fun.compute-intermediate-name-base-no-suffix
 $($(sm._this)._intermediate_prefix)$(basename $(subst ..,_,$(patsubst $(sm.top)/%,%,$(sm.var.temp._source))))
-endef #sm.fun.compute-intermediate-name-base
+endef #sm.fun.compute-intermediate-name-base-no-suffix
+define sm.fun.compute-intermediate-name-base-with-suffix
+$($(sm._this)._intermediate_prefix)$(subst ..,_,$(patsubst $(sm.top)/%,%,$(sm.var.temp._source)))
+endef #sm.fun.compute-intermediate-name-base-with-suffix
+
+sm.fun.compute-intermediate-name-base = $(sm.fun.compute-intermediate-name-base-with-suffix)
 
 ifeq ($($(sm._this).type),t)
-  sm.fun.compute-intermediate-name = $(sm.fun.compute-intermediate-name-base).t
+  #sm.fun.compute-intermediate-name = $(sm.fun.compute-intermediate-name-base).t
+  sm.fun.compute-intermediate-name = $(sm.fun.compute-intermediate-name-base)
 else
   sm.fun.compute-intermediate-name = $(sm.fun.compute-intermediate-name-base)
 endif

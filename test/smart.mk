@@ -121,3 +121,8 @@ $(call test-check-undefined, sm.this.dir) ## fake-module make nothing, sm-load-m
 
 features := $(wildcard $(test.temp.this-dir)/features/*.mk)
 $(foreach feature, $(features),$(call sm-load-module, $(feature)))
+
+toolsets := \
+  $(wildcard $(test.temp.this-dir)/toolsets/*.mk) \
+  $(wildcard $(test.temp.this-dir)/toolsets/*/*.mk)
+$(foreach toolset, $(toolsets),$(call sm-load-module, $(toolset)))

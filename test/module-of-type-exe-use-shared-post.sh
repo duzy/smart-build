@@ -1,5 +1,5 @@
 # -*- bash -*-
-test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/main.o
+test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/main.c.o
 test-check-file ${BASH_SOURCE}:${LINENO} $OUT_BIN/module-of-type-exe-use-shared$EXE
 
 out=`$OUT_BIN/module-of-type-exe-use-shared$EXE`
