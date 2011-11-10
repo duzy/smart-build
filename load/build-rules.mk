@@ -40,18 +40,9 @@ sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this)._intermediate_prefix := $(sm.var.temp._)
 
 ## Compute sources of each language supported by the toolset.
-${foreach sm.var.lang, $(sm.var.langs),$(sm.fun.compute-sources-of-lang)}
-
-#-----------------------------------------------
-#-----------------------------------------------
-ifdef $(sm._this).using_list
-  $(call sm.fun.compute-using-list)
-endif # $(sm._this).using_list != ""
-
-ifdef $(sm._this).using
-  ${warning "sm.this.using" is not working with GNU Make!}
-  ${foreach sm.var.temp._modir,$($(sm._this).using),$(sm.fun.using-module)}
-endif # $(sm._this).using != ""
+$(call sm.fun.compute-sources)
+$(call sm.fun.compute-using-list)
+#$(call sm.fun.compute-using)
 
 ##################################################
 
@@ -150,7 +141,6 @@ sm.var.temp._should_make_targets := \
             $(call is-true,$($(sm._this)._intermediates_only)))\
         ,,true)
 
-##-----------------------------------
 ## make module targets
 ifneq ($($(sm._this).toolset),common)
   ifeq ($(sm.var.temp._should_make_targets),true)
@@ -158,14 +148,11 @@ ifneq ($($(sm._this).toolset),common)
   endif #$(sm.var.temp._should_make_targets) == true
 endif #$($(sm._this).toolset) != common
 
-#-----------------------------------------------
-#-----------------------------------------------
+##################################################
 
 $(sm._this).module_targets := $($(sm._this).targets)
 $(sm._this).targets += $($(sm._this).user_defined_targets)
 $(sm._this).inters = $($(sm._this).intermediates)
-
-##################################################
 
 ifneq ($($(sm._this)._intermediates_only),true)
   $(call sm.fun.copy-headers)

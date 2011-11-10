@@ -21,7 +21,7 @@ endef #sm.fun.init-toolset
 
 ##
 define sm.fun.compute-using-list
-$(eval \
+$(if $($(sm._this).using_list), $(eval \
   ## FIXME: it looks like a gmake bug:
   ##   if these variables is not initialized using ":=", those "+=" in cused.mk
   ##   will act like a ":=".
@@ -36,7 +36,7 @@ $(eval \
     sm._that := sm.module.$(sm.var.temp._use)
     include $(sm.dir.buildsys)/cused.mk
    }
- )
+ ))
 endef #sm.fun.compute-using-list
 
 define sm.fun.using-module
@@ -55,6 +55,14 @@ define sm.fun.using-module
      }
    }
 endef #sm.fun.using-module
+define sm.fun.using
+$(eval \
+  ifdef $(sm._this).using
+    $${warning "sm.this.using" is not working with GNU Make!}
+    $${foreach sm.var.temp._modir,$($(sm._this).using),$$(sm.fun.using-module)}
+  endif # $(sm._this).using != ""
+ )
+endef #sm.fun.using
 
 ## eg. $(call sm.fun.append-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
 define sm.fun.append-items-with-fix
@@ -91,13 +99,18 @@ endef #sm.code.shift-flags-to-file
 ####################
 ##
 define sm.fun.compute-sources-of-lang
-  ${eval \
+${eval \
   sm.var.temp._suffix_pat.$(sm.var.lang)  := $($(sm.var.tool).suffix.$(sm.var.lang):%=\%%)
   $(sm._this).sources.$(sm.var.lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.lang)),$($(sm._this).sources))
   $(sm._this).sources.external.$(sm.var.lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.lang)),$($(sm._this).sources.external))
   $(sm._this).sources.has.$(sm.var.lang)      := $$(if $$($(sm._this).sources.$(sm.var.lang))$$($(sm._this).sources.external.$(sm.var.lang)),true)
-  }
+ }
 endef #sm.fun.compute-sources-of-lang
+
+##
+define sm.fun.compute-sources
+${foreach sm.var.lang, $(sm.var.langs), $(sm.fun.compute-sources-of-lang)}
+endef #sm.fun.compute-sources
 
 define sm.fun.compute-flags-compile
 ${eval \
