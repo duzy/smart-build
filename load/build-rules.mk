@@ -114,9 +114,6 @@ $(sm._this).flag_files :=
 
 ##################################################
 
-#-----------------------------------------------
-#-----------------------------------------------
-
 ## Check strange sources and compute common sources.
 sm.var.langs.common :=
 sm.var.langs.common.extra :=
@@ -130,9 +127,6 @@ ifneq ($(strip $($(sm._this).type)),depends)
       $(sm.fun.check-strange-and-compute-common-source) \
    )
 endif ## $(sm._this).type != depends
-
-## Export computed common sources.
-$(sm._this).sources.common := $(strip $($(sm._this).sources.common))
 
 ## Export computed common sources of different language and make compile rules
 ## for common sources(files not handled by the toolset, e.g. .w, .nw, etc).
@@ -172,56 +166,13 @@ $(sm._this).targets += $($(sm._this).user_defined_targets)
 $(sm._this).inters = $($(sm._this).intermediates)
 
 ##################################################
-# copy headers
-##################################################
-$(call sm.fun.copy-headers)
 
-##################################################
-##################################################
-ifeq ($(sm.var.temp._should_make_targets),true)
-  ifeq ($(strip $($(sm._this).intermediates)),)
-    $(warning smart: no intermediates)
-  endif
+ifneq ($($(sm._this)._intermediates_only),true)
+  $(call sm.fun.copy-headers)
+  $(call sm.fun.make-goal-rules)
+  $(call sm.fun.make-test-rules)
+  $(call sm.fun.make-clean-rules)
+  $(call sm.fun.invoke-toolset-built-target-mk)
+endif
 
-  ifeq ($(MAKECMDGOALS),clean)
-    goal-$($(sm._this).name) : ; @true
-    doc-$($(sm._this).name) : ; @true
-    headers-$($(sm._this).name) : ; @true
-  else
-    ifneq ($($(sm._this).documents),)
-      doc-$($(sm._this).name) : $($(sm._this).documents)
-    else
-      $(eval doc-$($(sm._this).name) : ; @echo "smart: No documents for $($(sm._this).name).")
-    endif
-
-    goal-$($(sm._this).name) : \
-      $($(sm._this).depends) \
-      $($(sm._this).depends.copyfiles) \
-      $($(sm._this).targets)
-  endif # MAKECMDGOALS != clean
-
-  ifeq ($($(sm._this).type),t)
-    $(sm.fun.make-test-rules)
-  endif ## $($(sm._this).type) == t
-
-  $(sm.fun.make-clean-rules)
-
-  sm.var.temp._built_mk := $(sm.dir.buildsys)/tools/$($(sm._this).toolset)/built-target.mk
-  sm.var.temp._built_mk := $(wildcard $(sm.var.temp._built_mk))
-  ifdef sm.var.temp._built_mk
-    include $(sm.var.temp._built_mk)
-  endif #sm.var.temp._built_mk
-else
-  ifeq ($(strip $($(sm._this).type)),depends)
-    goal-$($(sm._this).name): \
-      $($(sm._this).depends) \
-      $($(sm._this).depends.copyfiles) \
-      $($(sm._this).targets) #; @echo "smart: $@, $^"
-    clean-$($(sm._this).name):
-	$(call sm.tool.common.rm, $($(sm._this).depends) $($(sm._this).depends.copyfiles))
-    $(eval doc-$($(sm._this).name) : ; @echo "smart: No documents for $($(sm._this).name).")
-  endif ## $(sm._this).type != depends
-endif # sm.var.temp._should_make_targets == true
-
-##################################################
 ##################################################

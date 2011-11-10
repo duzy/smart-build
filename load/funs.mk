@@ -653,10 +653,10 @@ $(eval \
   endif # $(sm._this).headers.* != ""
 
   ## export the final copy rule
-  ifneq ($$($(sm._this).headers.???),)
-    $(sm._this).depends.copyfiles += $$(sm.this.depends.copyfiles)
-    headers-$($(sm._this).name) : $$($(sm._this).headers.???)
-  endif # $(sm._this).headers.copied != ""
+  $(sm._this).depends.copyfiles += $$(sm.this.depends.copyfiles)
+
+  ## this allow consequenced rules
+  headers-$($(sm._this).name) : $$($(sm._this).headers.???)
  )\
 $(eval \
   ## must restore sm.this.depends.copyfiles
@@ -666,18 +666,46 @@ $(eval \
 endef #sm.fun.copy-headers
 
 ##
-define sm.fun.make-test-rules
+define sm.fun.make-goal-rules
 $(eval \
+  ifneq ($(MAKECMDGOALS),clean)
+    ifneq ($($(sm._this).type),depends)
+      ifndef $(sm._this).intermediates
+        $$(warning no intermediates)
+      endif
+    endif ## $(sm._this).type != depends
+
+    ifndef $(sm._this).documents
+      $$(no-info smart: No documents for $($(sm._this).name))
+    endif # $(sm._this).documents != ""
+  endif # $(MAKECMDGOALS) != clean
+
+  goal-$($(sm._this).name) : \
+      $($(sm._this).depends) \
+      $($(sm._this).depends.copyfiles) \
+      $($(sm._this).targets)
+
+  doc-$($(sm._this).name) : $($(sm._this).documents)
+ )
+endef #sm.fun.make-goal-rules
+
+##
+define sm.fun.make-test-rules
+$(if $(call equal,$($(sm._this).type),t), $(eval \
   sm.global.tests += test-$($(sm._this).name)
   test-$($(sm._this).name): $($(sm._this).targets)
 	@echo test: $($(sm._this).name) - $$< && $$<
- )
+ ))
 endef #sm.fun.make-test-rules
 
 $(call sm-check-not-empty, sm.tool.common.rm)
 $(call sm-check-not-empty, sm.tool.common.rmdir)
 define sm.fun.make-clean-rules
-$(eval \
+$(if $(call equal,$($(sm._this).type),depends), $(eval \
+    clean-$($(sm._this).name):
+	$$(call sm.tool.common.rm, $$($(sm._this).depends) $$($(sm._this).depends.copyfiles))
+  )\
+ ,$(eval \
   clean-$($(sm._this).name): \
     clean-$($(sm._this).name)-flags \
     clean-$($(sm._this).name)-targets \
@@ -713,6 +741,19 @@ $(eval \
     clean-$($(sm._this).name)-depends:
 	@$$(info remove:$($(sm._this).depends))$$(call sm.tool.common.rm,$$($(sm._this).depends))
   endif
+  )\
  )
 endef #sm.fun.make-clean-rules
 
+##
+define sm.fun.invoke-toolset-built-target-mk
+$(eval \
+  ifeq ($(sm.var.temp._should_make_targets),true)
+    sm.var.temp._built_mk := $(sm.dir.buildsys)/tools/$($(sm._this).toolset)/built-target.mk
+    sm.var.temp._built_mk := $(wildcard $(sm.var.temp._built_mk))
+    ifdef sm.var.temp._built_mk
+      include $(sm.var.temp._built_mk)
+    endif #sm.var.temp._built_mk
+  endif # sm.var.temp._should_make_targets == true
+ )
+endef #sm.fun.invoke-toolset-built-target-mk
