@@ -475,7 +475,7 @@ define sm-compile-sources-internal
       ifneq ($($(sm._this).type),none)
         $(sm._this)._cnum := $(call sm-compute-compile-num,1)
         $(sm._this)._intermediates_only := true
-        include $(sm.dir.buildsys)/build-rules.mk
+        include $(sm.dir.buildsys)/rules.mk
         $(sm._this)._intermediates_only :=
         sm.this.intermediates := $$($(sm._this).intermediates)
       endif

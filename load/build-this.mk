@@ -32,7 +32,7 @@ endif
 ifneq ($(filter $($(sm._this).type),$(sm.global.module_types)),)
   sm.global.goals += goal-$($(sm._this).name)
 
-  include $(sm.dir.buildsys)/build-rules.mk
+  include $(sm.dir.buildsys)/rules.mk
 
   ## make alias to sm.this.sources.LANGs
   ${foreach sm.var.lang, $(sm.var.langs),\
