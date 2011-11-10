@@ -771,6 +771,58 @@ $(eval \
  )$(sm-interpolate)
 endef #sm-interpolate-header
 
+################
+# Utilities
+################
+## NOTE: this may slow down the compilation!! The make builtin function "sort"
+##       also remove duplicates!
+define sm-remove-duplicates
+${eval \
+  sm.var.temp._var := $(strip $1)
+ }\
+${eval \
+  sm.var.temp._$(sm.var.temp._var) :=
+ }\
+${foreach sm.var.temp._, $($(sm.var.temp._var)),\
+  ${if ${filter $(sm.var.temp._),$(sm.var.temp._$(sm.var.temp._var))},\
+   ,\
+      ${eval sm.var.temp._$(sm.var.temp._var) += $(sm.var.temp._)}\
+   }\
+ }\
+${eval \
+  $(sm.var.temp._var) := $(sm.var.temp._$(sm.var.temp._var))
+  sm.var.temp._$(sm.var.temp._var) :=
+ }
+endef #sm-remove-duplicates
+
+##
+define sm-remove-sequence-duplicates
+${eval \
+  sm.var.temp._var := $(strip $1)
+ }\
+${eval \
+  sm.var.temp._$(sm.var.temp._var) :=
+ }\
+${foreach sm.var.temp._, $($(sm.var.temp._var)),\
+   ${eval \
+     ifneq ($$(lastword $$(sm.var.temp._$(sm.var.temp._var))),$(sm.var.temp._))
+       sm.var.temp._$(sm.var.temp._var) += $(sm.var.temp._)
+     endif
+    }\
+ }\
+${eval \
+  $(sm.var.temp._var) := $(sm.var.temp._$(sm.var.temp._var))
+  sm.var.temp._$(sm.var.temp._var) :=
+ }
+endef #sm-remove-sequence-duplicates
+
+# vvvvvvv := a b c d e f a a a f b c e g h i j c d
+# $(call sm-remove-duplicates,vvvvvvv)
+# $(info test: $(vvvvvvv))
+
+# vvvvvvv := a b c d e f a a a f b c e g h i j c d
+# $(call sm-remove-sequence-duplicates,vvvvvvv)
+# $(info test: $(vvvvvvv))
 
 ################
 # Check helpers
