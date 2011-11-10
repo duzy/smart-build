@@ -196,66 +196,11 @@ sm.var.temp._should_make_targets := \
         ,,true)
 
 ##-----------------------------------
-## make static, shared, exe, t targets
+## make module targets
 ifneq ($($(sm._this).toolset),common)
-ifeq ($(sm.var.temp._should_make_targets),true)
-  ifeq ($($(sm._this).lang),)
-    $(error smart: $(sm._this).lang is empty)
-  endif
-
-  ## Make rule for targets of the module
-  $(if $($(sm._this).intermediates),,$(error smart: no intermediates for building '$($(sm._this).name)'))
-
-  $(call sm-check-defined,				\
-      $(sm._this)._link.flags				\
-      $(sm._this)._link.intermediates			\
-      $(sm._this)._link.libs				\
-      sm.fun.compute-flags-link				\
-      sm.fun.compute-intermediates-link			\
-      sm.fun.compute-libs-link				\
-      sm.fun.compute-module-targets-$($(sm._this).type)	\
-      sm-rule-$(sm.var.action)-$($(sm._this).lang)	\
-   )
-
-  $(sm._this).targets := $(sm.fun.compute-module-targets-$($(sm._this).type))
-  $(sm._this).targets := $(strip $($(sm._this).targets))
-
-  $(sm.fun.compute-flags-link)
-  $(sm.fun.compute-intermediates-link)
-  $(sm.fun.compute-libs-link)
-
-  sm.var.temp._flag_file_prefix := $($(sm._this).out.tmp)/link
-  sm.var.temp._flag_files :=
-
-  ifeq ($(call is-true,$($(sm._this).link.flags.infile)),true)
-    sm.var.temp._flag_files += $(sm.var.temp._flag_file_prefix).flags
-  endif ## flags.infile == true
-
-  ifeq ($(call is-true,$($(sm._this).link.intermediates.infile)),true)
-    sm.var.temp._flag_files += $(sm.var.temp._flag_file_prefix).intermediates
-  endif ## intermediates.infile == true
-
-  ifeq ($(call is-true,$($(sm._this).libs.infile)),true)
-    ifeq (link,link)
-      sm.var.temp._flag_files += $(sm.var.temp._flag_file_prefix).libs
-    endif
-  endif ## libs.infile == true
-
-  ifneq ($(sm.var.temp._flag_files),)
-    $(sm.args.target) : $(sm.var.temp._flag_files)
-  endif # $(sm.var.temp._flag_files) != ""
-
-  sm.args.target := $($(sm._this).targets)
-  sm.args.sources := $($(sm._this)._link.intermediates)
-  sm.args.prerequisites := $($(sm._this).intermediates)
-  sm.args.flags.0 := $($(sm._this)._link.flags)
-  sm.args.flags.1 := $($(sm._this)._link.libs)
-  $(sm-rule-$(sm.var.action)-$($(sm._this).lang))
-
-  ifeq ($(strip $($(sm._this).targets)),)
-    $(error smart: internal error: targets mis-computed)
-  endif
-endif #$(sm.var.temp._should_make_targets) == true
+  ifeq ($(sm.var.temp._should_make_targets),true)
+    $(call sm.fun.make-module-targets)
+  endif #$(sm.var.temp._should_make_targets) == true
 endif #$($(sm._this).toolset) != common
 
 #-----------------------------------------------

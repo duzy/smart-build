@@ -549,6 +549,59 @@ $(eval \
  )
 endef #sm.fun.make-t-compile-rules-for-langs
 
+## make targets for modules of type static, shared, exe, t
+define sm.fun.make-module-targets
+$(eval \
+  $(call sm-check-defined,				\
+      $(sm._this)._link.flags				\
+      $(sm._this)._link.intermediates			\
+      $(sm._this)._link.libs				\
+      $(sm._this).intermediates				\
+      $(sm._this).lang					\
+      sm.fun.compute-flags-link				\
+      sm.fun.compute-intermediates-link			\
+      sm.fun.compute-libs-link				\
+      sm.fun.compute-module-targets-$($(sm._this).type)	\
+      sm-rule-$(sm.var.action)-$($(sm._this).lang)	\
+   )
+
+  $(sm._this).targets := $$(sm.fun.compute-module-targets-$($(sm._this).type))
+
+  $$(sm.fun.compute-flags-link)
+  $$(sm.fun.compute-intermediates-link)
+  $$(sm.fun.compute-libs-link)
+
+  sm.var.temp._flag_file_prefix := $($(sm._this).out.tmp)/link
+  sm.var.temp._flag_files :=
+
+  ifeq ($(call is-true,$($(sm._this).link.flags.infile)),true)
+    sm.var.temp._flag_files += $$(sm.var.temp._flag_file_prefix).flags
+  endif ## flags.infile == true
+
+  ifeq ($(call is-true,$($(sm._this).link.intermediates.infile)),true)
+    sm.var.temp._flag_files += $$(sm.var.temp._flag_file_prefix).intermediates
+  endif ## intermediates.infile == true
+
+  ifeq ($(call is-true,$($(sm._this).libs.infile)),true)
+    sm.var.temp._flag_files += $$(sm.var.temp._flag_file_prefix).libs
+  endif ## libs.infile == true
+
+  sm.args.target := $$($(sm._this).targets)
+  sm.args.sources := $$($(sm._this)._link.intermediates)
+  sm.args.prerequisites := $$($(sm._this).intermediates)
+  sm.args.flags.0 := $$($(sm._this)._link.flags)
+  sm.args.flags.1 := $$($(sm._this)._link.libs)
+
+  ifneq ($$(sm.var.temp._flag_files),)
+    $(sm.args.target) : $$(sm.var.temp._flag_files)
+  endif # $(sm.var.temp._flag_files) != ""
+
+  $$(sm-rule-$(sm.var.action)-$($(sm._this).lang))
+
+  $$(call sm-check-defined, $(sm._this).targets,no targets)
+ )
+endef #sm.fun.make-module-targets
+
 ##################################################
 
 define sm.fun.copy-headers
