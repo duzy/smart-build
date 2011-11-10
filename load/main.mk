@@ -35,12 +35,6 @@ else
   include $(sm.dir.buildsys)/funs.mk
 endif
 
-ifeq ($(wildcard $(sm.dir.buildsys)/rules.mk),)  # funs for gen rules
-  $(error "broken smart build system")
-else
-  include $(sm.dir.buildsys)/rules.mk
-endif
-
 ifeq ($(wildcard $(sm.dir.buildsys)/conf.mk),)
   $(error "broken smart build system")
 else
