@@ -98,7 +98,7 @@ endef #sm.tool.common.compile.literal.web.private
 
 ##
 ##
-##
+## xxx.w -> xxx.c or xxx.cpp
 define sm.tool.common.compile.cweb.private
 cd $(dir $(word 1,$(sm.args.sources))) && \
 ctangle \
@@ -110,11 +110,19 @@ mv $(dir $(word 1,$(sm.args.sources)))/$(notdir $(sm.args.target)) \
 endef #sm.tool.common.compile.cweb.private
 
 ##
+##
+## xxx.w -> xxx.tex
 define sm.tool.common.compile.literal.cweb.private
+cd $(dir $(word 1,$(sm.args.sources))) && \
 cweave \
-  $(word 1,$(sm.args.sources)) \
+  $(notdir $(word 1,$(sm.args.sources))) \
   $(or $(word 2,$(sm.args.sources)),-) \
-  $(sm.args.target)
+  $(notdir $(sm.args.target)) && cd - && \
+mv \
+  $(dir $(word 1,$(sm.args.sources)))$(notdir $(sm.args.target)) \
+  $(dir $(word 1,$(sm.args.sources)))$(basename $(notdir $(sm.args.target))).idx \
+  $(dir $(word 1,$(sm.args.sources)))$(basename $(notdir $(sm.args.target))).scn \
+  $(dir $(sm.args.target))
 endef #sm.tool.common.compile.literal.cweb.private
 
 ##

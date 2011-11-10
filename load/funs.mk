@@ -501,8 +501,13 @@ define sm.fun.make-rule-compile-common
   $(if $(call equal,$(sm.var.temp._literal_lang),$(sm.var.lang)),\
     $(eval \
       sm.args.target := $(sm.out.doc)/$(notdir $(basename $(sm.var.source)))$(sm.args.docs_format)
-      sm.args.sources := $($(sm._this).prefix)$(sm.var.source)
-      sm.args.prerequisites = $($(sm._this).prefix)$(sm.args.sources)
+      ifeq ($1,external)
+        sm.args.sources := $(sm.var.source)
+        sm.args.prerequisites = $(sm.args.sources)
+      else
+        sm.args.sources := $($(sm._this).prefix)$(sm.var.source)
+        sm.args.prerequisites = $($(sm._this).prefix)$(sm.args.sources)
+      endif
      )\
     $(eval # rules for producing .dvi/.pdf(depends on sm.args.docs_format) files
       ifneq ($(sm.global.has.rule.$(sm.args.target)),true)
@@ -514,7 +519,9 @@ define sm.fun.make-rule-compile-common
             $(filter %, $(sm.tool.common.compile.$(sm.var.temp._literal_lang))))
 	@[[ -f $$@ ]] || (echo "ERROR: $(sm.var.lang): no document output: $$@" && true)
       endif
-     )))
+     )\
+   )\
+  )
 endef #sm.fun.make-rule-compile-common
 
 ##
@@ -536,10 +543,13 @@ endef #sm.fun.make-rules-compile
 ## may generate output like 'out/common/foo.cpp', this will be then appended
 ## to $(sm._this).sources.c++ which will then be used by sm.fun.make-rules-compile.
 define sm.fun.make-rules-compile-common
-$(if $(sm.var.lang),,$(error smart: internal: $$(sm.var.lang) is empty))\
+$(call sm-check-not-empty, sm.var.lang)\
 $(if $($(sm._this).sources.has.$(sm.var.lang)),\
-    $(foreach sm.var.source,$($(sm._this).sources.$(sm.var.lang)),\
-       $(call sm.fun.make-rule-compile-common)))
+    $(foreach sm.var.source, $($(sm._this).sources.$(sm.var.lang)),\
+         $(call sm.fun.make-rule-compile-common))\
+    $(foreach sm.var.source, $($(sm._this).sources.external.$(sm.var.lang)),\
+         $(call sm.fun.make-rule-compile-common,external))\
+ )
 endef #sm.fun.make-rules-compile-common
 
 ##
