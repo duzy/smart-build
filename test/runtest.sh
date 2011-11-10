@@ -1,6 +1,7 @@
 #!/bin/bash
 TOP=.
 OUT_INC=out/include
+OUT_DOC=out/documents
 OUT_BIN=out/gcc/debug/bin
 OUT_LIB=out/gcc/debug/lib
 OUT_TEMP=out/gcc/debug/temp

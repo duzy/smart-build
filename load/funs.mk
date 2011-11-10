@@ -480,12 +480,12 @@ define sm.fun.make-rule-compile-common
       ## If source can have literal(.tex) output...
       # TODO: should use sm.args.targets to including .tex, .idx, .scn files
       sm.args.target := $(basename $(sm.var.temp._intermediate))$(sm.tool.common.suffix.intermediate.$(sm.var.lang).$(sm.var.temp._literal_lang))
-      sm.args.sources := $(sm.var.source)
-      sm.args.prerequisites = $(sm.args.sources)
+      sm.args.sources := $($(sm._this).prefix)$(sm.var.source)
+      sm.args.prerequisites = $($(sm._this).prefix)$(sm.args.sources)
      )\
    $(eval ## compilate rule for documentation sources(.tex files)
       #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
-      $(sm._this).sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
+      $(sm._this).sources.external.$(sm.var.temp._literal_lang) += $(sm.args.target)
       $(sm._this).sources.has.$(sm.var.temp._literal_lang) := true
       ifeq ($$(filter $(sm.var.temp._literal_lang),$$(sm.var.langs) $$(sm.var.langs.common) $$(sm.var.langs.common.extra)),)
         sm.var.langs.common.extra += $(sm.var.temp._literal_lang)
@@ -501,8 +501,8 @@ define sm.fun.make-rule-compile-common
   $(if $(call equal,$(sm.var.temp._literal_lang),$(sm.var.lang)),\
     $(eval \
       sm.args.target := $(sm.out.doc)/$(notdir $(basename $(sm.var.source)))$(sm.args.docs_format)
-      sm.args.sources := $(sm.var.source)
-      sm.args.prerequisites = $(sm.args.sources)
+      sm.args.sources := $($(sm._this).prefix)$(sm.var.source)
+      sm.args.prerequisites = $($(sm._this).prefix)$(sm.args.sources)
      )\
     $(eval # rules for producing .dvi/.pdf(depends on sm.args.docs_format) files
       ifneq ($(sm.global.has.rule.$(sm.args.target)),true)
