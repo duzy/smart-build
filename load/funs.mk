@@ -1,5 +1,11 @@
 #
 #
+sm.var.action.depends := none
+sm.var.action.static := archive
+sm.var.action.shared := link
+sm.var.action.exe := link
+sm.var.action.t := link
+
 sm.var.target_type.static := static-library
 sm.var.target_type.shared := shared-library
 sm.var.target_type.exe := executable
@@ -845,3 +851,32 @@ $(eval \
   endif # sm.var.temp._should_make_targets == true
  )
 endef #sm.fun.invoke-toolset-built-target-mk
+
+######################################################################
+## new build rules...
+######################################################################
+
+## <NEW>
+##
+define sm.fun.compute-terminated-intermediates
+$(eval \
+  ## Compute sources of each language supported by the toolset.
+  $(sm._this).unterminated          := $($(sm._this).sources)
+  $(sm._this).unterminated.external := $($(sm._this).sources.external)
+
+  ## Reduce the unterminated list to produce terminated intermediates.
+  include $(sm.dir.buildsys)/reduce.mk
+
+  ## All unterminated intermediates are expected to be reduced!
+  $$(call sm-check-empty, \
+      $(sm._this).unterminated.external \
+      $(sm._this).unterminated \
+    )
+ )
+endef #sm.fun.compute-terminated-intermediates
+
+## <NEW>
+## 
+define sm.fun.make-intermediates-rules
+
+endef #sm.fun.make-intermediates-rules

@@ -39,27 +39,8 @@ sm.var.temp._ := $(sm.var.temp._:/%=%)
 sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this).prefix := $(sm.var.temp._)
 
-sm.var.langs.common :=
-sm.var.langs.common.extra :=
-$(sm._this).sources.common :=
-$(sm._this).sources.unknown :=
-
-## Compute sources of each language supported by the toolset.
-$(call sm.fun.compute-sources)
-$(call sm.fun.compute-using-list)
-#$(call sm.fun.compute-using)
-
-##################################################
-
-sm.var.action.static := archive
-sm.var.action.shared := link
-sm.var.action.exe := link
-sm.var.action.t := link
 sm.var.action := $(sm.var.action.$($(sm._this).type))
-
-ifneq ($(strip $($(sm._this).type)),depends)
-  $(call sm.fun.init-toolset)
-endif ## $(sm._this).type != depends
+$(call sm-check-not-empty, sm.var.action)
 
 sm.var._headers_vars := $(filter $(sm._this).headers.%,$(.VARIABLES))
 sm.var._headers_vars := $(filter-out \
@@ -67,60 +48,35 @@ sm.var._headers_vars := $(filter-out \
     %.headers.??? \
    ,$(sm.var._headers_vars))
 
-## This is a second check, the first check is done in sm-build-this.
-ifeq (${strip \
-         $(foreach _,$(sm.var._headers_vars),$($_))\
-         $($(sm._this).headers)\
-         $($(sm._this).sources)\
-         $($(sm._this).sources.external)\
-         $($(sm._this).depends)\
-         $($(sm._this).depends.copyfiles)\
-         $($(sm._this).intermediates)},)
-  $(error smart: no sources or intermediates or depends for module '$($(sm._this).name)')
-endif
-
-ifeq ($($(sm._this).type),t)
-  ifndef $(sm._this).lang
-    $(error '$(sm._this).lang' must be defined for "tests" module)
-  endif
-endif
-
 sm.args.docs_format := ${strip $($(sm._this).docs.format)}
 ifndef sm.args.docs_format
   sm.args.docs_format := .dvi
 endif
 
-##################################################
+## We copy the public headers first, since the module itself may make use on
+## the headers.
+ifneq ($($(sm._this)._intermediates_only),true)
+  $(call sm.fun.copy-headers)
+endif
 
-## Clear compile options for all langs
+## Store the unterminated intermediates, all terminated intermediates are stored
+## in $(sm._this).intermediates, and the final module targets produced from it.
+##
+## Note that $(sm._this).intermediates may be initialized with something by the
+## module smart.mk scripts, and should not be reset.
+$(sm._this).unterminated          :=
+$(sm._this).unterminated.external :=
+
+## Firstly, we compute the using list.
+$(call sm.fun.compute-using-list)
+
+## And toolset must be initialized.
 ifneq ($(strip $($(sm._this).type)),depends)
-${foreach sm.var.lang,$(sm.var.langs),\
-  ${eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.lang) := }\
-  ${eval $(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.lang).computed := }}
+  $(call sm.fun.init-toolset)
 endif ## $(sm._this).type != depends
 
-$(sm._this)._link.flags :=
-$(sm._this)._link.flags.computed :=
-$(sm._this)._link.intermediates =
-$(sm._this)._link.intermediates.computed :=
-$(sm._this)._link.libs :=
-$(sm._this)._link.libs.computed :=
-
-$(sm._this).flag_files :=
-
-##################################################
-
-## Export computed common sources of different language and make compile rules
-## for common sources(files not handled by the toolset, e.g. .w, .nw, etc).
-$(call sm.fun.make-common-compile-rules)
-
-ifneq ($($(sm._this).type),depends)
-  $(call sm.fun.make-compile-rules)
-endif ## $(sm._this).type != depends
-
-ifeq ($($(sm._this).type),t)
-  $(call sm.fun.make-t-compile-rules)
-endif # $(sm._this).type == t
+## Computes the terminated intermediates.
+$(call sm.fun.compute-terminated-intermediates)
 
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $($(sm._this).sources.unknown)),),\
@@ -133,18 +89,9 @@ ifeq ($(sm.var.temp._should_make_targets),true)
   $(call sm.fun.make-module-targets)
 endif #$(sm.var.temp._should_make_targets) == true
 
-##################################################
-
-$(sm._this).module_targets := $($(sm._this).targets)
-$(sm._this).targets += $($(sm._this).user_defined_targets)
-$(sm._this).inters = $($(sm._this).intermediates)
-
 ifneq ($($(sm._this)._intermediates_only),true)
-  $(call sm.fun.copy-headers)
   $(call sm.fun.make-goal-rules)
   $(call sm.fun.make-test-rules)
   $(call sm.fun.make-clean-rules)
   $(call sm.fun.invoke-toolset-built-target-mk)
 endif
-
-##################################################
