@@ -11,7 +11,8 @@ ${eval \
  }\
 ${foreach sm.var.temp._, $($(sm.var.temp._var)),\
   ${if ${filter $(sm.var.temp._),$(sm.var.temp._$(sm.var.temp._var))},\
-      ,${eval sm.var.temp._$(sm.var.temp._var) += $(sm.var.temp._)}\
+   ,\
+      ${eval sm.var.temp._$(sm.var.temp._var) += $(sm.var.temp._)}\
    }\
  }\
 ${eval \
@@ -359,9 +360,11 @@ endef #sm.fun.make-rule-compile-common-command
 
 ##
 define sm.fun.make-rule-compile-common
- $(if $(sm.var.lang),,$(error smart: internal: $$(sm.var.lang) is empty))\
- $(if $(sm.var.source),,$(error smart: internal: $$(sm.var.source) is empty))\
- $(eval ## Compute output file and literal output languages\
+ $(call sm-check-not-empty,\
+     sm.var.lang \
+     sm.var.source \
+  )\
+ $(eval ## Compute output file and literal output languages
    ## target output file language, e.g. Parscal, C, C++, TeX, etc.
    sm.var.temp._output_lang := $(sm.tool.common.lang.intermediate.$(sm.var.lang).$($(sm._this).lang))
    ## literal output file language, e.g. TeX, LaTeX, etc.
@@ -506,9 +509,45 @@ ${foreach sm.var.lang,$1,\
    $(if $(sm.tool.common.suffix.$(sm.var.lang)),\
       ,$(error smart: toolset $($(sm._this).toolset)/$(sm.var.lang) has no suffixes))\
    $(eval $(sm._this).sources.$(sm.var.lang) = $($(sm._this).sources.$(sm.var.lang)))\
-   $(call sm.fun.compute-flags-compile)\
-   $(sm.fun.make-rules-compile-common)}
+   $(call sm.fun.compute-flags-compile) \
+   $(call sm.fun.make-rules-compile-common) \
+ }
 endef #sm.fun.make-common-compile-rules-for-langs
+
+## Make compile rules for sources of each lang supported by the selected toolset.
+## E.g. $(sm._this).sources.$(sm.var.lang)
+define sm.fun.make-compile-rules-for-langs
+${foreach sm.var.lang, $(sm.var.langs),\
+  $(call sm-check-not-empty, $(sm.var.tool).suffix.$(sm.var.lang))\
+  $(call sm.fun.compute-flags-compile)\
+  $(call sm.fun.make-rules-compile)\
+  $(if $(and $(call equal,$(strip $($(sm._this).lang)),),\
+             $($(sm._this).sources.has.$(sm.var.lang))),\
+         $(no-info smart: language choosed as "$(sm.var.lang)" for "$($(sm._this).name)")\
+         $(eval $(sm._this).lang := $(sm.var.lang))\
+   )\
+ }
+endef #sm.fun.make-compile-rules-for-langs
+
+## Make compile rules for .t sources file
+define sm.fun.make-t-compile-rules-for-langs
+$(eval \
+  # set sm.var.lang for sm.fun.make-rule-compile
+  sm.var.lang := $($(sm._this).lang)
+
+  $(sm._this).sources.$(sm.var.lang).t := $(filter %.t,$($(sm._this).sources))
+  $(sm._this).sources.external.$(sm.var.lang).t := $(filter %.t,$($(sm._this).sources.external))
+  $(sm._this).sources.has.$(sm.var.lang).t := $$(if $$($(sm._this).sources.$(sm.var.lang).t)$$($(sm._this).sources.external.$(sm.var.lang).t),true)
+
+  ifeq ($$(or \
+             $$($(sm._this).sources.has.$(sm.var.lang)),\
+             $$($(sm._this).sources.has.$(sm.var.lang).t))\
+       ,true)
+    $${foreach sm.var.source,$$($(sm._this).sources.$(sm.var.lang).t),$$(call sm.fun.make-rule-compile)}
+    $${foreach sm.var.source,$$($(sm._this).sources.external.$(sm.var.lang).t),$$(call sm.fun.make-rule-compile,external)}
+  endif
+ )
+endef #sm.fun.make-t-compile-rules-for-langs
 
 ##################################################
 

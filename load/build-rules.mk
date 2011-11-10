@@ -40,9 +40,7 @@ sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this)._intermediate_prefix := $(sm.var.temp._)
 
 ## Compute sources of each language supported by the toolset.
-${foreach sm.var.lang, $(sm.var.langs),\
-  $(sm.fun.compute-sources-by-lang)\
- }
+${foreach sm.var.lang, $(sm.var.langs),$(sm.fun.compute-sources-by-lang)}
 
 #-----------------------------------------------
 #-----------------------------------------------
@@ -177,38 +175,17 @@ $(sm._this).sources.common := $(strip $($(sm._this).sources.common))
 
 ## Export computed common sources of different language and make compile rules
 ## for common sources(files not handled by the toolset, e.g. .w, .nw, etc).
-$(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs))
-$(call sm.fun.make-common-compile-rules-for-langs,$(sm.var.common.langs.extra))
+$(call sm.fun.make-common-compile-rules-for-langs,\
+    $(sm.var.common.langs) \
+    $(sm.var.common.langs.extra) \
+ )
 
-ifneq ($(strip $($(sm._this).type)),depends)
-## Make compile rules for sources of each lang supported by the selected toolset.
-## E.g. $(sm._this).sources.$(sm.var.lang)
-${foreach sm.var.lang, $(sm.var.langs),\
-  $(if $($(sm.var.tool).suffix.$(sm.var.lang)),\
-      ,$(error smart: toolset $($(sm._this).toolset)/$(sm.var.lang) has no suffixes))\
-  $(call sm.fun.compute-flags-compile)\
-  $(sm.fun.make-rules-compile)\
-  $(if $(and $(call equal,$(strip $($(sm._this).lang)),),\
-             $($(sm._this).sources.has.$(sm.var.lang))),\
-         $(no-info smart: language choosed as "$(sm.var.lang)" for "$($(sm._this).name)")\
-         $(eval $(sm._this).lang := $(sm.var.lang))\
-   )\
- }
+ifneq ($($(sm._this).type),depends)
+  $(call sm.fun.make-compile-rules-for-langs)
 endif ## $(sm._this).type != depends
 
-## Make object rules for .t sources file
 ifeq ($($(sm._this).type),t)
-  # set sm.var.lang for sm.fun.make-rule-compile
-  sm.var.lang := $($(sm._this).lang)
-
-  $(sm._this).sources.$(sm.var.lang).t := $(filter %.t,$($(sm._this).sources))
-  $(sm._this).sources.external.$(sm.var.lang).t := $(filter %.t,$($(sm._this).sources.external))
-  $(sm._this).sources.has.$(sm.var.lang).t := $(if $($(sm._this).sources.$(sm.var.lang).t)$($(sm._this).sources.external.$(sm.var.lang).t),true)
-
-  ifeq ($(or $($(sm._this).sources.has.$(sm.var.lang)),$($(sm._this).sources.has.$(sm.var.lang).t)),true)
-    ${foreach sm.var.source,$($(sm._this).sources.$(sm.var.lang).t),$(call sm.fun.make-rule-compile)}
-    ${foreach sm.var.source,$($(sm._this).sources.external.$(sm.var.lang).t),$(call sm.fun.make-rule-compile,external)}
-  endif
+  $(call sm.fun.make-t-compile-rules-for-langs)
 endif # $(sm._this).type == t
 
 sm.var.temp._should_make_targets := \
