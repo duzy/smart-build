@@ -4,6 +4,6 @@
 
 ## This file is expected to be included AFTER including an 'smart.mk'(module).
 
-$(foreach sm.var.lang, $(sm.var.common.langs.extra),\
+$(foreach sm.var.lang, $(sm.var.langs.common.extra),\
    $(eval sm.this.sources.$(sm.var.lang) :=)\
    $(eval sm.this.sources.has.$(sm.var.lang) :=))

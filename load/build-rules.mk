@@ -40,48 +40,16 @@ sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this)._intermediate_prefix := $(sm.var.temp._)
 
 ## Compute sources of each language supported by the toolset.
-${foreach sm.var.lang, $(sm.var.langs),$(sm.fun.compute-sources-by-lang)}
+${foreach sm.var.lang, $(sm.var.langs),$(sm.fun.compute-sources-of-lang)}
 
 #-----------------------------------------------
 #-----------------------------------------------
 ifdef $(sm._this).using_list
-  #ifeq ($(flavor $(sm._this).using_list.computed),undefine)
-  ## FIXME: it looks like a gmake bug:
-  ##   if these variables is not initialized using ":=", those "+=" in cused.mk
-  ##   will act like a ":=".
-  $(sm._this).using_list.computed :=
-  $(sm._this).used.defines        :=
-  $(sm._this).used.includes       :=
-  $(sm._this).used.compile.flags  :=
-  $(sm._this).used.link.flags     :=
-  $(sm._this).used.libdirs        :=
-  $(sm._this).used.libs           :=
-  #endif # $(sm._this).using_list.computed is undefine
-  ${foreach sm.var.temp._use,$($(sm._this).using_list),\
-    ${eval sm._that := sm.module.$(sm.var.temp._use)}\
-    ${eval include $(sm.dir.buildsys)/cused.mk}\
-   }
+  $(call sm.fun.compute-using-list)
 endif # $(sm._this).using_list != ""
 
 ifdef $(sm._this).using
   ${warning "sm.this.using" is not working with GNU Make!}
-
-  define sm.fun.using-module
-    ${info smart: using $(sm.var.temp._modir)}\
-    ${eval \
-      ${if ${filter $(sm.var.temp._modir),$(sm.global.using.loaded)},,\
-          sm.global.using.loaded += $(sm.var.temp._modir)
-          sm.var.temp._using := ${wildcard $(sm.var.temp._modir)/smart.mk}
-          sm.rules.phony.* += using-$$(sm.var.temp._using)
-          goal-$($(sm._this).name) : using-$$(sm.var.temp._using)
-          using-$$(sm.var.temp._using): ; \
-            $$(info smart: using $$@)\
-	    $$(call sm-load-module,$$(sm.var.temp._using))\
-            echo using: $$@ -> $$(info $(sm.result.module.name))
-       }
-     }
-  endef #sm.fun.using-module
-
   ${foreach sm.var.temp._modir,$($(sm._this).using),$(sm.fun.using-module)}
 endif # $(sm._this).using != ""
 
@@ -94,31 +62,18 @@ sm.var.action.t := link
 sm.var.action := $(sm.var.action.$($(sm._this).type))
 
 ifneq ($(strip $($(sm._this).type)),depends)
-  ifeq ($($(sm.var.tool)),)
-    include $(sm.dir.buildsys)/loadtool.mk
-  endif
-
-  ifneq ($($(sm.var.tool)),true)
-    $(error smart: $(sm.var.tool) is not defined)
-  endif
-
-  ifneq ($($(sm._this).toolset),common)
-    ifndef $(sm._this).suffix
-      ${call sm-check-defined,$(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name)}
-      $(sm._this).suffix := $($(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name))
-    endif
-  endif # $(sm._this).toolset != common
+  $(call sm.fun.init-toolset)
 endif ## $(sm._this).type != depends
 
-sm.var.temp._header_vars := $(filter $(sm._this).headers.%,$(.VARIABLES))
-sm.var.temp._header_vars := $(filter-out \
+sm.var._headers_vars := $(filter $(sm._this).headers.%,$(.VARIABLES))
+sm.var._headers_vars := $(filter-out \
     %.headers.* \
     %.headers.??? \
-   ,$(sm.var.temp._header_vars))
+   ,$(sm.var._headers_vars))
 
 ## This is a second check, the first check is done in sm-build-this.
 ifeq (${strip \
-         $(foreach _,$(sm.var.temp._header_vars),$($_))\
+         $(foreach _,$(sm.var._headers_vars),$($_))\
          $($(sm._this).headers)\
          $($(sm._this).sources)\
          $($(sm._this).sources.external)\
@@ -129,7 +84,9 @@ ifeq (${strip \
 endif
 
 ifeq ($($(sm._this).type),t)
- ${if $($(sm._this).lang),,$(error smart: '$(sm._this).lang' must be defined for "tests" module)}
+  ifndef $(sm._this).lang
+    $(error '$(sm._this).lang' must be defined for "tests" module)
+  endif
 endif
 
 sm.args.docs_format := ${strip $($(sm._this).docs.format)}
@@ -161,13 +118,17 @@ $(sm._this).flag_files :=
 #-----------------------------------------------
 
 ## Check strange sources and compute common sources.
-sm.var.common.langs :=
-sm.var.common.langs.extra :=
+sm.var.langs.common :=
+sm.var.langs.common.extra :=
 $(sm._this).sources.common :=
 $(sm._this).sources.unknown :=
 ifneq ($(strip $($(sm._this).type)),depends)
-  $(foreach sm.var.source, $($(sm._this).sources) $($(sm._this).sources.external),\
-      $(sm.fun.check-strange-and-compute-common-source))
+  $(foreach sm.var.source, \
+      $($(sm._this).sources) \
+      $($(sm._this).sources.external) \
+   ,\
+      $(sm.fun.check-strange-and-compute-common-source) \
+   )
 endif ## $(sm._this).type != depends
 
 ## Export computed common sources.
@@ -176,8 +137,8 @@ $(sm._this).sources.common := $(strip $($(sm._this).sources.common))
 ## Export computed common sources of different language and make compile rules
 ## for common sources(files not handled by the toolset, e.g. .w, .nw, etc).
 $(call sm.fun.make-common-compile-rules-for-langs,\
-    $(sm.var.common.langs) \
-    $(sm.var.common.langs.extra) \
+    $(sm.var.langs.common) \
+    $(sm.var.langs.common.extra) \
  )
 
 ifneq ($($(sm._this).type),depends)
@@ -213,41 +174,7 @@ $(sm._this).inters = $($(sm._this).intermediates)
 ##################################################
 # copy headers
 ##################################################
-
-## this is the final headers to be copied
-$(sm._this).headers.??? :=
-
-## sm-copy-files will append to this
-sm.this.depends.copyfiles_saved := $(sm.this.depends.copyfiles)
-sm.this.depends.copyfiles :=
-
-## headers from sm.this.headers
-ifneq ($(call is-true,$($(sm._this).headers!)),true)
-  ifneq ($($(sm._this).headers),)
-    $(call sm-copy-files, $($(sm._this).headers), $(sm.out.inc))
-    $(sm._this).headers.??? += $(foreach _,$($(sm._this).headers),$(sm.out.inc)/$_)
-  endif # $(sm._this).headers != ""
-endif # $(sm._this).headers! == true
-
-$(sm._this).headers.* := $(filter-out * ???,\
-    $(sm.var.temp._header_vars:$(sm._this).headers.%=%))
-
-## select multipart headers:
-##     sm.this.headers.* := foo bar
-##     sm.this.headers.foo := foo.h # copy to foo/foo.h
-##     sm.this.headers.bar := bar.h # copy to bar/bar.h
-ifneq ($($(sm._this).headers.*),)
-  $(foreach sm.var.temp._hp, $($(sm._this).headers.*), $(sm.fun.copy-headers))
-endif # $(sm._this).headers.* != ""
-
-## export the final copy rule
-ifneq ($($(sm._this).headers.???),)
-  $(sm._this).depends.copyfiles += $(sm.this.depends.copyfiles)
-  headers-$($(sm._this).name) : $($(sm._this).headers.???)
-endif # $(sm._this).headers.copied != ""
-
-## must restore sm.this.depends.copyfiles
-sm.this.depends.copyfiles := $(sm.this.depends.copyfiles_saved)
+$(call sm.fun.copy-headers)
 
 ##################################################
 ##################################################

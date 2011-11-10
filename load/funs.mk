@@ -1,5 +1,61 @@
 #
 #
+define sm.fun.init-toolset
+$(eval \
+  ifeq ($($(sm.var.tool)),)
+    include $(sm.dir.buildsys)/loadtool.mk
+  endif
+
+  ifneq ($($(sm.var.tool)),true)
+    $$(error smart: $(sm.var.tool) is not defined)
+  endif
+
+  ifneq ($($(sm._this).toolset),common)
+    ifndef $(sm._this).suffix
+      ${call sm-check-defined,$(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name)}
+      $(sm._this).suffix := $($(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name))
+    endif
+  endif # $(sm._this).toolset != common
+ )
+endef #sm.fun.init-toolset
+
+##
+define sm.fun.compute-using-list
+$(eval \
+  ## FIXME: it looks like a gmake bug:
+  ##   if these variables is not initialized using ":=", those "+=" in cused.mk
+  ##   will act like a ":=".
+  $(sm._this).using_list.computed :=
+  $(sm._this).used.defines        :=
+  $(sm._this).used.includes       :=
+  $(sm._this).used.compile.flags  :=
+  $(sm._this).used.link.flags     :=
+  $(sm._this).used.libdirs        :=
+  $(sm._this).used.libs           :=
+  ${foreach sm.var.temp._use, $($(sm._this).using_list),
+    sm._that := sm.module.$(sm.var.temp._use)
+    include $(sm.dir.buildsys)/cused.mk
+   }
+ )
+endef #sm.fun.compute-using-list
+
+define sm.fun.using-module
+  ${warning "sm.this.using" is not working with GNU Make!}\
+  ${info smart: using $(sm.var.temp._modir)}\
+  ${eval \
+    ${if ${filter $(sm.var.temp._modir),$(sm.global.using.loaded)},,\
+        sm.global.using.loaded += $(sm.var.temp._modir)
+        sm.var.temp._using := ${wildcard $(sm.var.temp._modir)/smart.mk}
+        sm.rules.phony.* += using-$$(sm.var.temp._using)
+        goal-$($(sm._this).name) : using-$$(sm.var.temp._using)
+        using-$$(sm.var.temp._using): ; \
+          $$(info smart: using $$@)\
+	    $$(call sm-load-module,$$(sm.var.temp._using))\
+	    echo using: $$@ -> $$(info $(sm.result.module.name))
+     }
+   }
+endef #sm.fun.using-module
+
 ## eg. $(call sm.fun.append-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
 define sm.fun.append-items-with-fix
 ${foreach sm.var.temp._,$(strip $2),\
@@ -34,14 +90,14 @@ endef #sm.code.shift-flags-to-file
 
 ####################
 ##
-define sm.fun.compute-sources-by-lang
+define sm.fun.compute-sources-of-lang
   ${eval \
   sm.var.temp._suffix_pat.$(sm.var.lang)  := $($(sm.var.tool).suffix.$(sm.var.lang):%=\%%)
   $(sm._this).sources.$(sm.var.lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.lang)),$($(sm._this).sources))
   $(sm._this).sources.external.$(sm.var.lang) := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.lang)),$($(sm._this).sources.external))
   $(sm._this).sources.has.$(sm.var.lang)      := $$(if $$($(sm._this).sources.$(sm.var.lang))$$($(sm._this).sources.external.$(sm.var.lang)),true)
   }
-endef #sm.fun.compute-sources-by-lang
+endef #sm.fun.compute-sources-of-lang
 
 define sm.fun.compute-flags-compile
 ${eval \
@@ -353,8 +409,8 @@ define sm.fun.make-rule-compile-common
       #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
       $(sm._this).sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
       $(sm._this).sources.has.$(sm.var.temp._literal_lang) := true
-      ifeq ($$(filter $(sm.var.temp._literal_lang),$$(sm.var.langs) $$(sm.var.common.langs) $$(sm.var.common.langs.extra)),)
-        sm.var.common.langs.extra += $(sm.var.temp._literal_lang)
+      ifeq ($$(filter $(sm.var.temp._literal_lang),$$(sm.var.langs) $$(sm.var.langs.common) $$(sm.var.langs.common.extra)),)
+        sm.var.langs.common.extra += $(sm.var.temp._literal_lang)
       endif
       ifeq ($(sm.global.has.rule.$(sm.args.target)),)
         sm.global.has.rule.$(sm.args.target) := true
@@ -439,10 +495,10 @@ $(foreach _,$(sm.var.temp._check_common_langs),\
            $(sm._this).sources.$_ += $(sm.var.source)
          endif
          ######
-         ifeq ($(filter $_,$(sm.var.common.langs)),)
-           sm.var.common.langs += $_
+         ifeq ($(filter $_,$(sm.var.langs.common)),)
+           sm.var.langs.common += $_
          endif
-         sm.var.common.lang$(suffix $(sm.var.source)) := $_
+         sm.var.lang$(suffix $(sm.var.source)) := $_
         )))\
 $(eval \
   ifeq ($(sm.var.temp._is_strange_source),true)
@@ -554,7 +610,8 @@ endef #sm.fun.make-module-targets
 
 ##################################################
 
-define sm.fun.copy-headers
+## copy headers according to sm.this.headers.PREFIX
+define sm.fun.copy-headers-of-prefix
 $(eval \
     ifneq ($(call is-true,$($(sm._this).headers.$(sm.var.temp._hp)!)),true)
     ifneq ($($(sm._this).headers.$(sm.var.temp._hp)),)
@@ -563,8 +620,52 @@ $(eval \
     endif # $(sm._this).headers.$(sm.var.temp._hp)! != true
     endif # $(sm._this).headers.$(sm.var.temp._hp) != ""
  )
+endef #sm.fun.copy-headers-of-prefix
+
+## copy headers according to all sm.this.headers.XXX variables
+define sm.fun.copy-headers
+$(eval \
+  ## sm-copy-files will append items to sm.this.depends.copyfiles
+  sm.this.depends.copyfiles_saved := $(sm.this.depends.copyfiles)
+  sm.this.depends.copyfiles :=
+
+  ## this is the final headers to be copied
+  $(sm._this).headers.??? :=
+
+  ## this contains all header PREFIXs
+  $(sm._this).headers.* :=
+ )\
+$(eval \
+  ## headers from sm.this.headers
+  ifneq ($(call is-true,$($(sm._this).headers!)),true)
+    ifdef $(sm._this).headers
+      $$(call sm-copy-files, $($(sm._this).headers), $(sm.out.inc))
+      $(sm._this).headers.??? += $(foreach _,$($(sm._this).headers),$(sm.out.inc)/$_)
+    endif # $(sm._this).headers != ""
+  endif # $(sm._this).headers! == true
+
+  $(sm._this).headers.* := $(filter-out * ???,\
+      $(sm.var._headers_vars:$(sm._this).headers.%=%))
+
+  ifneq ($$($(sm._this).headers.*),)
+    $$(foreach sm.var.temp._hp, $$($(sm._this).headers.*),\
+        $$(sm.fun.copy-headers-of-prefix))
+  endif # $(sm._this).headers.* != ""
+
+  ## export the final copy rule
+  ifneq ($$($(sm._this).headers.???),)
+    $(sm._this).depends.copyfiles += $$(sm.this.depends.copyfiles)
+    headers-$($(sm._this).name) : $$($(sm._this).headers.???)
+  endif # $(sm._this).headers.copied != ""
+ )\
+$(eval \
+  ## must restore sm.this.depends.copyfiles
+  sm.this.depends.copyfiles := $(sm.this.depends.copyfiles_saved)
+  sm.this.depends.copyfiles_saved :=
+ )
 endef #sm.fun.copy-headers
 
+##
 define sm.fun.make-test-rules
 $(eval \
   sm.global.tests += test-$($(sm._this).name)
