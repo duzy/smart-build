@@ -37,7 +37,7 @@ sm.var.temp._ := $($(sm._this).dir:$(sm.top)%=%)
 sm.var.temp._ := $(sm.var.temp._:%.=%)
 sm.var.temp._ := $(sm.var.temp._:/%=%)
 sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
-$(sm._this)._intermediate_prefix := $(sm.var.temp._)
+$(sm._this).prefix := $(sm.var.temp._)
 
 sm.var.langs.common :=
 sm.var.langs.common.extra :=

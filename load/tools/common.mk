@@ -100,18 +100,21 @@ endef #sm.tool.common.compile.literal.web.private
 ##
 ##
 define sm.tool.common.compile.cweb.private
+cd $(dir $(word 1,$(sm.args.sources))) && \
 ctangle \
- $(word 1,$(sm.args.sources)) \
- $(or $(word 2,$(sm.args.sources)),-) \
- $(sm.args.target)
+  $(notdir $(word 1,$(sm.args.sources))) \
+  $(or $(word 2,$(sm.args.sources)),-) \
+  $(notdir $(sm.args.target)) && cd - && \
+mv $(dir $(word 1,$(sm.args.sources)))/$(notdir $(sm.args.target)) \
+   $(sm.args.target)
 endef #sm.tool.common.compile.cweb.private
 
 ##
 define sm.tool.common.compile.literal.cweb.private
 cweave \
- $(word 1,$(sm.args.sources)) \
- $(or $(word 2,$(sm.args.sources)),-) \
- $(sm.args.target)
+  $(word 1,$(sm.args.sources)) \
+  $(or $(word 2,$(sm.args.sources)),-) \
+  $(sm.args.target)
 endef #sm.tool.common.compile.literal.cweb.private
 
 ##

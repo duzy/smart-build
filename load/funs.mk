@@ -291,7 +291,7 @@ define sm.fun.compute-intermediate-name
 $(strip \
   $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.top)/%=%))\
   $(eval sm.var.temp._inter_name := $(subst ..,_,$(sm.var.temp._inter_name)))\
-$($(sm._this)._intermediate_prefix)$(sm.var.temp._inter_name))
+$(sm.var.temp._inter_name))
 endef #sm.fun.compute-intermediate-name
 
 ##
@@ -300,24 +300,30 @@ define sm.fun.compute-intermediate.
 $(strip \
   $(eval sm.var.temp._inter_name := $(sm.var.source))\
   $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.out.inter)/%=%))\
-  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$($(sm._this)._intermediate_prefix)%=%))\
-  $(eval sm.var.temp._inter_name := $(sm.fun.compute-intermediate-name))\
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$($(sm._this).prefix)%=%))\
+  $(eval sm.var.temp._inter_name := $($(sm._this).prefix)$(sm.fun.compute-intermediate-name))\
   $(eval sm.var.temp._inter_suff := $(sm.tool.$($(sm._this).toolset).suffix.intermediate.$(sm.var.lang)))\
 $(sm.out.inter)/$(sm.var.temp._inter_name)$(sm.var.temp._inter_suff))
 endef #sm.fun.compute-intermediate.
 
 define sm.fun.compute-intermediate.external
-$(sm.fun.compute-intermediate.)
+$(strip \
+  $(eval sm.var.temp._inter_name := $(sm.var.source))\
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.out.inter)/%=%))\
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$($(sm._this).prefix)%=%))\
+  $(eval sm.var.temp._inter_name := $($(sm._this).prefix)$(sm.fun.compute-intermediate-name))\
+  $(eval sm.var.temp._inter_suff := $(sm.tool.$($(sm._this).toolset).suffix.intermediate.$(sm.var.lang)))\
+$(sm.out.inter)/$(sm.var.temp._inter_name)$(sm.var.temp._inter_suff))
 endef #sm.fun.compute-intermediate.external
 
 define sm.fun.compute-intermediate.common
 $(strip \
   $(eval sm.var.temp._inter_name := $(sm.var.source))\
-  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.out.inter)/common/%=%))\
-  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$($(sm._this)._intermediate_prefix)%=%))\
-  $(eval sm.var.temp._inter_name := $(sm.fun.compute-intermediate-name))\
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.out.inter)/%=%))\
+  $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$($(sm._this).prefix)%=%))\
+  $(eval sm.var.temp._inter_name := $($(sm._this).prefix)$(sm.fun.compute-intermediate-name))\
   $(eval sm.var.temp._inter_suff := $(sm.tool.common.suffix.intermediate.$(sm.var.lang).$($(sm._this).lang)))\
-$(sm.out.inter)/common/$(sm.var.temp._inter_name)$(sm.var.temp._inter_suff))
+$(sm.out.inter)/$(sm.var.temp._inter_name)$(sm.var.temp._inter_suff))
 endef #sm.fun.compute-intermediate.common
 
 ##
@@ -423,7 +429,13 @@ endef #sm.fun.make-rule-compile
 ## 
 define sm.fun.make-rule-compile-common-command
 $(strip $(if $(call equal,$($(sm._this).verbose),true),$2,\
-   $$(info $1: $($(sm._this).name) += $$^ --> $$@)$(sm.var.Q)($2)>/dev/null))
+   $$(info $1: $($(sm._this).name) += $$^ --> $$@)$(sm.var.Q)\
+   ($2) > $(sm.out.tmp)/common-compile.log \
+   || (    echo "=============== LOG ===============" \
+        && cat $(sm.out.tmp)/common-compile.log \
+        && echo "=============== END ===============" \
+        && false )\
+ ))
 endef #sm.fun.make-rule-compile-common-command
 
 ##
@@ -440,25 +452,28 @@ define sm.fun.make-rule-compile-common
   )\
  $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.common))\
  $(if $(and $(call not-equal,$(sm.var.temp._literal_lang),$(sm.var.lang)),
-            $(sm.var.temp._output_lang)),$(eval \
-   ## args for sm.tool.common.compile.*
-   sm.args.lang = $($(sm._this).lang)
-   sm.args.target := $(sm.var.temp._intermediate)
-   sm.args.sources := $(sm.var.source)
-   sm.args.prerequisites = $(sm.args.sources)
-  )$(eval \
-   ## If $(sm.var.source) is possible to be transformed into another lang.
-   $(sm._this).sources.$(sm.var.temp._output_lang) += $(sm.args.target)
-   $(sm._this).sources.has.$(sm.var.temp._output_lang) := true
-   ## Make rule for generating intermediate file (e.g. cweb to c compilation)
-   ifeq ($(sm.global.has.rule.$(sm.args.target)),)
-     sm.global.has.rule.$(sm.args.target) := true
-     $(sm.args.target) : $(sm.args.sources)
+            $(sm.var.temp._output_lang)),\
+  $(eval \
+     ## args for sm.tool.common.compile.*
+     sm.args.lang = $($(sm._this).lang)
+     sm.args.target := $(sm.var.temp._intermediate)
+     sm.args.sources := $($(sm._this).prefix)$(sm.var.source)
+     sm.args.prerequisites = $($(sm._this).prefix)$(sm.args.sources)
+   )\
+  $(eval \
+     ## If $(sm.var.source) is possible to be transformed into another lang.
+     $(sm._this).sources.external.$(sm.var.temp._output_lang) += $(sm.args.target)
+     $(sm._this).sources.has.$(sm.var.temp._output_lang) := true
+     ## Make rule for generating intermediate file (e.g. cweb to c compilation)
+     ifeq ($(sm.global.has.rule.$(sm.args.target)),)
+       sm.global.has.rule.$(sm.args.target) := true
+       $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.lang),\
-            $(filter %, $(sm.tool.common.compile.$(sm.var.lang))))
-   endif
-  ))\
+            $(filter %, $(sm.tool.common.compile.$(sm.var.lang)))) \
+	|| ( rm -f $$@ && false )
+     endif
+   ))\
  $(if $(sm.var.temp._literal_lang),\
   $(if $(call not-equal,$(sm.var.temp._literal_lang),$(sm.var.lang)),\
     $(eval \
@@ -467,7 +482,8 @@ define sm.fun.make-rule-compile-common
       sm.args.target := $(basename $(sm.var.temp._intermediate))$(sm.tool.common.suffix.intermediate.$(sm.var.lang).$(sm.var.temp._literal_lang))
       sm.args.sources := $(sm.var.source)
       sm.args.prerequisites = $(sm.args.sources)
-     )$(eval ## compilate rule for documentation sources(.tex files)
+     )\
+   $(eval ## compilate rule for documentation sources(.tex files)
       #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
       $(sm._this).sources.$(sm.var.temp._literal_lang) += $(sm.args.target)
       $(sm._this).sources.has.$(sm.var.temp._literal_lang) := true
@@ -476,7 +492,7 @@ define sm.fun.make-rule-compile-common
       endif
       ifeq ($(sm.global.has.rule.$(sm.args.target)),)
         sm.global.has.rule.$(sm.args.target) := true
-      $(sm.args.target) : $(sm.args.sources)
+       $(sm.args.target) : $(sm.args.sources)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.make-rule-compile-common-command,$(sm.var.lang),\
             $(filter %, $(sm.tool.common.compile.literal.$(sm.var.lang))))
@@ -484,9 +500,9 @@ define sm.fun.make-rule-compile-common
      ))\
   $(if $(call equal,$(sm.var.temp._literal_lang),$(sm.var.lang)),\
     $(eval \
+      sm.args.target := $(sm.out.doc)/$(notdir $(basename $(sm.var.source)))$(sm.args.docs_format)
       sm.args.sources := $(sm.var.source)
       sm.args.prerequisites = $(sm.args.sources)
-      sm.args.target := $(sm.out.doc)/$(notdir $(basename $(sm.var.source)))$(sm.args.docs_format)
      )\
     $(eval # rules for producing .dvi/.pdf(depends on sm.args.docs_format) files
       ifneq ($(sm.global.has.rule.$(sm.args.target)),true)
