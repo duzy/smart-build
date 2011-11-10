@@ -112,32 +112,26 @@ $(sm._this).flag_files :=
 
 ## Export computed common sources of different language and make compile rules
 ## for common sources(files not handled by the toolset, e.g. .w, .nw, etc).
-$(call sm.fun.make-common-compile-rules-for-langs,\
-    $(sm.var.langs.common) \
-    $(sm.var.langs.common.extra) \
- )
+$(call sm.fun.make-common-compile-rules)
 
 ifneq ($($(sm._this).type),depends)
-  $(call sm.fun.make-compile-rules-for-langs)
+  $(call sm.fun.make-compile-rules)
 endif ## $(sm._this).type != depends
 
 ifeq ($($(sm._this).type),t)
-  $(call sm.fun.make-t-compile-rules-for-langs)
+  $(call sm.fun.make-t-compile-rules)
 endif # $(sm._this).type == t
 
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $($(sm._this).sources.unknown)),),\
+            $(call equal,$(strip $($(sm._this).toolset)),common),\
             $(call equal,$(strip $($(sm._this).type)),depends),\
             $(call equal,$(strip $($(sm._this).intermediates)),),\
-            $(call is-true,$($(sm._this)._intermediates_only)))\
-        ,,true)
-
-## make module targets
-ifneq ($($(sm._this).toolset),common)
-  ifeq ($(sm.var.temp._should_make_targets),true)
-    $(call sm.fun.make-module-targets)
-  endif #$(sm.var.temp._should_make_targets) == true
-endif #$($(sm._this).toolset) != common
+            $(call is-true,$($(sm._this)._intermediates_only))),\
+   ,true)
+ifeq ($(sm.var.temp._should_make_targets),true)
+  $(call sm.fun.make-module-targets)
+endif #$(sm.var.temp._should_make_targets) == true
 
 ##################################################
 

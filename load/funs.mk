@@ -572,19 +572,19 @@ endef #sm.fun.check-strange-and-compute-common-source
 
 ##
 ##
-define sm.fun.make-common-compile-rules-for-langs
-${foreach sm.var.lang,$1,\
+define sm.fun.make-common-compile-rules
+${foreach sm.var.lang, $(sm.var.langs.common) $(sm.var.langs.common.extra),\
    $(if $(sm.tool.common.suffix.$(sm.var.lang)),\
       ,$(error smart: toolset $($(sm._this).toolset)/$(sm.var.lang) has no suffixes))\
    $(eval $(sm._this).sources.$(sm.var.lang) = $($(sm._this).sources.$(sm.var.lang)))\
    $(call sm.fun.compute-flags-compile) \
    $(call sm.fun.make-rules-compile-common) \
  }
-endef #sm.fun.make-common-compile-rules-for-langs
+endef #sm.fun.make-common-compile-rules
 
 ## Make compile rules for sources of each lang supported by the selected toolset.
 ## E.g. $(sm._this).sources.$(sm.var.lang)
-define sm.fun.make-compile-rules-for-langs
+define sm.fun.make-compile-rules
 ${foreach sm.var.lang, $(sm.var.langs),\
   $(call sm-check-not-empty, $(sm.var.tool).suffix.$(sm.var.lang))\
   $(call sm.fun.compute-flags-compile)\
@@ -595,10 +595,10 @@ ${foreach sm.var.lang, $(sm.var.langs),\
          $(eval $(sm._this).lang := $(sm.var.lang))\
    )\
  }
-endef #sm.fun.make-compile-rules-for-langs
+endef #sm.fun.make-compile-rules
 
 ## Make compile rules for .t sources file
-define sm.fun.make-t-compile-rules-for-langs
+define sm.fun.make-t-compile-rules
 $(eval \
   # set sm.var.lang for sm.fun.make-rule-compile
   sm.var.lang := $($(sm._this).lang)
@@ -615,7 +615,7 @@ $(eval \
     $${foreach sm.var.source,$$($(sm._this).sources.external.$(sm.var.lang).t),$$(call sm.fun.make-rule-compile,external)}
   endif
  )
-endef #sm.fun.make-t-compile-rules-for-langs
+endef #sm.fun.make-t-compile-rules
 
 ## make targets for modules of type static, shared, exe, t
 define sm.fun.make-module-targets
