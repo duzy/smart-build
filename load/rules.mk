@@ -39,6 +39,11 @@ sm.var.temp._ := $(sm.var.temp._:/%=%)
 sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this)._intermediate_prefix := $(sm.var.temp._)
 
+sm.var.langs.common :=
+sm.var.langs.common.extra :=
+$(sm._this).sources.common :=
+$(sm._this).sources.unknown :=
+
 ## Compute sources of each language supported by the toolset.
 $(call sm.fun.compute-sources)
 $(call sm.fun.compute-using-list)
@@ -104,20 +109,6 @@ $(sm._this)._link.libs.computed :=
 $(sm._this).flag_files :=
 
 ##################################################
-
-## Check strange sources and compute common sources.
-sm.var.langs.common :=
-sm.var.langs.common.extra :=
-$(sm._this).sources.common :=
-$(sm._this).sources.unknown :=
-ifneq ($(strip $($(sm._this).type)),depends)
-  $(foreach sm.var.source, \
-      $($(sm._this).sources) \
-      $($(sm._this).sources.external) \
-   ,\
-      $(sm.fun.check-strange-and-compute-common-source) \
-   )
-endif ## $(sm._this).type != depends
 
 ## Export computed common sources of different language and make compile rules
 ## for common sources(files not handled by the toolset, e.g. .w, .nw, etc).

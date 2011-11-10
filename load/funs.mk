@@ -151,7 +151,14 @@ endef #sm.fun.compute-sources-of-lang
 
 ##
 define sm.fun.compute-sources
-${foreach sm.var.lang, $(sm.var.langs), $(sm.fun.compute-sources-of-lang)}
+${foreach sm.var.lang, $(sm.var.langs), $(sm.fun.compute-sources-of-lang)}\
+$(if $(call not-equal,$($(sm._this).type),depends),\
+    $(foreach sm.var.source, \
+       $($(sm._this).sources) \
+       $($(sm._this).sources.external) \
+     , $(sm.fun.check-strange-and-compute-common-source) \
+     )\
+ )
 endef #sm.fun.compute-sources
 
 define sm.fun.compute-flags-compile
