@@ -3,8 +3,8 @@
 #             producing output into $(sm._this).intermediates, making
 #             intermediates generation rules.
 #
-$(sm._this).unterminated          := $(strip $(sm._this).unterminated)
-$(sm._this).unterminated.external := $(strip $(sm._this).unterminated.external)
+$(sm._this).unterminated          := $(strip $($(sm._this).unterminated))
+$(sm._this).unterminated.external := $(strip $($(sm._this).unterminated.external))
 
 ifneq ($(or $($(sm._this).unterminated),$($(sm._this).unterminated.external)),)
   ## Store unterminated intermediates into sm.var.sources for make intermediates

@@ -58,6 +58,22 @@ $(eval \
     $$(error smart: $(sm.var.tool) is not defined)
   endif
 
+  $(foreach sm.var.lang, $($(sm.var.tool).langs),
+    $(foreach sm.temp._suffix, $($(sm.var.tool).suffix.$(sm.var.lang)),
+      sm.var.lang$(sm.temp._suffix) := $(sm.var.lang)
+     )
+   )
+  $(foreach sm.var.lang, $(sm.tool.common.langs),
+    $(foreach sm.temp._suffix, $(sm.tool.common.suffix.$(sm.var.lang)),
+      sm.var.lang$(sm.temp._suffix) := $(sm.var.lang)
+     )
+   )
+
+  ifeq ($($(sm._this).type),t)
+    $$(call sm-check-not-empty, $(sm._this).lang, 'sm.this.lang' must be specified for "tests")
+    sm.var.lang.t := $($(sm._this).lang)
+  endif
+
   ifneq ($($(sm._this).toolset),common)
     ifndef $(sm._this).suffix
       ${call sm-check-defined,$(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name)}
@@ -868,15 +884,52 @@ $(eval \
   include $(sm.dir.buildsys)/reduce.mk
 
   ## All unterminated intermediates are expected to be reduced!
-  $$(call sm-check-empty, \
-      $(sm._this).unterminated.external \
-      $(sm._this).unterminated \
-    )
+ )\
+$(call sm-check-empty, \
+    $(sm._this).unterminated.external \
+    $(sm._this).unterminated \
  )
 endef #sm.fun.compute-terminated-intermediates
 
 ## <NEW>
 ## 
+## Handle with the input "sm.var.sources", compute the terminated intermediates.
+##
+## INPUT:
+##     *) sm.var.sources: module local sources
+##     *) sm.var.sources.external: module external sources
+## OUTPUT:
+##     *) $(sm._this).intermediates (append to it)
+## 
 define sm.fun.make-intermediates-rules
-
+$(foreach sm.var.source, $(sm.var.sources), $(sm.fun.make-intermediate-rule))
 endef #sm.fun.make-intermediates-rules
+
+## <NEW>
+##
+## Make intermedate rule for one single source, append terminated intermediate
+## to $(sm._this).intermediates.
+##
+## INPUT:
+##     *) sm.var.source:
+##     *) sm.var.lang.XXX: where XXX is $(suffix $(sm.var.source))
+## OUTPUT:
+##     *) $(sm._this).intermediates
+##     *) sm.var.source.suffix
+##
+define sm.fun.make-intermediate-rule
+$(call sm-check-not-empty, \
+    sm.var.source \
+ , 'sm.var.source' must not be empty \
+ )\
+$(eval \
+  sm.var.source.suffix := $(suffix $(sm.var.source))
+  sm.var.source.lang := $$(sm.var.lang$$(sm.var.source.suffix))
+ )\
+$(call sm-check-not-empty, \
+    sm.var.source.suffix \
+    sm.var.source.lang \
+ , source "$(sm.var.source)" is strange (lang: "$(sm.var.source.lang)") \
+ )\
+$(info TODO: rule for $(sm.var.source) of $(sm.var.source.lang) lang)
+endef #sm.fun.make-intermediate-rule
