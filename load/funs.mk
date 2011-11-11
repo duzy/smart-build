@@ -15,6 +15,7 @@ $(strip $(or $(sm.var.target_type.$($(sm._this).type)),$($(sm._this).type)))
 endef #sm.fun.get-target-type
 
 define sm-rule
+$(error deprecated)\
 $(call sm-check-flavor,\
    $(sm.var.tool).$(sm.args.action).$(sm.args.lang),recursive,\
    broken toolset '$($(sm._this).toolset)': '$(sm.var.tool).$(sm.args.action).$(sm.args.lang)' is not recursive)\
@@ -48,6 +49,7 @@ sm-rule-dependency = $(error sm-rule-dependency is deprecated)
 
 ######################################################################
 
+## <!!!>
 define sm.fun.init-toolset
 $(eval \
   ifeq ($($(sm.var.tool)),)
@@ -85,7 +87,7 @@ $(eval \
  )
 endef #sm.fun.init-toolset
 
-##
+## <!!!>
 define sm.fun.compute-using-list
 $(if $($(sm._this).using_list), $(eval \
   ## FIXME: it looks like a gmake bug:
@@ -130,6 +132,7 @@ $(eval \
  )
 endef #sm.fun.using
 
+## <!!!>
 ## eg. $(call sm.fun.append-items,RESULT_VAR_NAME,ITEMS,PREFIX,SUFFIX)
 define sm.fun.append-items-with-fix
 ${foreach sm.var.temp._,$(strip $2),\
@@ -147,7 +150,7 @@ ${foreach sm.var.temp._,$(strip $2),\
    }}
 endef #sm.fun.append-items-with-fix
 
-##
+## <!!!>
 ## eg. $(call sm.code.shift-flags-to-file,compile,flags.c++)
 define sm.code.shift-flags-to-file-r
   $(sm._this).$1.flat := $$(subst \",\\\",$$($(sm._this).$1))
@@ -165,6 +168,7 @@ endef #sm.code.shift-flags-to-file
 ####################
 ##
 define sm.fun.compute-sources-of-lang
+$(error deprecated)\
 ${eval \
   sm.var.temp._suffix_pat.$(sm.var.lang)  := $($(sm.var.tool).suffix.$(sm.var.lang):%=\%%)
   $(sm._this).sources.$(sm.var.lang)          := $$(filter $$(sm.var.temp._suffix_pat.$(sm.var.lang)),$($(sm._this).sources))
@@ -175,6 +179,7 @@ endef #sm.fun.compute-sources-of-lang
 
 ##
 define sm.fun.compute-sources
+$(error deprecated)\
 ${foreach sm.var.lang, $(sm.var.langs), $(sm.fun.compute-sources-of-lang)}\
 $(if $(call not-equal,$($(sm._this).type),depends),\
     $(foreach sm.var.source, \
@@ -235,6 +240,7 @@ ${eval \
  }
 endef #sm.fun.compute-compile-flags
 
+## <!!!>
 define sm.fun.compute-link-flags
 ${eval \
   ifeq ($($(sm._this)._link.flags.computed),)
@@ -262,6 +268,7 @@ ${eval \
  }
 endef #sm.fun.compute-link-flags
 
+## <!!!>
 define sm.fun.compute-link-intermediates
 ${eval \
   ifeq ($($(sm._this)._link.intermediates.computed),)
@@ -275,6 +282,7 @@ ${eval \
  }
 endef #sm.fun.compute-link-intermediates
 
+## <!!!>
 define sm.fun.compute-link-libs
 ${eval \
   ifeq ($($(sm._this)._link.libs.computed),)
@@ -313,6 +321,7 @@ endef #sm.fun.compute-link-libs
 
 ## Compute the intermediate name
 define sm.fun.compute-intermediate-name
+$(error deprecated)\
 $(strip \
   $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.top)/%=%))\
   $(eval sm.var.temp._inter_name := $(subst ..,_,$(sm.var.temp._inter_name)))\
@@ -322,6 +331,7 @@ endef #sm.fun.compute-intermediate-name
 ##
 ##
 define sm.fun.compute-intermediate.
+$(error deprecated)\
 $(strip \
   $(eval sm.var.temp._inter_name := $(sm.var.source))\
   $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.out.inter)/%=%))\
@@ -332,6 +342,7 @@ $(sm.out.inter)/$(sm.var.temp._inter_name)$(sm.var.temp._inter_suff))
 endef #sm.fun.compute-intermediate.
 
 define sm.fun.compute-intermediate.external
+$(error deprecated)\
 $(strip \
   $(eval sm.var.temp._inter_name := $(sm.var.source))\
   $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.out.inter)/%=%))\
@@ -342,6 +353,7 @@ $(sm.out.inter)/$(sm.var.temp._inter_name)$(sm.var.temp._inter_suff))
 endef #sm.fun.compute-intermediate.external
 
 define sm.fun.compute-intermediate.common
+$(error deprecated)\
 $(strip \
   $(eval sm.var.temp._inter_name := $(sm.var.source))\
   $(eval sm.var.temp._inter_name := $(sm.var.temp._inter_name:$(sm.out.inter)/%=%))\
@@ -354,29 +366,34 @@ endef #sm.fun.compute-intermediate.common
 ##
 ## source file of relative location
 define sm.fun.compute-source.
+$(error deprecated)\
 ${patsubst $(sm.top)/%,%,$($(sm._this).dir)/$(strip $1)}
 endef #sm.fun.compute-source.
 
 ##
 ## source file of fixed location
 define sm.fun.compute-source.external
+$(error deprecated)\
 $(patsubst $(sm.top)/%,%,$(strip $1))
 endef #sm.fun.compute-source.external
 
-##
+## <!!!>
 ## binary module to be built
 define sm.fun.compute-module-targets-exe
 $(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
 endef #sm.fun.compute-module-targets-exe
 
+## <!!!>
 define sm.fun.compute-module-targets-t
 $(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
 endef #sm.fun.compute-module-targets-t
 
+## <!!!>
 define sm.fun.compute-module-targets-shared
 $(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
 endef #sm.fun.compute-module-targets-shared
 
+## <!!!>
 define sm.fun.compute-module-targets-static
 $(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name:lib%=%)$($(sm._this).suffix)
 endef #sm.fun.compute-module-targets-static
@@ -384,6 +401,7 @@ endef #sm.fun.compute-module-targets-static
 ##################################################
 
 define sm.fun.do-make-rule-depend
+$(error deprecated)\
   ${eval sm.var.temp._depend := $(sm.var.temp._intermediate:%.o=%.d)}\
   ${eval \
     -include $(sm.var.temp._depend)
@@ -423,6 +441,7 @@ endef #sm.fun.do-make-rule-depend
 ##   eg. $(call sm.fun.make-rule-compile, external)
 ##   eg. $(call sm.fun.make-rule-compile, intermediate)
 define sm.fun.make-rule-compile
+$(error deprecated)\
  $(if $(sm.var.lang),,$(error smart: internal: $$(sm.var.lang) is empty))\
  $(if $(sm.var.source),,$(error smart: internal: $$(sm.var.source) is empty))\
  $(if $1,$(call sm-check-equal,$(strip $1),external,smart: arg \#3 must be 'external' if specified))\
@@ -453,6 +472,7 @@ endef #sm.fun.make-rule-compile
 
 ## 
 define sm.fun.make-rule-compile-common-command
+$(error deprecated)\
 $(strip $(if $(call equal,$($(sm._this).verbose),true),$2,\
    $$(info $1: $($(sm._this).name) += $$^ --> $$@)$(sm.var.Q)\
    ($2) > $(sm.out.tmp)/common-compile.log \
@@ -465,6 +485,7 @@ endef #sm.fun.make-rule-compile-common-command
 
 ##
 define sm.fun.make-rule-compile-common
+$(error deprecated)\
  $(call sm-check-not-empty,\
      sm.var.lang \
      sm.var.source \
@@ -555,6 +576,7 @@ endef #sm.fun.make-rule-compile-common
 ## Computes sources of a specific languange via sm.var.temp._temp and generate
 ## compilation rules for them.
 define sm.fun.make-rules-compile
+$(error deprecated)\
 $(if $(sm.var.lang),,$(error smart: internal: sm.var.lang is empty))\
 $(eval \
  ifeq ($$($(sm._this).sources.has.$(sm.var.lang)),true)
@@ -568,6 +590,7 @@ endef #sm.fun.make-rules-compile
 ## may generate output like 'out/common/foo.cpp', this will be then appended
 ## to $(sm._this).sources.c++ which will then be used by sm.fun.make-rules-compile.
 define sm.fun.make-rules-compile-common
+$(error deprecated)\
 $(call sm-check-not-empty, sm.var.lang)\
 $(if $($(sm._this).sources.has.$(sm.var.lang)),\
     $(foreach sm.var.source, $($(sm._this).sources.$(sm.var.lang)),\
@@ -580,6 +603,7 @@ endef #sm.fun.make-rules-compile-common
 ##
 ##
 define sm.fun.check-strange-and-compute-common-source
+$(error deprecated)\
 $(eval \
   sm.var.temp._tool4src := $(strip $(sm.toolset.for.file$(suffix $(sm.var.source))))
   sm.var.temp._is_strange_source := $$(call not-equal,$$(sm.var.temp._tool4src),$($(sm._this).toolset))
@@ -624,6 +648,7 @@ endef #sm.fun.check-strange-and-compute-common-source
 ##
 ##
 define sm.fun.make-common-compile-rules
+$(error deprecated)\
 ${foreach sm.var.lang, $(sm.var.langs.common) $(sm.var.langs.common.extra),\
    $(if $(sm.tool.common.suffix.$(sm.var.lang)),\
       ,$(error smart: toolset $($(sm._this).toolset)/$(sm.var.lang) has no suffixes))\
@@ -636,6 +661,7 @@ endef #sm.fun.make-common-compile-rules
 ## Make compile rules for sources of each lang supported by the selected toolset.
 ## E.g. $(sm._this).sources.$(sm.var.lang)
 define sm.fun.make-compile-rules
+$(error deprecated)\
 ${foreach sm.var.lang, $(sm.var.langs),\
   $(call sm-check-not-empty, $(sm.var.tool).suffix.$(sm.var.lang))\
   $(call sm.fun.compute-compile-flags)\
@@ -650,6 +676,7 @@ endef #sm.fun.make-compile-rules
 
 ## Make compile rules for .t sources file
 define sm.fun.make-t-compile-rules
+$(error deprecated)\
 $(eval \
   # set sm.var.lang for sm.fun.make-rule-compile
   sm.var.lang := $($(sm._this).lang)
@@ -726,7 +753,10 @@ $(eval \
   ifndef sm.global.has.rule.$(sm.args.target)
     sm.global.has.rule.$(sm.args.target) := true
 
-    $(call sm-check-defined, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
+    $(call sm-check-defined,\
+        $(sm.var.tool).$(sm.args.action).$(sm.args.lang)\
+     , '$($(sm._this).toolset)' toolset donnot support commands for '$(sm.args.action) $(sm.args.lang)'
+     )
     $(call sm-check-not-empty, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
 
     $(sm.args.target) : $(sm.args.prerequisites)
@@ -742,6 +772,7 @@ endef #sm.fun.make-module-targets
 
 ##################################################
 
+## <!!!>
 ## copy headers according to sm.this.headers.PREFIX
 define sm.fun.copy-headers-of-prefix
 $(eval \
@@ -754,6 +785,7 @@ $(eval \
  )
 endef #sm.fun.copy-headers-of-prefix
 
+## <!!!>
 ## copy headers according to all sm.this.headers.XXX variables
 define sm.fun.copy-headers
 $(eval \
@@ -821,6 +853,7 @@ $(eval \
  )
 endef #sm.fun.make-goal-rules
 
+## <!!!>
 ##
 define sm.fun.make-test-rules
 $(if $(call equal,$($(sm._this).type),t), $(eval \
@@ -832,6 +865,7 @@ endef #sm.fun.make-test-rules
 
 $(call sm-check-not-empty, sm.tool.common.rm)
 $(call sm-check-not-empty, sm.tool.common.rmdir)
+## <!!!>
 define sm.fun.make-clean-rules
 $(if $(call equal,$($(sm._this).type),depends), $(eval \
     clean-$($(sm._this).name):
@@ -877,6 +911,7 @@ $(if $(call equal,$($(sm._this).type),depends), $(eval \
  )
 endef #sm.fun.make-clean-rules
 
+## <!!!>
 ##
 define sm.fun.invoke-toolset-built-target-mk
 $(eval \
@@ -1005,6 +1040,7 @@ $(eval \
   sm.args.flags.1 :=
   sm.args.flags.2 :=
  )\
+$(if $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)),\
 $(eval \
   ifndef sm.global.has.rule.$(sm.args.target)
     sm.global.has.rule.$(sm.args.target) := true
@@ -1013,7 +1049,10 @@ $(eval \
       $(sm.args.target) : $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang)
     endif
 
-    $(call sm-check-defined, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
+    $(call sm-check-defined,\
+        $(sm.var.tool).$(sm.args.action).$(sm.args.lang)\
+     , '$($(sm._this).toolset)' toolset donnot support commands for '$(sm.args.action) $(sm.args.lang)'
+     )
     $(call sm-check-not-empty, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
 
     $(sm.args.target) : $(sm.args.prerequisites)
@@ -1024,7 +1063,7 @@ $(eval \
   endif # rule not yet be defined
  )\
 $(call sm-check-value,sm.global.has.rule.$(sm.args.target),true)\
-$(if sm.global.has.rule.$(sm.args.target),ok)
+$(if sm.global.has.rule.$(sm.args.target),ok))
 endef #sm.fun.make-intermediate-rule-with-user-toolset
 
 ## <NEW>
