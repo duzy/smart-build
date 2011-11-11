@@ -69,6 +69,8 @@ $(eval \
      )
    )
 
+  sm.var.lang :=
+
   ifeq ($($(sm._this).type),t)
     $$(call sm-check-not-empty, $(sm._this).lang, 'sm.this.lang' must be specified for "tests")
     sm.var.lang.t := $($(sm._this).lang)
@@ -183,9 +185,10 @@ $(if $(call not-equal,$($(sm._this).type),depends),\
  )
 endef #sm.fun.compute-sources
 
-define sm.fun.compute-flags-compile
+## <!!!>
+define sm.fun.compute-compile-flags
 ${eval \
-  sm.temp._fvar_prop := compile.flags.$($(sm._this)._cnum).$(sm.var.lang)
+  sm.temp._fvar_prop := compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang)
   sm.var.temp._fvar_name := $(sm._this).$$(sm.temp._fvar_prop)
  }\
 ${eval \
@@ -200,21 +203,21 @@ ${eval \
 
     $(sm.var.temp._fvar_name) += $(filter %,\
        $($(sm.var.tool).defines)\
-       $($(sm.var.tool).defines.$(sm.var.lang))\
+       $($(sm.var.tool).defines.$(sm.source.var.lang))\
        $($(sm.var.tool).compile.flags)\
-       $($(sm.var.tool).compile.flags.$(sm.var.lang))\
+       $($(sm.var.tool).compile.flags.$(sm.source.var.lang))\
        $(sm.global.defines)\
-       $(sm.global.defines.$(sm.var.lang))\
+       $(sm.global.defines.$(sm.var.source.lang))\
        $(sm.global.compile.flags)\
-       $(sm.global.compile.flags.$(sm.var.lang))\
+       $(sm.global.compile.flags.$(sm.var.source.lang))\
        $($(sm._this).used.defines)\
-       $($(sm._this).used.defines.$(sm.var.lang))\
+       $($(sm._this).used.defines.$(sm.var.source.lang))\
        $($(sm._this).used.compile.flags)\
-       $($(sm._this).used.compile.flags.$(sm.var.lang))\
+       $($(sm._this).used.compile.flags.$(sm.var.source.lang))\
        $($(sm._this).defines)\
-       $($(sm._this).defines.$(sm.var.lang))\
+       $($(sm._this).defines.$(sm.var.source.lang))\
        $($(sm._this).compile.flags)\
-       $($(sm._this).compile.flags.$(sm.var.lang)))
+       $($(sm._this).compile.flags.$(sm.var.source.lang)))
 
     $$(call sm.fun.append-items-with-fix, $(sm.var.temp._fvar_name), \
            $$($(sm._this).includes) \
@@ -230,7 +233,7 @@ ${eval \
     endif
   endif
  }
-endef #sm.fun.compute-flags-compile
+endef #sm.fun.compute-compile-flags
 
 define sm.fun.compute-link-flags
 ${eval \
@@ -625,7 +628,7 @@ ${foreach sm.var.lang, $(sm.var.langs.common) $(sm.var.langs.common.extra),\
    $(if $(sm.tool.common.suffix.$(sm.var.lang)),\
       ,$(error smart: toolset $($(sm._this).toolset)/$(sm.var.lang) has no suffixes))\
    $(eval $(sm._this).sources.$(sm.var.lang) = $($(sm._this).sources.$(sm.var.lang)))\
-   $(call sm.fun.compute-flags-compile) \
+   $(call sm.fun.compute-compile-flags) \
    $(call sm.fun.make-rules-compile-common) \
  }
 endef #sm.fun.make-common-compile-rules
@@ -635,7 +638,7 @@ endef #sm.fun.make-common-compile-rules
 define sm.fun.make-compile-rules
 ${foreach sm.var.lang, $(sm.var.langs),\
   $(call sm-check-not-empty, $(sm.var.tool).suffix.$(sm.var.lang))\
-  $(call sm.fun.compute-flags-compile)\
+  $(call sm.fun.compute-compile-flags)\
   $(call sm.fun.make-rules-compile)\
   $(if $(and $(call equal,$(strip $($(sm._this).lang)),),\
              $($(sm._this).sources.has.$(sm.var.lang))),\
@@ -707,6 +710,8 @@ $(eval \
     sm.var.temp._flag_files += $$(sm.var.temp._flag_file_prefix).libs
   endif ## libs.infile == true
 
+  sm.args.action := $$(sm.var.action.$$($(sm._this).type))
+  sm.args.lang := $$($(sm._this).lang)
   sm.args.target := $$($(sm._this).targets)
   sm.args.sources := $$($(sm._this)._link.intermediates)
   sm.args.prerequisites := $$($(sm._this).intermediates)
@@ -718,19 +723,22 @@ $(eval \
     $(sm.args.target) : $$(sm.var.temp._flag_files)
   endif # $(sm.var.temp._flag_files) != ""
 
-  $$(info zzzzz: $$($(sm._this).intermediates))
-
   ifndef sm.global.has.rule.$(sm.args.target)
     sm.global.has.rule.$(sm.args.target) := true
 
+    $$(info $(sm.args.target) : $(sm.args.prerequisites))
+
+    $(call sm-check-defined, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
+    $(call sm-check-not-empty, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
+
     $(sm.args.target) : $(sm.args.prerequisites)
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands,\
 	    $(sm.var.command_prompt.$(sm.args.action)),\
 	    $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)))
   endif # rule not yet be defined
 
-  $$(call sm-check-defined, $(sm._this).targets,no targets)
+  $$(call sm-check-defined, $(sm._this).targets, no targets)
  )
 endef #sm.fun.make-module-targets
 
@@ -918,6 +926,7 @@ endef #sm.fun.compute-terminated-intermediates
 ##     *) $(sm._this).intermediates (append to it)
 ## 
 define sm.fun.make-intermediates-rules
+$(call sm.fun.compute-compile-flags)\
 $(eval sm.var.source.type := local)   $(foreach sm.var.source, $(sm.var.sources),          $(sm.fun.make-intermediate-rule))\
 $(eval sm.var.source.type := external)$(foreach sm.var.source, $(sm.var.sources.external), $(sm.fun.make-intermediate-rule))\
 $(eval sm.var.source.type :=)
@@ -987,6 +996,8 @@ $(eval \
  )\
 $(info TODO: draw dependency for $(sm.var.source))\
 $(eval \
+  sm.args.action := compile
+  sm.args.lang := $(sm.var.source.lang)
   sm.args.target := $(sm.temp._intermediate)
   sm.args.sources := $(call sm.fun.compute-source-of-$(sm.var.source.type))
   sm.args.prerequisites = $$(sm.args.sources)
@@ -1005,8 +1016,11 @@ $(eval \
 
     $$(info $(sm.args.target) : $(sm.args.prerequisites))
 
+    $(call sm-check-defined, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
+    $(call sm-check-not-empty, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
+
     $(sm.args.target) : $(sm.args.prerequisites)
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands,\
 	    $(sm.var.command_prompt.$(sm.args.action)),\
 	    $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)))
@@ -1024,11 +1038,11 @@ endef #sm.fun.make-intermediate-rule-with-user-toolset
 ## RETURN:
 ##   *) 
 define sm.fun.wrap-rule-commands
-$(eval \
+$(strip $(eval \
   sm.temp._command_prompt := $(strip $1)
   sm.temp._command_text := $(filter %,$2)
  )\
-$(strip $(if $(call is-true,$($(sm._this).verbose)),\
+$(if $(call is-true,$($(sm._this).verbose)),\
     $(sm.temp._command_text) \
  ,\
     $(sm.temp._command_text) \

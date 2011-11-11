@@ -90,10 +90,10 @@ sm.var.temp._should_make_targets := \
             $(call equal,$(strip $($(sm._this).intermediates)),),\
             $(call is-true,$($(sm._this)._intermediates_only))),\
    ,true)
-#ifeq ($(sm.var.temp._should_make_targets),true)
+ifeq ($(sm.var.temp._should_make_targets),true)
   $(call sm.fun.make-module-targets)
   $(warning $($(sm._this).name): $($(sm._this).targets))
-#endif #$(sm.var.temp._should_make_targets) == true
+endif #$(sm.var.temp._should_make_targets) == true
 
 ifneq ($($(sm._this)._intermediates_only),true)
   $(call sm.fun.make-goal-rules)
