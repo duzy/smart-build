@@ -726,8 +726,6 @@ $(eval \
   ifndef sm.global.has.rule.$(sm.args.target)
     sm.global.has.rule.$(sm.args.target) := true
 
-    $$(info $(sm.args.target) : $(sm.args.prerequisites))
-
     $(call sm-check-defined, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
     $(call sm-check-not-empty, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
 
@@ -994,7 +992,8 @@ $(eval \
   sm.temp._intermediate := $(sm.fun.compute-intermediate-of-$(sm.var.source.type))
   $(sm._this).intermediates += $$(sm.temp._intermediate)
  )\
-$(info TODO: draw dependency for $(sm.var.source))\
+$(warning TODO: draw dependency for $(sm.var.source), and move sm.fun.compute-compile-flags into somewhere else)\
+$(call sm.fun.compute-compile-flags)\
 $(eval \
   sm.args.action := compile
   sm.args.lang := $(sm.var.source.lang)
@@ -1013,8 +1012,6 @@ $(eval \
     ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
       $(sm.args.target) : $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang)
     endif
-
-    $$(info $(sm.args.target) : $(sm.args.prerequisites))
 
     $(call sm-check-defined, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
     $(call sm-check-not-empty, $(sm.var.tool).$(sm.args.action).$(sm.args.lang))
