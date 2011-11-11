@@ -67,6 +67,10 @@ endif
 $(sm._this).unterminated          :=
 $(sm._this).unterminated.external :=
 
+## The strange unterminated intermediates is unexpected errors, should be
+## reported to users.
+$(sm._this).unterminated.strange  :=
+
 ## Firstly, we compute the using list.
 $(call sm.fun.compute-using-list)
 
@@ -77,6 +81,7 @@ endif ## $(sm._this).type != depends
 
 ## Computes the terminated intermediates.
 $(call sm.fun.compute-terminated-intermediates)
+$(warning intermediates:$($(sm._this).intermediates))
 
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $($(sm._this).sources.unknown)),),\
@@ -85,9 +90,10 @@ sm.var.temp._should_make_targets := \
             $(call equal,$(strip $($(sm._this).intermediates)),),\
             $(call is-true,$($(sm._this)._intermediates_only))),\
    ,true)
-ifeq ($(sm.var.temp._should_make_targets),true)
+#ifeq ($(sm.var.temp._should_make_targets),true)
   $(call sm.fun.make-module-targets)
-endif #$(sm.var.temp._should_make_targets) == true
+  $(warning $($(sm._this).name): $($(sm._this).targets))
+#endif #$(sm.var.temp._should_make_targets) == true
 
 ifneq ($($(sm._this)._intermediates_only),true)
   $(call sm.fun.make-goal-rules)

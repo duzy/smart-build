@@ -23,7 +23,7 @@ $(eval \
     $$(error smart: internal: sm._this is empty)
   endif
 
-  ifeq ($(sm.global.has.rule.$(sm.args.target)),)
+  ifndef sm.global.has.rule.$(sm.args.target)
    sm.global.has.rule.$(sm.args.target) := true
    $(sm.args.target) : $(sm.args.prerequisites)
 	$$(call sm-util-mkdir,$$(@D))
@@ -41,9 +41,9 @@ $(eval \
   )
 endef #sm-rule
 
-sm-rule-compile = $(eval sm.args.action := compile)$(call sm-rule)
-sm-rule-link    = $(eval sm.args.action := link)$(call sm-rule)
-sm-rule-archive = $(eval sm.args.action := archive)$(call sm-rule)
+sm-rule-compile    = $(eval sm.args.action := compile)$(call sm-rule)
+sm-rule-link       = $(eval sm.args.action := link)$(call sm-rule)
+sm-rule-archive    = $(eval sm.args.action := archive)$(call sm-rule)
 sm-rule-dependency = $(error sm-rule-dependency is deprecated)
 
 ######################################################################
@@ -232,7 +232,7 @@ ${eval \
  }
 endef #sm.fun.compute-flags-compile
 
-define sm.fun.compute-flags-link
+define sm.fun.compute-link-flags
 ${eval \
   ifeq ($($(sm._this)._link.flags.computed),)
     $(sm._this)._link.flags.computed := true
@@ -257,9 +257,9 @@ ${eval \
     endif
   endif
  }
-endef #sm.fun.compute-flags-link
+endef #sm.fun.compute-link-flags
 
-define sm.fun.compute-intermediates-link
+define sm.fun.compute-link-intermediates
 ${eval \
   ifeq ($($(sm._this)._link.intermediates.computed),)
     $(sm._this)._link.intermediates.computed := true
@@ -270,9 +270,9 @@ ${eval \
     endif
   endif
  }
-endef #sm.fun.compute-intermediates-link
+endef #sm.fun.compute-link-intermediates
 
-define sm.fun.compute-libs-link
+define sm.fun.compute-link-libs
 ${eval \
   ifeq ($($(sm._this)._link.libs.computed),)
     $(sm._this)._link.libs.computed := true
@@ -304,7 +304,7 @@ ${eval \
     endif
   endif
  }
-endef #sm.fun.compute-libs-link
+endef #sm.fun.compute-link-libs
 
 ##################################################
 
@@ -665,27 +665,32 @@ $(eval \
  )
 endef #sm.fun.make-t-compile-rules
 
+## <!!!>
 ## make targets for modules of type static, shared, exe, t
 define sm.fun.make-module-targets
 $(eval \
-  $(call sm-check-defined,				\
-      $(sm._this)._link.flags				\
-      $(sm._this)._link.intermediates			\
-      $(sm._this)._link.libs				\
-      $(sm._this).intermediates				\
+  $(call sm-check-not-empty,				\
       $(sm._this).lang					\
-      sm.fun.compute-flags-link				\
-      sm.fun.compute-intermediates-link			\
-      sm.fun.compute-libs-link				\
+      $(sm._this).intermediates				\
+   )
+  $(call sm-check-defined,				\
+      sm.fun.compute-link-flags				\
+      sm.fun.compute-link-intermediates			\
+      sm.fun.compute-link-libs				\
       sm.fun.compute-module-targets-$($(sm._this).type)	\
       sm-rule-$(sm.var.action)-$($(sm._this).lang)	\
    )
 
   $(sm._this).targets := $$(sm.fun.compute-module-targets-$($(sm._this).type))
 
-  $$(sm.fun.compute-flags-link)
-  $$(sm.fun.compute-intermediates-link)
-  $$(sm.fun.compute-libs-link)
+  $$(sm.fun.compute-link-flags)
+  $$(sm.fun.compute-link-intermediates)
+  $$(sm.fun.compute-link-libs)
+  $$(call sm-check-defined,				\
+      $(sm._this)._link.flags				\
+      $(sm._this)._link.intermediates			\
+      $(sm._this)._link.libs				\
+   )
 
   sm.var.temp._flag_file_prefix := $($(sm._this).out.tmp)/link
   sm.var.temp._flag_files :=
@@ -707,12 +712,23 @@ $(eval \
   sm.args.prerequisites := $$($(sm._this).intermediates)
   sm.args.flags.0 := $$($(sm._this)._link.flags)
   sm.args.flags.1 := $$($(sm._this)._link.libs)
-
+ )\
+$(eval \
   ifneq ($$(sm.var.temp._flag_files),)
     $(sm.args.target) : $$(sm.var.temp._flag_files)
   endif # $(sm.var.temp._flag_files) != ""
 
-  $$(sm-rule-$(sm.var.action)-$($(sm._this).lang))
+  $$(info zzzzz: $$($(sm._this).intermediates))
+
+  ifndef sm.global.has.rule.$(sm.args.target)
+    sm.global.has.rule.$(sm.args.target) := true
+
+    $(sm.args.target) : $(sm.args.prerequisites)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.wrap-rule-commands,\
+	    $(sm.var.command_prompt.$(sm.args.action)),\
+	    $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)))
+  endif # rule not yet be defined
 
   $$(call sm-check-defined, $(sm._this).targets,no targets)
  )
@@ -775,7 +791,7 @@ $(eval \
  )
 endef #sm.fun.copy-headers
 
-##
+## <!!!>
 define sm.fun.make-goal-rules
 $(eval \
   ifneq ($(MAKECMDGOALS),clean)
@@ -902,7 +918,9 @@ endef #sm.fun.compute-terminated-intermediates
 ##     *) $(sm._this).intermediates (append to it)
 ## 
 define sm.fun.make-intermediates-rules
-$(foreach sm.var.source, $(sm.var.sources), $(sm.fun.make-intermediate-rule))
+$(eval sm.var.source.type := local)   $(foreach sm.var.source, $(sm.var.sources),          $(sm.fun.make-intermediate-rule))\
+$(eval sm.var.source.type := external)$(foreach sm.var.source, $(sm.var.sources.external), $(sm.fun.make-intermediate-rule))\
+$(eval sm.var.source.type :=)
 endef #sm.fun.make-intermediates-rules
 
 ## <NEW>
@@ -920,16 +938,179 @@ endef #sm.fun.make-intermediates-rules
 define sm.fun.make-intermediate-rule
 $(call sm-check-not-empty, \
     sm.var.source \
- , 'sm.var.source' must not be empty \
+    sm.var.source.type \
+ , no source or unknown source type \
  )\
 $(eval \
   sm.var.source.suffix := $(suffix $(sm.var.source))
   sm.var.source.lang := $$(sm.var.lang$$(sm.var.source.suffix))
+  ifeq ($(strip $($(sm._this).lang)),)
+    $(sm._this).lang := $$(sm.var.source.lang)
+  endif
  )\
 $(call sm-check-not-empty, \
     sm.var.source.suffix \
     sm.var.source.lang \
- , source "$(sm.var.source)" is strange (lang: "$(sm.var.source.lang)") \
+ , source "$(sm.var.source)" is strange (lang: $(sm.var.source.lang)) \
  )\
-$(info TODO: rule for $(sm.var.source) of $(sm.var.source.lang) lang)
+$(eval \
+  sm.temp._result := $$(sm.fun.make-intermediate-rule-with-user-toolset)
+  sm.temp._result := $$(strip $$(sm.temp._result))
+  ifneq ($$(sm.temp._result),ok)
+    sm.temp._result := $$(sm.fun.make-intermediate-rule-with-common-toolset)
+    sm.temp._result := $$(strip $$(sm.temp._result))
+  endif
+  ifneq ($$(sm.temp._result),ok)
+    $(sm._this).unterminated.strange += $(sm.var.source)
+  endif
+  sm.temp._result :=
+ )
 endef #sm.fun.make-intermediate-rule
+
+sm.var.command_prompt.compile = $(sm.args.lang): $($(sm._this).name) += $(sm.args.sources:$(sm.top)/%=%)
+sm.var.command_prompt.link = $(sm.fun.get-target-type): $($(sm._this).name) -> $(sm.args.target)
+
+## <NEW>
+##
+## RETURN:
+##   *) "ok" on success
+define sm.fun.make-intermediate-rule-with-user-toolset
+$(call sm-check-not-empty, \
+    sm.var.source \
+    sm.var.source.type \
+    sm.var.source.lang \
+ , no source or unknown language or type of source ($(sm.var.lang),$(sm.var.source),$(sm.var.source.type)) \
+ )\
+$(eval \
+  sm.temp._intermediate := $(sm.fun.compute-intermediate-of-$(sm.var.source.type))
+  $(sm._this).intermediates += $$(sm.temp._intermediate)
+ )\
+$(info TODO: draw dependency for $(sm.var.source))\
+$(eval \
+  sm.args.target := $(sm.temp._intermediate)
+  sm.args.sources := $(call sm.fun.compute-source-of-$(sm.var.source.type))
+  sm.args.prerequisites = $$(sm.args.sources)
+  sm.args.flags.0 := $($(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang))
+  sm.args.flags.0 += $($(sm._this).compile.flags-$(sm.var.source))
+  sm.args.flags.1 :=
+  sm.args.flags.2 :=
+ )\
+$(eval \
+  ifndef sm.global.has.rule.$(sm.args.target)
+    sm.global.has.rule.$(sm.args.target) := true
+
+    ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
+      $(sm.args.target) : $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang)
+    endif
+
+    $$(info $(sm.args.target) : $(sm.args.prerequisites))
+
+    $(sm.args.target) : $(sm.args.prerequisites)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.wrap-rule-commands,\
+	    $(sm.var.command_prompt.$(sm.args.action)),\
+	    $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)))
+  endif # rule not yet be defined
+ )\
+$(call sm-check-value,sm.global.has.rule.$(sm.args.target),true)\
+$(if sm.global.has.rule.$(sm.args.target),ok)
+endef #sm.fun.make-intermediate-rule-with-user-toolset
+
+## <NEW>
+##
+## ARGUMENTS:
+##   1) the prompt text for non-verbose build
+##   2) the original shell commands
+## RETURN:
+##   *) 
+define sm.fun.wrap-rule-commands
+$(eval \
+  sm.temp._command_prompt := $(strip $1)
+  sm.temp._command_text := $(filter %,$2)
+ )\
+$(strip $(if $(call is-true,$($(sm._this).verbose)),\
+    $(sm.temp._command_text) \
+ ,\
+    $(sm.temp._command_text) \
+ ))
+endef #sm.fun.wrap-rule-commands
+
+## <NEW>
+##
+## RETURN:
+##   *) "ok" on success
+define sm.fun.compute-intermediate-of-local
+$(strip \
+  $(eval sm.temp._inter_name := $(basename $(sm.var.source)))\
+  $(eval sm.temp._inter_name := $(sm.temp._inter_name:$(sm.out.inter)/%=%))\
+  $(eval sm.temp._inter_name := $(sm.temp._inter_name:$($(sm._this).prefix)%=%))\
+  $(eval sm.temp._inter_name := $(sm.temp._inter_name:$(sm.top)/%=%))\
+  $(eval sm.temp._inter_name := $(subst ..,_,$(sm.temp._inter_name)))\
+  $(eval sm.temp._inter_name := $($(sm._this).name)/$(sm.temp._inter_name))\
+  $(eval sm.temp._inter_name := $($(sm._this).prefix)$(sm.temp._inter_name))\
+  $(eval sm.temp._inter_suff := $(sm.fun.get-toolset-defined-intermediate-suffix))\
+  $(sm.out.inter)/$(sm.temp._inter_name)$(sm.temp._inter_suff))
+endef #sm.fun.compute-intermediate-of-local
+
+## <NEW>
+##
+## RETURN:
+##   *) "ok" on success
+define sm.fun.compute-intermediate-of-external
+$(strip \
+  $(eval sm.temp._inter_name := $(basename $(sm.var.source)))\
+  $(eval sm.temp._inter_name := $(sm.temp._inter_name:$(sm.out.inter)/%=%))\
+  $(eval sm.temp._inter_name := $(sm.temp._inter_name:$($(sm._this).prefix)%=%))\
+  $(eval sm.temp._inter_name := $(sm.temp._inter_name:$(sm.top)/%=%))\
+  $(eval sm.temp._inter_name := $(subst ..,_,$(sm.temp._inter_name)))\
+  $(eval sm.temp._inter_name := $($(sm._this).name)/$(sm.temp._inter_name))\
+  $(eval sm.temp._inter_name := $($(sm._this).prefix)$(sm.temp._inter_name))\
+  $(eval sm.temp._inter_suff := $(sm.fun.get-toolset-defined-intermediate-suffix))\
+  $(sm.out.inter)/$(sm.temp._inter_name)$(sm.temp._inter_suff))
+endef #sm.fun.compute-intermediate-of-external
+
+## <NEW>
+##
+## RETURN:
+##   *) the local source file path related to $(sm.top)
+define sm.fun.compute-source-of-local
+$(strip \
+  $(eval sm.temp._source := $(sm.var.source))\
+  $(eval sm.temp._source := $($(sm._this).dir)/$(sm.temp._source))\
+  $(eval sm.temp._source := $(sm.temp._source:$(sm.top)/%=%))\
+  $(sm.temp._source))
+endef #sm.fun.compute-source-of-local
+
+## <NEW>
+##
+## RETURN:
+##   *) the external source file path, may be related to $(sm.top)
+define sm.fun.compute-source-of-external
+$(strip \
+  $(eval sm.temp._source := $(sm.var.source))\
+  $(eval sm.temp._source := $(sm.temp._source:$(sm.top)/%=%))\
+  $(sm.temp._source))
+endef #sm.fun.compute-source-of-external
+
+## <NEW>
+##
+## INPUT:
+##   *) sm.var.tool
+##   *) sm.var.source.lang
+## RETURN:
+##   *) the toolset defined intermediate suffix
+define sm.fun.get-toolset-defined-intermediate-suffix
+$(call sm-check-not-empty, \
+    sm.var.tool \
+    sm.var.source.lang \
+ , unknown toolset or source file language
+ )$($(sm.var.tool).suffix.intermediate.$(sm.var.source.lang))
+endef #sm.fun.get-toolset-defined-intermediate-suffix
+
+## <NEW>
+##
+## RETURN:
+##   *) "ok" on success
+define sm.fun.make-intermediate-rule-with-common-toolset
+$(info TODO: common: rule external for $(sm.var.source) of $(sm.var.source.lang) lang)
+endef #sm.fun.make-intermediate-rule-with-common-toolset

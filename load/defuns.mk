@@ -618,6 +618,10 @@ $(eval \
     $$(sm._this)._cnum := 0
     include $(sm.dir.buildsys)/build.mk
     $$(sm._this)._already_built := true
+
+    ifdef $$(sm._this).unterminated.strange
+      $$(error strange source:$$($$(sm._this).unterminated.strange))
+    endif
   endif
  )\
 $(eval \
