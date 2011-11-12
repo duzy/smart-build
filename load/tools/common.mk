@@ -23,47 +23,27 @@ sm.tool.common.suffix.LaTeX := .latex
 ## Only if the transformation is possible, will the variable be assigned
 ## to the target languange, the empty value tells that the transformation
 ## is not possible.
-sm.tool.common.lang.intermediate.web.pascal := pascal
-sm.tool.common.lang.intermediate.web.TeX := TeX
-sm.tool.common.lang.intermediate.web.LaTeX := LaTeX
-sm.tool.common.lang.intermediate.cweb.c := c
-sm.tool.common.lang.intermediate.cweb.c++ := c++
-sm.tool.common.lang.intermediate.cweb.TeX := TeX
-sm.tool.common.lang.intermediate.cweb.LaTeX := LaTeX
-sm.tool.common.lang.intermediate.noweb.c := c
-sm.tool.common.lang.intermediate.noweb.c++ := c++
-sm.tool.common.lang.intermediate.noweb.TeX := TeX
-sm.tool.common.lang.intermediate.noweb.LaTeX := LaTeX
-
-## Set target langs for weave, cweave, noweave, etc.
-##
-## For TeX and LaTeX, since they are literal language themselves, the values
-## are not transformed.
-sm.tool.common.lang.intermediate.literal.web := TeX
-sm.tool.common.lang.intermediate.literal.cweb := TeX
-sm.tool.common.lang.intermediate.literal.noweb := TeX
-sm.tool.common.lang.intermediate.literal.TeX := TeX
-sm.tool.common.lang.intermediate.literal.LaTeX := LaTeX
+sm.tool.common.langs.intermediate.web := pascal TeX LaTeX
+sm.tool.common.langs.intermediate.cweb := c c++ TeX LaTeX
+sm.tool.common.langs.intermediate.noweb := c c++ TeX LaTeX
 
 ## known intermediate suffixes list, empty if no intermediates
-sm.tool.common.suffix.intermediate.web := .p
-sm.tool.common.suffix.intermediate.web.c := .p
-sm.tool.common.suffix.intermediate.web.c++ := .p
+sm.tool.common.suffix.intermediate.web = $(error common toolset: undetermined intermediate language)
 sm.tool.common.suffix.intermediate.web.pascal := .p
 sm.tool.common.suffix.intermediate.web.TeX := .tex
 sm.tool.common.suffix.intermediate.web.LaTeX := .latex
-sm.tool.common.suffix.intermediate.cweb = $(error smart: undetermined intermediate form)
+sm.tool.common.suffix.intermediate.cweb = $(error common toolset: undetermined intermediate language)
 sm.tool.common.suffix.intermediate.cweb.c = .c
 sm.tool.common.suffix.intermediate.cweb.c++ = .cpp
 sm.tool.common.suffix.intermediate.cweb.TeX = .tex
 sm.tool.common.suffix.intermediate.cweb.LaTeX = .latex
-sm.tool.common.suffix.intermediate.noweb = $(error smart: undetermined intermediate form)
+sm.tool.common.suffix.intermediate.noweb = $(error common toolset: undetermined intermediate language)
 sm.tool.common.suffix.intermediate.noweb.c := .c
 sm.tool.common.suffix.intermediate.noweb.c++ := .cpp
 sm.tool.common.suffix.intermediate.noweb.TeX := .tex
 sm.tool.common.suffix.intermediate.noweb.LaTeX := .latex
-#sm.tool.common.suffix.intermediate.TeX := .dvi
-#sm.tool.common.suffix.intermediate.LaTeX := .dvi
+sm.tool.common.suffix.intermediate.TeX := .dvi
+sm.tool.common.suffix.intermediate.LaTeX := .dvi
 
 ##################################################
 ## common commands

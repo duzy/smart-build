@@ -81,7 +81,6 @@ endif ## $(sm._this).type != depends
 
 ## Computes the terminated intermediates.
 $(call sm.fun.compute-terminated-intermediates)
-#$(warning intermediates:$($(sm._this).intermediates))
 
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $($(sm._this).sources.unknown)),),\
@@ -92,7 +91,6 @@ sm.var.temp._should_make_targets := \
    ,true)
 ifeq ($(sm.var.temp._should_make_targets),true)
   $(call sm.fun.make-module-targets)
-  #$(warning $($(sm._this).name): $($(sm._this).targets))
 endif #$(sm.var.temp._should_make_targets) == true
 
 ifneq ($($(sm._this)._intermediates_only),true)

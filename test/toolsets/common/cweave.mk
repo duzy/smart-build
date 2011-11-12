@@ -2,6 +2,7 @@
 $(call sm-new-module, toolset-common-cweave, exe, gcc)
 
 sm.this.lang := c
+sm.this.langs := c TeX
 sm.this.sources := cweave.w common.w prod.w
 
 $(sm-build-this)

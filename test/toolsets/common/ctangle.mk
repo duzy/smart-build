@@ -3,6 +3,7 @@
 $(call sm-new-module, toolset-common-ctangle, exe, gcc)
 
 sm.this.lang := c
+sm.this.langs := c TeX
 sm.this.sources := ctangle.w common.w cwebman.tex
 
 $(sm-build-this)
