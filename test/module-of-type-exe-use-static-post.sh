@@ -1,6 +1,6 @@
 # -*- bash -*-
-test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/main.c.o
-test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/main.c.d
+test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/module-of-type-exe-use-static/main.c.o
+test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/module-of-type-exe-use-static/main.c.d
 test-check-file ${BASH_SOURCE}:${LINENO} $OUT_BIN/module-of-type-exe-use-static$EXE
 
 out=`$OUT_BIN/module-of-type-exe-use-static$EXE`
