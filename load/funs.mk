@@ -691,8 +691,8 @@ $(if $(call equal,$($(sm._this).type),t), $(eval \
  ))
 endef #sm.fun.make-test-rules
 
-$(call sm-check-not-empty, sm.tool.common.rm)
-$(call sm-check-not-empty, sm.tool.common.rmdir)
+#$(call sm-check-not-empty, sm.tool.common.rm)
+#$(call sm-check-not-empty, sm.tool.common.rmdir)
 ## <!!!>
 define sm.fun.make-clean-rules
 $(if $(call equal,$($(sm._this).type),depends), $(eval \
