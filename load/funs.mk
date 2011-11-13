@@ -157,16 +157,24 @@ endef #sm.fun.compute-link-flags
 
 ## <!!!>
 define sm.fun.compute-link-intermediates
-${eval \
+$(eval \
+  sm.temp._intermediates_filters := $(foreach _,$($(sm.var.tool).langs),%$($(sm.var.tool).suffix.intermediate.$_))
+  ifndef sm.temp._intermediates_filters
+    sm.temp._intermediates_filters := %
+  else
+    $$(call sm-remove-duplicates, sm.temp._intermediates_filters)
+  endif
+ )\
+$(eval \
   ifeq ($($(sm._this)._link.intermediates.computed),)
     $(sm._this)._link.intermediates.computed := true
-    $(sm._this)._link.intermediates := $(filter %, $($(sm._this).intermediates))
+    $(sm._this)._link.intermediates := $(filter $(sm.temp._intermediates_filters), $($(sm._this).intermediates))
 
     ifeq ($(call is-true,$($(sm._this).link.intermediates.infile)),true)
       $(call sm.code.shift-flags-to-file,_link.intermediates)
     endif
   endif
- }
+ )
 endef #sm.fun.compute-link-intermediates
 
 ## <!!!>
@@ -550,6 +558,15 @@ $(eval \
       $(sm._this)._link.intermediates			\
       $(sm._this)._link.libs				\
    )
+
+  sm.temp._strange_intermediates := $$(filter-out $$(sm.temp._intermediates_filters),$$($(sm._this).intermediates))
+  ifneq ($$(sm.temp._strange_intermediates),)
+    $$(warning strange intermediates: '$$(sm.temp._strange_intermediates)')
+  endif
+
+  ifndef $(sm._this)._link.intermediates
+    $$(error no intermediates for targets '$$($(sm._this).targets)')
+  endif
 
   sm.var.temp._flag_file_prefix := $($(sm._this).out.tmp)/link
   sm.var.temp._flag_files :=
