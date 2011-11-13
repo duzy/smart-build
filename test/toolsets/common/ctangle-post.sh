@@ -1,9 +1,11 @@
 # -*- bash -*-
 test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/toolsets/common/toolset-common-ctangle/ctangle.w.c
+test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/toolsets/common/toolset-common-ctangle/ctangle.w.c.o
 test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/toolsets/common/toolset-common-ctangle/ctangle.w.tex
 test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/toolsets/common/toolset-common-ctangle/ctangle.w.idx
 test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/toolsets/common/toolset-common-ctangle/ctangle.w.scn
 test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/toolsets/common/toolset-common-ctangle/common.w.c
+test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/toolsets/common/toolset-common-ctangle/common.w.c.o
 test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/toolsets/common/toolset-common-ctangle/common.w.tex
 test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/toolsets/common/toolset-common-ctangle/common.w.idx
 test-check-file ${BASH_SOURCE}:${LINENO} $OUT_INTERS/toolsets/common/toolset-common-ctangle/common.w.scn
