@@ -1,6 +1,7 @@
 #!/bin/bash
 TOP=.
 OUT_INC=out/include
+OUT_DOC=out/documents
 OUT_BIN=out/gcc/debug/bin
 OUT_LIB=out/gcc/debug/lib
 OUT_TEMP=out/gcc/debug/temp
@@ -76,6 +77,6 @@ function test-load-check-scripts
 
 test-load-precondition-scripts .
 
-rm -rf out && make -f main.mk
+rm -rf out && make -f main.mk && make -f main.mk doc
 
 test-load-check-scripts $TOP
