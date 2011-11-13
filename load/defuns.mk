@@ -538,9 +538,8 @@ $(foreach v, $(sm.temp._files),\
      sm.this.depends.copyfiles += $(sm.var.temp._d)/$(notdir $v)
      $(sm.var.temp._d)/$(notdir $v): $(sm.this.dir:$(sm.top)/%=%)/$v
 	@( echo smart: copy: $$@ ) &&\
-	 ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@)) &&\
-	 ($(sm.tool.common.CP) -u $$< $$@) &&\
-	$(if $(sm.temp._mode), (chmod +x $$@), true)
+	 ([[ -d $$(dir $$@) ]] || mkdir -p $$(dir $$@)) &&\
+	 (cp -u $$< $$@) && $(if $(sm.temp._mode), (chmod +x $$@), true)
     ))
 endef #sm-copy-files-internal
 #####
