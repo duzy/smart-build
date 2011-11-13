@@ -919,7 +919,7 @@ $(eval \
   sm.temp._intermediates_unruled = $$(filter-out $$(sm.temp._intermediates_ruled),$$(sm.temp._intermediates))
   sm.temp._intermediates_ruled :=
  )\
-$(TODO draw dependency for $(sm.var.source))\
+$(call sm.fun.draw-intermediates-dependency)\
 $(foreach sm.temp._intermediate, $(sm.temp._intermediates),\
     $(if $(call equal,$(strip $(sm.fun.make-rule-for-intermediate)),ok),\
         $(eval sm.temp._intermediates_ruled += $(sm.temp._intermediate))\
@@ -928,7 +928,7 @@ $(foreach sm.temp._intermediate, $(sm.temp._intermediates),\
      )\
  )\
 $(if $(sm.temp._intermediates_ruled),ok,\
-  $(no-info smart:0: unruled: $(sm.temp._intermediates_unruled)))
+    $(no-info smart:0: unruled: $(sm.temp._intermediates_unruled)))
 endef #sm.fun.make-intermediate-rule-with-the-toolset
 
 ## <NEW>
@@ -1027,6 +1027,7 @@ define sm.fun.compute-intermediates-of-external
 $(strip \
   $(eval sm.temp._inter_name := $(basename $(sm.var.source)))\
   $(eval sm.temp._inter_name := $(sm.temp._inter_name:$(sm.out.inter)/%=%))\
+  $(eval sm.temp._inter_name := $(sm.temp._inter_name:$($(sm._this).dir)%=%))\
   $(eval sm.temp._inter_name := $(sm.temp._inter_name:$($(sm._this).prefix)%=%))\
   $(eval sm.temp._inter_name := $(sm.temp._inter_name:$(sm.top)/%=%))\
   $(eval sm.temp._inter_name := $(subst ..,_,$(sm.temp._inter_name)))\
@@ -1074,17 +1075,17 @@ $(strip \
   $(foreach _, $(sm.temp._inter_langs),\
     $(eval \
       sm.temp._inter_suff := $($(sm.var.tool).suffix.intermediate.$_)
-      ifdef sm.temp._inter_suff
-        ## combined with the source suffix to avoid conflicts like
-        ## foo.go, foo.c, foo.cpp, they both have ".o" suffix
-        sm.temp._inter_suff := $(suffix $(sm.var.source))$$(sm.temp._inter_suff)
-      else
+      ifndef sm.temp._inter_suff
         ## this conversion of one language into another,
         ## e.g. "foo.w" -> "foo.c", "foo.tex"
         sm.temp._inter_suff := $($(sm.var.tool).suffix.intermediate.$(sm.var.source.lang).$_)
       endif
       ifndef sm.temp._inter_suff
         $$(no-info smart:0: no intermediate suffix for language '$(sm.var.source.lang) -> $_' defined by toolset '$(sm.var.tool:sm.tool.%=%)')
+      else
+        ## combined with the source suffix to avoid conflicts like
+        ## foo.go, foo.c, foo.cpp, they both have ".o" suffix
+        sm.temp._inter_suff := $(suffix $(sm.var.source))$$(sm.temp._inter_suff)
       endif
      )\
     $(if $(sm.temp._inter_suff),\
@@ -1123,3 +1124,14 @@ $(strip \
    )\
  )
 endef #sm.fun.compute-intermediates-langs
+
+## <NEW>
+##
+## INPUT:
+##   *) sm.var.source
+##   *) sm.temp._intermediates
+## RETURN:
+##   *) 
+define sm.fun.draw-intermediates-dependency
+$(info TODO: draw dependency for $(sm.var.source))
+endef #sm.fun.draw-intermediates-dependency

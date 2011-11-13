@@ -42,8 +42,8 @@ sm.tool.common.suffix.intermediate.noweb.c := .c
 sm.tool.common.suffix.intermediate.noweb.c++ := .cpp
 sm.tool.common.suffix.intermediate.noweb.TeX := .tex
 sm.tool.common.suffix.intermediate.noweb.LaTeX := .latex
-sm.tool.common.suffix.intermediate.TeX := .dvi
-sm.tool.common.suffix.intermediate.LaTeX := .dvi
+sm.tool.common.suffix.intermediate.TeX = $(or $(sm.args.docs_format),.dvi)
+sm.tool.common.suffix.intermediate.LaTeX = $(or $(sm.args.docs_format),.dvi)
 
 ##################################################
 ## common commands
@@ -136,8 +136,9 @@ cd $(dir $(word 1,$(sm.args.sources))) && \
 $1 -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources))) && \
 rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).log && \
 rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).toc && \
-F=$$$$PWD/$(basename $(notdir $(word 1,$(sm.args.sources)))).$2 && \
-cd - && mv $$$$F $(dir $(sm.args.target))
+cd - && \
+mv $(dir $(word 1,$(sm.args.sources)))$(basename $(notdir $(word 1,$(sm.args.sources)))).$2 \
+   $(dir $(sm.args.target))
 endef #sm.tool.common.compile.TeX-LaTeX.private
 
 ##
