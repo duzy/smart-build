@@ -84,7 +84,7 @@ endif
 #   sm.toolset := gcc
 # endif
 
-include $(sm.dir.buildsys)/tools/common.mk
+-include $(sm.dir.buildsys)/tools/common.mk
 
 sm.log.enabled :=
 sm.log.filename :=
@@ -112,52 +112,5 @@ sm.global.hooks.build :=
 
 ###
 sm.global.using :=
-## NOTE: sm.module.properties should not include .using_list
-sm.module.properties__deprecated := \
-  .dir \
-  .name \
-  .type \
-  .lang \
-  .using \
-  .toolset \
-  .suffix \
-  .targets \
-  .verbose \
-  .makefile \
-  .headers.* \
-  .headers! \
-  .headers \
-  .sources \
-  .sources.external \
-  .sources.common \
-  .intermediates \
-  .depends \
-  .depends.copyfiles \
-  .docs.format \
-  .defines \
-  .includes \
-  .compile.flags \
-  .compile.flags.infile \
-  .link.flags \
-  .link.flags.infile \
-  .link.intermediates.infile \
-  .libdirs \
-  .libs \
-  .libs.infile \
-  .clean-steps \
-  .gen_deps \
-  .is_external \
-  .export.includes \
-  .export.defines \
-  .export.compile.flags \
-  .export.link.flags \
-  .export.libdirs \
-  .export.libs \
-  .export.use \
-
-# $(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.common.langs)")
-# $(warning TODO: props ".sources.$$(sm.var.temp._lang)" according to "$$(sm.tool.XXX.langs)")
-
-sm.module.properties = $(error sm.module.properties is deprecated)
 
 sm.var.Q := @
