@@ -691,13 +691,11 @@ $(if $(call equal,$($(sm._this).type),t), $(eval \
  ))
 endef #sm.fun.make-test-rules
 
-#$(call sm-check-not-empty, sm.tool.common.rm)
-#$(call sm-check-not-empty, sm.tool.common.rmdir)
 ## <!!!>
 define sm.fun.make-clean-rules
 $(if $(call equal,$($(sm._this).type),depends), $(eval \
     clean-$($(sm._this).name):
-	$$(call sm.tool.common.rm, $$($(sm._this).depends) $$($(sm._this).depends.copyfiles))
+	rm -vf $$($(sm._this).depends) $$($(sm._this).depends.copyfiles)
   )\
  ,$(eval \
   clean-$($(sm._this).name): \
@@ -718,22 +716,22 @@ $(if $(call equal,$($(sm._this).type),depends), $(eval \
 
   ifeq ($(call is-true,$($(sm._this).verbose)),true)
     clean-$($(sm._this).name)-flags:
-	$$(call sm.tool.common.rm,$$($(sm._this).flag_files))
+	rm -f $$($(sm._this).flag_files)
     clean-$($(sm._this).name)-targets:
-	$$(call sm.tool.common.rm,$$($(sm._this).targets))
+	rm -f $$($(sm._this).targets)
     clean-$($(sm._this).name)-intermediates:
-	$$(call sm.tool.common.rm,$$($(sm._this).intermediates))
+	rm -f $$($(sm._this).intermediates)
     clean-$($(sm._this).name)-depends:
-	$$(call sm.tool.common.rm,$$($(sm._this).depends))
+	rm -f $$($(sm._this).depends)
   else
     clean-$($(sm._this).name)-flags:
-	@$$(info remove:$($(sm._this).targets))$$(call sm.tool.common.rm,$$($(sm._this).flag_files))
+	@$$(info remove:$($(sm._this).targets))(rm -f $$($(sm._this).flag_files))
     clean-$($(sm._this).name)-targets:
-	@$$(info remove:$($(sm._this).targets))$$(call sm.tool.common.rm,$$($(sm._this).targets))
+	@$$(info remove:$($(sm._this).targets))(rm -f $$($(sm._this).targets))
     clean-$($(sm._this).name)-intermediates:
-	@$$(info remove:$($(sm._this).intermediates))$$(call sm.tool.common.rm,$$($(sm._this).intermediates))
+	@$$(info remove:$($(sm._this).intermediates))(rm -f $$($(sm._this).intermediates))
     clean-$($(sm._this).name)-depends:
-	@$$(info remove:$($(sm._this).depends))$$(call sm.tool.common.rm,$$($(sm._this).depends))
+	@$$(info remove:$($(sm._this).depends))(rm -f $$($(sm._this).depends))
   endif
   )\
  )
