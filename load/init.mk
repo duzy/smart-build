@@ -84,7 +84,7 @@ endif
 #   sm.toolset := gcc
 # endif
 
-include $(sm.dir.buildsys)/tools/common.mk
+-include $(sm.dir.buildsys)/tools/common.mk
 
 sm.log.enabled :=
 sm.log.filename :=
