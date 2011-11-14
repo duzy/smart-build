@@ -877,7 +877,6 @@ $(eval \
   endif
   sm.args.action  := compile
  )\
-$(info sm.args.lang: $(sm.args.lang), $(notdir $(sm.var.source)), $(notdir $(sm.temp._intermediate)))\
 $(if $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)),\
  $(TODO invoke sm.fun.compute-compile-flags somewhere else)\
  $(call sm.fun.compute-compile-flags)\
@@ -1027,7 +1026,6 @@ define sm.fun.compute-intermediates
 $(strip \
   $(call sm-check-not-empty, sm.temp._inter_name, unknown intermediate name)\
   $(call sm.fun.compute-intermediates-langs)\
-$(info intermediate-langs: $(sm.var.source) ($(sm.var.source.lang)) -> $(sm.temp._inter_langs))\
   $(foreach _, $(or $(sm.temp._inter_langs),$(sm.var.source.lang)),\
     $(eval \
       sm.temp._inter_suff :=
@@ -1058,7 +1056,7 @@ $(info intermediate-langs: $(sm.var.source) ($(sm.var.source.lang)) -> $(sm.temp
       endif
      )\
     $(if $(sm.temp._inter_suff),\
-        $(sm.out.inter)/$(sm.temp._inter_name)$(sm.temp._inter_suff))\
+        $(subst //,/,$(sm.out.inter)/$(sm.temp._inter_name)$(sm.temp._inter_suff)))\
    ))
 endef #sm.fun.compute-intermediates
 
