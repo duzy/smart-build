@@ -321,93 +321,6 @@ $(strip $(if $(call equal,$($(sm._this).verbose),true),$2,\
 endef #sm.fun.make-rule-compile-common-command
 
 ##
-define sm.fun.make-rule-compile-common
-$(error deprecated)\
- $(call sm-check-not-empty,\
-     sm.var.lang \
-     sm.var.source \
-  )\
- $(eval ## Compute output file and literal output languages
-   ## target output file language, e.g. Parscal, C, C++, TeX, etc.
-   sm.var.temp._output_lang := $(sm.tool.common.lang.intermediate.$(sm.var.lang).$($(sm._this).lang))
-   ## literal output file language, e.g. TeX, LaTeX, etc.
-   sm.var.temp._literal_lang := $(sm.tool.common.lang.intermediate.literal.$(sm.var.lang))
-  )\
- $(eval sm.var.temp._intermediate := $(sm.fun.compute-intermediate.common))\
- $(if $(and $(call not-equal,$(sm.var.temp._literal_lang),$(sm.var.lang)),
-            $(sm.var.temp._output_lang)),\
-  $(eval \
-     ## args for sm.tool.common.compile.*
-     sm.args.lang = $($(sm._this).lang)
-     sm.args.target := $(sm.var.temp._intermediate)
-     sm.args.sources := $($(sm._this).prefix)$(sm.var.source)
-     sm.args.prerequisites = $($(sm._this).prefix)$(sm.args.sources)
-   )\
-  $(eval \
-     ## If $(sm.var.source) is possible to be transformed into another lang.
-     $(sm._this).sources.external.$(sm.var.temp._output_lang) += $(sm.args.target)
-     $(sm._this).sources.has.$(sm.var.temp._output_lang) := true
-     ## Make rule for generating intermediate file (e.g. cweb to c compilation)
-     ifeq ($(sm.global.ruled.$(sm.args.target)),)
-       sm.global.ruled.$(sm.args.target) := true
-       $(sm.args.target) : $(sm.args.sources)
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.make-rule-compile-common-command,$(sm.var.lang),\
-            $(filter %, $(sm.tool.common.compile.$(sm.var.lang)))) \
-	|| ( rm -f $$@ && false )
-     endif
-   ))\
- $(if $(sm.var.temp._literal_lang),\
-  $(if $(call not-equal,$(sm.var.temp._literal_lang),$(sm.var.lang)),\
-    $(eval \
-      ## If source can have literal(.tex) output...
-      # TODO: should use sm.args.targets to including .tex, .idx, .scn files
-      sm.args.target := $(basename $(sm.var.temp._intermediate))$(sm.tool.common.suffix.intermediate.$(sm.var.lang).$(sm.var.temp._literal_lang))
-      sm.args.sources := $($(sm._this).prefix)$(sm.var.source)
-      sm.args.prerequisites = $($(sm._this).prefix)$(sm.args.sources)
-     )\
-   $(eval ## compilate rule for documentation sources(.tex files)
-      #TODO: rules for producing .tex sources ($(sm.var.temp._literal_lang))
-      $(sm._this).sources.external.$(sm.var.temp._literal_lang) += $(sm.args.target)
-      $(sm._this).sources.has.$(sm.var.temp._literal_lang) := true
-      ifeq ($$(filter $(sm.var.temp._literal_lang),$$(sm.var.langs) $$(sm.var.langs.common) $$(sm.var.langs.common.extra)),)
-        sm.var.langs.common.extra += $(sm.var.temp._literal_lang)
-      endif
-      ifeq ($(sm.global.ruled.$(sm.args.target)),)
-        sm.global.ruled.$(sm.args.target) := true
-       $(sm.args.target) : $(sm.args.sources)
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.make-rule-compile-common-command,$(sm.var.lang),\
-            $(filter %, $(sm.tool.common.compile.literal.$(sm.var.lang))))
-      endif
-     ))\
-  $(if $(call equal,$(sm.var.temp._literal_lang),$(sm.var.lang)),\
-    $(eval \
-      sm.args.target := $(sm.out.doc)/$(notdir $(basename $(sm.var.source)))$(sm.args.docs_format)
-      ifeq ($1,external)
-        sm.args.sources := $(sm.var.source)
-        sm.args.prerequisites = $(sm.args.sources)
-      else
-        sm.args.sources := $($(sm._this).prefix)$(sm.var.source)
-        sm.args.prerequisites = $($(sm._this).prefix)$(sm.args.sources)
-      endif
-     )\
-    $(eval # rules for producing .dvi/.pdf(depends on sm.args.docs_format) files
-      ifneq ($(sm.global.ruled.$(sm.args.target)),true)
-        sm.global.ruled.$(sm.args.target) := true
-        $(sm._this).documents += $(sm.args.target)
-       $(sm.args.target) : $(sm.args.sources)
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.make-rule-compile-common-command,$(sm.var.lang),\
-            $(filter %, $(sm.tool.common.compile.$(sm.var.temp._literal_lang))))
-	@[[ -f $$@ ]] || (echo "ERROR: $(sm.var.lang): no document output: $$@" && true)
-      endif
-     )\
-   )\
-  )
-endef #sm.fun.make-rule-compile-common
-
-##
 ## Make object rules, eg. $(call sm.fun.make-rules-compile,c++)
 ##
 ## Computes sources of a specific languange via sm.var.temp._temp and generate
@@ -955,18 +868,21 @@ endef #sm.fun.make-intermediate-rule-with-the-toolset
 ##   *) 'ok' on success
 define sm.fun.make-rule-for-intermediate
 $(eval \
+  ifeq ($(sm.fun.is-terminated-intermediate),true)
+    sm.temp._inter_list := $(sm._this).intermediates
+    sm.args.lang    := $(sm.var.source.lang)
+  else
+    sm.temp._inter_list := $(sm._this).unterminated.external
+    sm.args.lang    := $$(sm.temp._inter_lang$$(suffix $(sm.temp._intermediate)))
+  endif
   sm.args.action  := compile
-  sm.args.lang    := $(sm.var.source.lang)
  )\
+$(info sm.args.lang: $(sm.args.lang), $(notdir $(sm.var.source)), $(notdir $(sm.temp._intermediate)))\
 $(if $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)),\
  $(TODO invoke sm.fun.compute-compile-flags somewhere else)\
  $(call sm.fun.compute-compile-flags)\
  $(eval \
-   ifeq ($(sm.fun.is-terminated-intermediate),true)
-     $(sm._this).intermediates += $(sm.temp._intermediate)
-   else
-     $(sm._this).unterminated.external += $(sm.temp._intermediate)
-   endif
+   $(sm.temp._inter_list) += $(sm.temp._intermediate)
 
    sm.args.target  := $(sm.temp._intermediate)
    sm.args.sources := $(call sm.fun.compute-source-of-$(sm.var.source.type))
@@ -1111,16 +1027,23 @@ define sm.fun.compute-intermediates
 $(strip \
   $(call sm-check-not-empty, sm.temp._inter_name, unknown intermediate name)\
   $(call sm.fun.compute-intermediates-langs)\
-  $(call sm-check-not-empty, sm.temp._inter_langs,unknown intermediate language for '$(sm.var.source)')\
-  $(foreach _, $(sm.temp._inter_langs),\
+$(info intermediate-langs: $(sm.var.source) ($(sm.var.source.lang)) -> $(sm.temp._inter_langs))\
+  $(foreach _, $(or $(sm.temp._inter_langs),$(sm.var.source.lang)),\
     $(eval \
-      sm.temp._inter_unterminated := false
-      sm.temp._inter_suff := $($(sm.var.tool).suffix.intermediate.$_)
-      ifndef sm.temp._inter_suff
+      sm.temp._inter_suff :=
+      sm.temp._inter_unterminated :=
+
+      ifdef sm.temp._inter_langs
         ## this conversion of one language into another,
         ## e.g. "foo.w" -> "foo.c", "foo.tex"
         sm.temp._inter_suff := $($(sm.var.tool).suffix.intermediate.$(sm.var.source.lang).$_)
+        sm.temp._inter_lang$$(sm.temp._inter_suff) := $(sm.var.source.lang).$_
         sm.temp._inter_unterminated := true
+      else
+        ## this terminated intermediate
+        sm.temp._inter_suff := $($(sm.var.tool).suffix.intermediate.$_)
+        sm.temp._inter_lang$$(sm.temp._inter_suff) :=
+        sm.temp._inter_unterminated := false
       endif
 
       sm.temp._inter_unterminated$$(sm.temp._inter_suff) := $$(sm.temp._inter_unterminated)
@@ -1164,8 +1087,6 @@ $(strip \
         $$(info smart:0: but none of these languages are selected (via 'sm.this.langs'))
         $$(error no target language selected for '$(sm.var.source.lang)' ($(sm.var.source)))
       endif
-    else
-      sm.temp._inter_langs := $(sm.var.source.lang)
     endif
    )\
  )
