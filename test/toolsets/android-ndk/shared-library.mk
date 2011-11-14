@@ -5,6 +5,8 @@ $(call test-check-undefined,TOOLCHAIN_PREFIX)
 #$(call sm-new-module, native-activity, shared, android-ndk:armeabi:android-9)
 #$(call sm-new-module, native-activity, shared, android-ndk armeabi android-9)
 $(call sm-new-module, native-activity, shared, android-ndk ABI=armeabi PLATFORM=android-9)
+$(call test-check-defined,NDK_ROOT)
+$(call test-check-defined,TOOLCHAIN_PREFIX)
 
 ## TODO: get rid of the usage of android-ndk-import-module
 
