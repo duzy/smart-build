@@ -1,2 +1,2 @@
 # -*- bash -*-
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/test/toolsets/android-ndk/na.c
+test-check-file ${BASH_SOURCE}:${LINENO} $TOP/toolsets/android-ndk/na.c
