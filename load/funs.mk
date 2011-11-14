@@ -595,10 +595,10 @@ $(eval \
   sm.var.source.suffix := $(suffix $(sm.var.source))
   sm.var.source.lang := $$(sm.var.lang$$(sm.var.source.suffix))
 
-  $(sm._this).lang := $(strip $($(sm._this).lang))
-  ifndef $(sm._this).lang
-    $(sm._this).lang := $$(sm.var.source.lang)
-  endif
+  ## Use a foreach on $(sm.var.tool).langs to keep the orders
+  $(sm._this).langs := $$(foreach _, $($(sm.var.tool).langs),$$(filter $$_,$$(sm.var.source.lang) $($(sm._this).langs))) $($(sm._this).langs)
+  $$(call sm-remove-duplicates, $(sm._this).langs)
+  $(sm._this).lang := $$(firstword $$($(sm._this).langs))
  )\
 $(call sm-check-not-empty, \
     sm.var.source.suffix \
