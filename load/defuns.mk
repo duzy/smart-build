@@ -477,7 +477,9 @@ define sm-compile-sources-internal
         $(sm._this)._intermediates_only := true
         include $(sm.dir.buildsys)/rules.mk
         $(sm._this)._intermediates_only :=
-        sm.this.intermediates := $$($(sm._this).intermediates)
+        #sm.this.intermediates := $$($(sm._this).intermediates)
+        #sm.this.lang := $$($(sm._this).lang)
+        $$(call sm-clone-module, $(sm._this), sm.this)
       endif
      )\
    ,$(error smart: No sources defined))

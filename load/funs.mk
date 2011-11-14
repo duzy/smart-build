@@ -594,7 +594,9 @@ $(call sm-check-not-empty, \
 $(eval \
   sm.var.source.suffix := $(suffix $(sm.var.source))
   sm.var.source.lang := $$(sm.var.lang$$(sm.var.source.suffix))
-  ifeq ($(strip $($(sm._this).lang)),)
+
+  $(sm._this).lang := $(strip $($(sm._this).lang))
+  ifndef $(sm._this).lang
     $(sm._this).lang := $$(sm.var.source.lang)
   endif
  )\
@@ -672,7 +674,8 @@ $(eval \
 $(if $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)),\
  $(TODO invoke sm.fun.compute-compile-flags somewhere else)\
  $(call sm.fun.compute-compile-flags)\
- $(call sm.fun.draw-intermediate-dependency)\
+ $(if $(call is-true,$($(sm._this).gen_deps)),\
+    $(call sm.fun.draw-intermediate-dependency))\
  $(eval \
    $(sm.temp._inter_list) += $(sm.temp._intermediate)
 

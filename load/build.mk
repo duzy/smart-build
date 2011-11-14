@@ -48,14 +48,14 @@ ifneq ($(filter $($(sm._this).type),$(sm.global.module_types)),)
     sm.this.sources.has.$(sm.var.lang).t = $($(sm._this).sources.has.$(sm.var.lang).t)
   endif
 
-  sm.this.lang             = $(sm._this).lang
-  sm.this.intermediates    = $($(sm._this).intermediates)
-  sm.this.inters           = $($(sm._this).intermediates)
-  sm.this.depends         := $($(sm._this).depends)
-  sm.this.targets         := $($(sm._this).targets)
-  sm.this.documents       := $($(sm._this).documents)
-  sm.this.sources.common  := $($(sm._this).sources.common)
-  sm.this.sources.unknown := $($(sm._this).sources.unknown)
+  sm.this.lang              = $($(sm._this).lang)
+  sm.this.intermediates     = $($(sm._this).intermediates)
+  sm.this.inters            = $($(sm._this).intermediates)
+  sm.this.depends          := $($(sm._this).depends)
+  sm.this.targets          := $($(sm._this).targets)
+  sm.this.documents        := $($(sm._this).documents)
+  sm.this.sources.common   := $($(sm._this).sources.common)
+  sm.this.sources.unknown  := $($(sm._this).sources.unknown)
   sm.this.depends.copyfiles = $($(sm._this).depends.copyfiles)
 
   $(sm._this)._already_built := true
