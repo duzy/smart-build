@@ -65,21 +65,23 @@ sm.tool.common.SED = sed
 ##
 ##
 ##
-define sm.tool.common.compile.web.private
+define sm.tool.common.compile.web.pascal
 tangle $(sm.args.sources) && \
 mv $(word 1,$(sm.args.sources:%.web=%.p)) $(sm.args.target)
-endef #sm.tool.common.compile.web.private
+endef #sm.tool.common.compile.web.pascal
 
 ## Literal source generation(for documentation)
-define sm.tool.common.compile.literal.web.private
+define sm.tool.common.compile.web.TeX
 weave $(sm.args.sources) && \
 mv $(word 1,$(sm.args.sources:%.web=%.p)) $(sm.args.target)
-endef #sm.tool.common.compile.literal.web.private
+endef #sm.tool.common.compile.web.TeX
+
+sm.tool.common.compile.web.LaTeX = $(sm.tool.common.compile.web.TeX)
 
 ##
 ##
 ## xxx.w -> xxx.c or xxx.cpp
-define sm.tool.common.compile.cweb.private
+define sm.tool.common.compile.cweb.c
 cd $(dir $(word 1,$(sm.args.sources))) && \
 ctangle \
   $(notdir $(word 1,$(sm.args.sources))) \
@@ -87,12 +89,12 @@ ctangle \
   $(notdir $(sm.args.target)) && cd - && \
 mv $(dir $(word 1,$(sm.args.sources)))/$(notdir $(sm.args.target)) \
    $(sm.args.target)
-endef #sm.tool.common.compile.cweb.private
+endef #sm.tool.common.compile.cweb.c
 
 ##
 ##
 ## xxx.w -> xxx.tex
-define sm.tool.common.compile.literal.cweb.private
+define sm.tool.common.compile.cweb.TeX
 cd $(dir $(word 1,$(sm.args.sources))) && \
 cweave \
   $(notdir $(word 1,$(sm.args.sources))) \
@@ -103,7 +105,10 @@ mv \
   $(dir $(word 1,$(sm.args.sources)))$(basename $(notdir $(sm.args.target))).idx \
   $(dir $(word 1,$(sm.args.sources)))$(basename $(notdir $(sm.args.target))).scn \
   $(dir $(sm.args.target))
-endef #sm.tool.common.compile.literal.cweb.private
+endef #sm.tool.common.compile.cweb.TeX
+
+sm.tool.common.compile.cweb.c++ = $(sm.tool.common.compile.cweb.c)
+sm.tool.common.compile.cweb.LaTeX = $(sm.tool.common.compile.cweb.TeX)
 
 ##
 ##
@@ -119,19 +124,9 @@ noweave -$(sm.args.lang) $(sm.args.sources) && \
 mv $(word 1,$(sm.args.sources:%.nw=%.p)) $(sm.args.target)
 endef #sm.tool.common.compile.noweb.private
 
-sm.tool.common.compile       = $(call sm.tool.common.compile.$(sm.args.lang).private)
-sm.tool.common.compile.web   = $(eval sm.args.lang:=web)$(sm.tool.common.compile)
-sm.tool.common.compile.cweb  = $(eval sm.args.lang:=cweb)$(sm.tool.common.compile)
-sm.tool.common.compile.noweb = $(eval sm.args.lang:=noweb)$(sm.tool.common.compile)
-
-# sm.tool.common.compile.literal       = $(call sm.tool.common.compile.literal.$(sm.args.lang).private)
-# sm.tool.common.compile.literal.web   = $(eval sm.args.lang:=web)$(sm.tool.common.compile.literal)
-# sm.tool.common.compile.literal.cweb  = $(eval sm.args.lang:=cweb)$(sm.tool.common.compile.literal)
-# sm.tool.common.compile.literal.noweb = $(eval sm.args.lang:=noweb)$(sm.tool.common.compile.literal)
-sm.tool.common.compile.literal       = $(error deprecated)
-sm.tool.common.compile.literal.web   = $(error deprecated)
-sm.tool.common.compile.literal.cweb  = $(error deprecated)
-sm.tool.common.compile.literal.noweb = $(error deprecated)
+sm.tool.common.compile.web   = $(error undetermined intermediate language for web)
+sm.tool.common.compile.cweb  = $(error undetermined intermediate language for cweb)
+sm.tool.common.compile.noweb = $(error undetermined intermediate language for noweb)
 
 ##################################################
 
@@ -175,27 +170,33 @@ sm.tool.common.compile.LaTeX = $(sm.tool.common.compile.LaTeX$(sm.args.docs_form
 ##################################################
 
 define sm.tool.common.rm
+$(error deprecated sm.tool.common.rm)\
 $(if $1,rm -f $1)
 endef #sm.tool.common.rm
 
 define sm.tool.common.rmdir
+$(error deprecated sm.tool.common.rmdir)\
 $(if $1,rm -rf $1)
 endef #sm.tool.common.rmdir
 
 define sm.tool.common.mkdir
+$(error deprecated sm.tool.common.mkdir)\
 $(if $1,mkdir -p $1)
 endef #sm.tool.common.mkdir
 
 define sm.tool.common.cp
+$(error deprecated sm.tool.common.cp)\
 $(if $(and $1,$2),cp $1 $2,\
   $(error smart: copy command requires more than two args))
 endef #sm.tool.common.cp
 
 define sm.tool.common.mv
+$(error deprecated sm.tool.common.mv)\
 $(if $(and $1,$2),mv $1 $2,\
   $(error smart: move command requires more than two args))
 endef #sm.tool.common.mv
 
 define sm.tool.common.ln
+$(error deprecated sm.tool.common.ln)\
 $(if $(and $1,$2),ln -sf $1 $2)
 endef #sm.tool.common.ln

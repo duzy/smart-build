@@ -1,5 +1,4 @@
 #
-
 $(call sm-new-module, toolset-common-ctangle, exe, gcc)
 
 sm.this.lang := c
