@@ -89,4 +89,4 @@ ifeq ($(sm.os.name),win32)
 endif#win32
 endif#linux
 
-sm.tool.gcc.link.flags += -Wl,--no-undefined
+#sm.tool.gcc.link.flags += -Wl,--no-undefined
