@@ -15,6 +15,7 @@ $(strip $(or $(sm.var.target_type.$($(sm._this).type)),$($(sm._this).type)))
 endef #sm.fun.get-target-type
 
 sm.var.command_prompt.compile = $(sm.args.lang): $($(sm._this).name) += $(sm.args.sources:$(sm.top)/%=%)
+sm.var.command_prompt.dependency = smart: update $(sm.temp._intermediate_d)..
 sm.var.command_prompt.link = $(sm.fun.get-target-type): $($(sm._this).name) -> $(sm.args.target)
 
 ######################################################################
@@ -847,7 +848,6 @@ $(eval \
   sm.temp._intermediates_unruled = $$(filter-out $$(sm.temp._intermediates_ruled),$$(sm.temp._intermediates))
   sm.temp._intermediates_ruled :=
  )\
-$(call sm.fun.draw-intermediates-dependency)\
 $(foreach sm.temp._intermediate, $(sm.temp._intermediates),\
     $(if $(call equal,$(strip $(sm.fun.make-rule-for-intermediate)),ok),\
         $(eval sm.temp._intermediates_ruled += $(sm.temp._intermediate))\
@@ -880,12 +880,12 @@ $(eval \
 $(if $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)),\
  $(TODO invoke sm.fun.compute-compile-flags somewhere else)\
  $(call sm.fun.compute-compile-flags)\
+ $(call sm.fun.draw-intermediate-dependency)\
  $(eval \
    $(sm.temp._inter_list) += $(sm.temp._intermediate)
 
    sm.args.target  := $(sm.temp._intermediate)
    sm.args.sources := $(call sm.fun.compute-source-of-$(sm.var.source.type))
-   sm.args.prerequisites = $$(sm.args.sources)
    sm.args.flags.0 := $($(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang))
    sm.args.flags.0 += $($(sm._this).compile.flags-$(sm.var.source))
    sm.args.flags.1 :=
@@ -904,7 +904,7 @@ $(if $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)),\
       , '$($(sm._this).toolset)' toolset donnot support commands for '$(sm.args.action) $(sm.args.lang)'\
       )
 
-     $(sm.args.target) : $(sm.args.prerequisites)
+     $(sm.args.target) : $(sm.temp._flag_file) $(sm.args.sources)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands,\
 	    $(sm.var.command_prompt.$(sm.args.action)),\
@@ -1097,6 +1097,53 @@ endef #sm.fun.compute-intermediates-langs
 ##   *) sm.temp._intermediates
 ## RETURN:
 ##   *) 
-define sm.fun.draw-intermediates-dependency
-$(no-info TODO: draw dependency for $(sm.var.source))
-endef #sm.fun.draw-intermediates-dependency
+define sm.fun.draw-intermediate-dependency
+$(call sm-check-not-empty, \
+    sm.args.lang \
+    sm.temp._intermediate \
+ )\
+$(eval sm.temp._intermediate_d := $(sm.temp._intermediate).d)\
+$(eval \
+  -include $(sm.temp._intermediate_d)
+
+  ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
+    sm.temp._flag_file := $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang)
+  else
+    sm.temp._flag_file :=
+  endif
+
+  sm.args.action.saved := $(sm.args.action)
+  sm.args.action := dependency
+
+  sm.args.output := $(sm.temp._intermediate_d)
+  sm.args.target := $(sm.temp._intermediate)
+  sm.args.sources := $(call sm.fun.compute-source-of-$(sm.var.source.type))
+  sm.args.flags.0 := $($(sm._this).compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang))
+  sm.args.flags.0 += $(strip $($(sm._this).compile.flags-$(sm.var.source)))
+  sm.args.flags.1 :=
+  sm.args.flags.2 :=
+ )\
+$(if $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)),\
+  $(info DEP: $(sm.var.tool).$(sm.args.action).$(sm.args.lang) for $(sm.args.output))\
+  $(eval \
+    ifeq ($(sm.global.ruled.$(sm.args.output)),)
+      sm.global.ruled.$(sm.args.output) := true
+
+      ifeq ($(wildcard $(sm.args.sources)),)
+        #$$(info smart: missing $(sm.args.sources) ($($(sm._this).name)))
+      endif
+
+      $(sm.args.output) : $(sm.temp._flag_file) $(sm.args.sources)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.wrap-rule-commands,\
+	    $(sm.var.command_prompt.$(sm.args.action)),\
+	    $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)))
+    endif
+   )\
+ , $(info TODO: $(sm.var.tool).$(sm.args.action).$(sm.args.lang) for $(sm.args.output))\
+ )\
+$(eval \
+  sm.args.action := $(sm.args.action.saved)
+  sm.args.action.saved :=
+ )
+endef #sm.fun.draw-intermediate-dependency
