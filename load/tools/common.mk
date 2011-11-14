@@ -61,19 +61,26 @@ sm.tool.common.MKDIR = mkdir
 sm.tool.common.SED = sed
 
 ##################################################
+define sm.tool.common._mv
+$(if $(findstring x$(strip $2)x,x$(strip $1)x),true,mv $(strip $1) $(strip $2))
+endef #sm.tool.common._mv
 
 ##
 ##
 ##
 define sm.tool.common.compile.web.pascal
 tangle $(sm.args.sources) && \
-mv $(word 1,$(sm.args.sources:%.web=%.p)) $(sm.args.target)
+$(call sm.tool.common._mv,\
+    $(word 1,$(sm.args.sources:%.web=%.p)),\
+    $(sm.args.target))
 endef #sm.tool.common.compile.web.pascal
 
 ## Literal source generation(for documentation)
 define sm.tool.common.compile.web.TeX
 weave $(sm.args.sources) && \
-mv $(word 1,$(sm.args.sources:%.web=%.p)) $(sm.args.target)
+$(call sm.tool.common._mv,\
+    $(word 1,$(sm.args.sources:%.web=%.p)),\
+    $(sm.args.target))
 endef #sm.tool.common.compile.web.TeX
 
 sm.tool.common.compile.web.LaTeX = $(sm.tool.common.compile.web.TeX)
@@ -87,8 +94,9 @@ ctangle \
   $(notdir $(word 1,$(sm.args.sources))) \
   $(or $(word 2,$(sm.args.sources)),-) \
   $(notdir $(sm.args.target)) && cd - && \
-mv $(dir $(word 1,$(sm.args.sources)))/$(notdir $(sm.args.target)) \
-   $(sm.args.target)
+$(call sm.tool.common._mv,\
+   $(dir $(word 1,$(sm.args.sources)))$(notdir $(sm.args.target)),\
+   $(sm.args.target))
 endef #sm.tool.common.compile.cweb.c
 
 ##
@@ -115,13 +123,17 @@ sm.tool.common.compile.cweb.LaTeX = $(sm.tool.common.compile.cweb.TeX)
 ##
 define sm.tool.common.compile.noweb.private
 notangle -$(sm.args.lang) $(sm.args.sources) && \
-mv $(word 1,$(sm.args.sources:%.nw=%.p)) $(sm.args.target)
+$(call sm.tool.common._mv,\
+    $(word 1,$(sm.args.sources:%.nw=%.p)),\
+    $(sm.args.target))
 endef #sm.tool.common.compile.noweb.private
 
 ##
 define sm.tool.common.compile.noweb.private
 noweave -$(sm.args.lang) $(sm.args.sources) && \
-mv $(word 1,$(sm.args.sources:%.nw=%.p)) $(sm.args.target)
+$(call sm.tool.common._mv,\
+    $(word 1,$(sm.args.sources:%.nw=%.p)),\
+    $(sm.args.target))
 endef #sm.tool.common.compile.noweb.private
 
 sm.tool.common.compile.web   = $(error undetermined intermediate language for web)
@@ -136,7 +148,9 @@ $1 -interaction=nonstopmode $(notdir $(word 1,$(sm.args.sources))) && \
 rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).log && \
 rm -vf $(basename $(notdir $(word 1,$(sm.args.sources)))).toc && \
 cd - && \
-mv $(dir $(word 1,$(sm.args.sources)))$(basename $(notdir $(word 1,$(sm.args.sources)))).$2 \
+[[ "$(dir $(word 1,$(sm.args.sources)))" == "$(dir $(sm.args.target))" ]] || \
+mv \
+   $(dir $(word 1,$(sm.args.sources)))$(basename $(notdir $(word 1,$(sm.args.sources)))).$2 \
    $(dir $(sm.args.target))
 endef #sm.tool.common.compile.TeX-LaTeX.private
 
