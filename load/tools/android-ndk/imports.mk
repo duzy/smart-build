@@ -86,7 +86,7 @@ $(eval \
   $(sm.temp._sm).verbose :=
 
   sm._this := sm.module.$($(sm.temp._m).MODULE)
-  include $(sm.dir.buildsys)/build-rules.mk
+  include $(sm.dir.buildsys)/rules.mk
 
   sm.this.depends += goal-$($(sm.temp._m).MODULE)
  )
