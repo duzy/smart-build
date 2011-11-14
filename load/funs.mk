@@ -916,7 +916,7 @@ $(eval \
   sm.args.flags.2 :=
  )\
 $(if $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)),\
-  $(info DEP: $(sm.var.tool).$(sm.args.action).$(sm.args.lang) for $(sm.args.output))\
+  $(no-info DEP: $(sm.var.tool).$(sm.args.action).$(sm.args.lang) for $(sm.args.output))\
   $(eval \
     ifeq ($(sm.global.ruled.$(sm.args.output)),)
       sm.global.ruled.$(sm.args.output) := true
@@ -932,7 +932,7 @@ $(if $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)),\
 	    $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)))
     endif
    )\
- , $(info TODO: $(sm.var.tool).$(sm.args.action).$(sm.args.lang) for $(sm.args.output))\
+ , $(no-info TODO: $(sm.var.tool).$(sm.args.action).$(sm.args.lang) for $(sm.args.output))\
  )\
 $(eval \
   sm.args.action := $(sm.args.action.saved)
