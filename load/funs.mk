@@ -330,7 +330,6 @@ $(eval \
     ifneq ($(call is-true,$($(sm._this).headers.$(sm.var.temp._hp)!)),true)
     ifneq ($($(sm._this).headers.$(sm.var.temp._hp)),)
       $$(call sm-copy-files, $($(sm._this).headers.$(sm.var.temp._hp)), $(sm.out.inc)/$(sm.var.temp._hp))
-      $(sm._this).headers.??? += $(foreach _, $($(sm._this).headers.$(sm.var.temp._hp)),$(sm.out.inc)/$(sm.var.temp._hp)/$_)
     endif # $(sm._this).headers.$(sm.var.temp._hp)! != true
     endif # $(sm._this).headers.$(sm.var.temp._hp) != ""
  )
@@ -343,27 +342,17 @@ $(eval \
   ## sm-copy-files will append items to sm.this.depends.copyfiles
   sm.this.depends.copyfiles_saved := $(sm.this.depends.copyfiles)
   sm.this.depends.copyfiles :=
-
-  ## this is the final headers to be copied
-  $(sm._this).headers.??? :=
-
-  ## this contains all header PREFIXs
-  $(sm._this).headers.* :=
  )\
 $(eval \
   ## headers from sm.this.headers
   ifneq ($(call is-true,$($(sm._this).headers!)),true)
     ifdef $(sm._this).headers
       $$(call sm-copy-files, $($(sm._this).headers), $(sm.out.inc))
-      $(sm._this).headers.??? += $(foreach _,$($(sm._this).headers),$(sm.out.inc)/$_)
     endif # $(sm._this).headers != ""
   endif # $(sm._this).headers! == true
 
-  $(sm._this).headers.* := $(filter-out * ???,\
-      $(sm.var._headers_vars:$(sm._this).headers.%=%))
-
-  ifneq ($$($(sm._this).headers.*),)
-    $$(foreach sm.var.temp._hp, $$($(sm._this).headers.*),\
+  ifdef sm.var._headers_vars
+    $$(foreach sm.var.temp._hp, $(sm.var._headers_vars:$(sm._this).headers.%=%),\
         $$(sm.fun.copy-headers-of-prefix))
   endif # $(sm._this).headers.* != ""
 
@@ -371,14 +360,12 @@ $(eval \
   $(sm._this).depends.copyfiles += $$(sm.this.depends.copyfiles)
 
   ## this allow consequenced rules
-  headers-$($(sm._this).name) : $$($(sm._this).headers.???)
+  headers-$($(sm._this).name) : $$(sm.this.depends.copyfiles)
  )\
 $(eval \
   ## must restore sm.this.depends.copyfiles
   sm.this.depends.copyfiles := $(sm.this.depends.copyfiles_saved)
   sm.this.depends.copyfiles_saved :=
-  $(sm._this).headers.* :=
-  $(sm._this).headers.??? :=
  )
 endef #sm.fun.copy-headers
 
