@@ -55,9 +55,9 @@ endif
 
 ## We copy the public headers first, since the module itself may make use on
 ## the headers.
-ifneq ($($(sm._this)._intermediates_only),true)
+#ifneq ($($(sm._this)._intermediates_only),true)
   $(call sm.fun.copy-headers)
-endif
+#endif
 
 ## Store the unterminated intermediates, all terminated intermediates are stored
 ## in $(sm._this).intermediates, and the final module targets produced from it.

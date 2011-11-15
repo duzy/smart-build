@@ -377,6 +377,8 @@ $(eval \
   ## must restore sm.this.depends.copyfiles
   sm.this.depends.copyfiles := $(sm.this.depends.copyfiles_saved)
   sm.this.depends.copyfiles_saved :=
+  $(sm._this).headers.* :=
+  $(sm._this).headers.??? :=
  )
 endef #sm.fun.copy-headers
 
