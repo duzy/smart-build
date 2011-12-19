@@ -1,0 +1,1 @@
+all: ; bash main.sh
