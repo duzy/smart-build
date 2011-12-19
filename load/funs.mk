@@ -240,7 +240,7 @@ endef #sm.fun.compute-module-targets-static
 
 ## <!!!>
 ## make targets for modules of type static, shared, exe, t
-define sm.fun.make-module-targets
+define sm.fun.make-rules-targets
 $(eval \
   $(call sm-check-not-empty,				\
       $(sm._this).lang					\
@@ -319,69 +319,58 @@ $(eval \
 
   $$(call sm-check-defined, $(sm._this).targets, no targets)
  )
-endef #sm.fun.make-module-targets
+endef #sm.fun.make-rules-targets
 
 ##################################################
 
 ## <!!!>
 ## copy headers according to sm.this.headers.PREFIX
-define sm.fun.copy-headers-of-prefix
+define sm.fun.make-rules-headers-of-prefix
 $(eval \
     ifneq ($(call is-true,$($(sm._this).headers.$(sm.var.temp._hp)!)),true)
     ifneq ($($(sm._this).headers.$(sm.var.temp._hp)),)
       $$(call sm-copy-files, $($(sm._this).headers.$(sm.var.temp._hp)), $(sm.out.inc)/$(sm.var.temp._hp))
-      $(sm._this).headers.??? += $(foreach _, $($(sm._this).headers.$(sm.var.temp._hp)),$(sm.out.inc)/$(sm.var.temp._hp)/$_)
     endif # $(sm._this).headers.$(sm.var.temp._hp)! != true
     endif # $(sm._this).headers.$(sm.var.temp._hp) != ""
  )
-endef #sm.fun.copy-headers-of-prefix
+endef #sm.fun.make-rules-headers-of-prefix
 
 ## <!!!>
 ## copy headers according to all sm.this.headers.XXX variables
-define sm.fun.copy-headers
+define sm.fun.make-rules-headers
 $(eval \
   ## sm-copy-files will append items to sm.this.depends.copyfiles
   sm.this.depends.copyfiles_saved := $(sm.this.depends.copyfiles)
   sm.this.depends.copyfiles :=
-
-  ## this is the final headers to be copied
-  $(sm._this).headers.??? :=
-
-  ## this contains all header PREFIXs
-  $(sm._this).headers.* :=
  )\
 $(eval \
   ## headers from sm.this.headers
   ifneq ($(call is-true,$($(sm._this).headers!)),true)
     ifdef $(sm._this).headers
       $$(call sm-copy-files, $($(sm._this).headers), $(sm.out.inc))
-      $(sm._this).headers.??? += $(foreach _,$($(sm._this).headers),$(sm.out.inc)/$_)
     endif # $(sm._this).headers != ""
   endif # $(sm._this).headers! == true
 
-  $(sm._this).headers.* := $(filter-out * ???,\
-      $(sm.var._headers_vars:$(sm._this).headers.%=%))
-
-  ifneq ($$($(sm._this).headers.*),)
-    $$(foreach sm.var.temp._hp, $$($(sm._this).headers.*),\
-        $$(sm.fun.copy-headers-of-prefix))
+  ifdef sm.var._headers_vars
+    $$(foreach sm.var.temp._hp, $(sm.var._headers_vars:$(sm._this).headers.%=%),\
+        $$(sm.fun.make-rules-headers-of-prefix))
   endif # $(sm._this).headers.* != ""
 
   ## export the final copy rule
   $(sm._this).depends.copyfiles += $$(sm.this.depends.copyfiles)
 
   ## this allow consequenced rules
-  headers-$($(sm._this).name) : $$($(sm._this).headers.???)
+  headers-$($(sm._this).name) : $$(sm.this.depends.copyfiles)
  )\
 $(eval \
   ## must restore sm.this.depends.copyfiles
   sm.this.depends.copyfiles := $(sm.this.depends.copyfiles_saved)
   sm.this.depends.copyfiles_saved :=
  )
-endef #sm.fun.copy-headers
+endef #sm.fun.make-rules-headers
 
 ## <!!!>
-define sm.fun.make-goal-rules
+define sm.fun.make-rules-goal
 $(eval \
   ifneq ($(MAKECMDGOALS),clean)
     ifneq ($($(sm._this).type),depends)
@@ -402,20 +391,20 @@ $(eval \
 
   doc-$($(sm._this).name) : $($(sm._this).documents)
  )
-endef #sm.fun.make-goal-rules
+endef #sm.fun.make-rules-goal
 
 ## <!!!>
 ##
-define sm.fun.make-test-rules
+define sm.fun.make-rules-test
 $(if $(call equal,$($(sm._this).type),t), $(eval \
   sm.global.tests += test-$($(sm._this).name)
   test-$($(sm._this).name): $($(sm._this).targets)
 	@echo test: $($(sm._this).name) - $$< && $$<
  ))
-endef #sm.fun.make-test-rules
+endef #sm.fun.make-rules-test
 
 ## <!!!>
-define sm.fun.make-clean-rules
+define sm.fun.make-rules-clean
 $(if $(call equal,$($(sm._this).type),depends), $(eval \
     clean-$($(sm._this).name):
 	rm -vf $$($(sm._this).depends) $$($(sm._this).depends.copyfiles)
@@ -458,7 +447,7 @@ $(if $(call equal,$($(sm._this).type),depends), $(eval \
   endif
   )\
  )
-endef #sm.fun.make-clean-rules
+endef #sm.fun.make-rules-clean
 
 ## <!!!>
 ##
@@ -533,7 +522,7 @@ $(if $($(sm._this).using_list), $(eval \
   $(sm._this).used.libs           :=
   ${foreach sm.var._use, $($(sm._this).using_list),
     sm._that := sm.module.$(sm.var._use)
-    include $(sm.dir.buildsys)/cused.mk
+    include $(sm.dir.buildsys)/funs/use.mk
    }
  ))
 endef #sm.fun.compute-using-list
@@ -547,7 +536,7 @@ $(eval \
   $(sm._this).unterminated.external := $($(sm._this).sources.external)
 
   ## Reduce the unterminated list to produce terminated intermediates.
-  include $(sm.dir.buildsys)/reduce.mk
+  include $(sm.dir.buildsys)/funs/reduce.mk
 
   ## All unterminated intermediates are expected to be reduced!
  )\
@@ -594,9 +583,11 @@ $(call sm-check-not-empty, \
 $(eval \
   sm.var.source.suffix := $(suffix $(sm.var.source))
   sm.var.source.lang := $$(sm.var.lang$$(sm.var.source.suffix))
-  ifeq ($(strip $($(sm._this).lang)),)
-    $(sm._this).lang := $$(sm.var.source.lang)
-  endif
+
+  ## Use a foreach on $(sm.var.tool).langs to keep the orders
+  $(sm._this).langs := $$(foreach _, $($(sm.var.tool).langs),$$(filter $$_,$$(sm.var.source.lang) $($(sm._this).langs))) $($(sm._this).langs)
+  $$(call sm-remove-duplicates, $(sm._this).langs)
+  $(sm._this).lang := $$(firstword $$($(sm._this).langs))
  )\
 $(call sm-check-not-empty, \
     sm.var.source.suffix \
@@ -672,7 +663,8 @@ $(eval \
 $(if $($(sm.var.tool).$(sm.args.action).$(sm.args.lang)),\
  $(TODO invoke sm.fun.compute-compile-flags somewhere else)\
  $(call sm.fun.compute-compile-flags)\
- $(call sm.fun.draw-intermediate-dependency)\
+ $(if $(call is-true,$($(sm._this).gen_deps)),\
+    $(call sm.fun.draw-intermediate-dependency))\
  $(eval \
    $(sm.temp._inter_list) += $(sm.temp._intermediate)
 

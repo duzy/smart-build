@@ -188,8 +188,12 @@ define sm-new-module-internal
    ifeq ($$(sm.this.toolset),common)
      #$$(warning TODO: common toolset...)
    else
-     ifeq ($$(sm.tool.$$(sm.this.toolset)),)
-       include $(sm.dir.buildsys)/loadtool.mk
+     ifeq ($$(sm.tool.$(sm.temp._toolset)),)
+       ifeq ($(wildcard $(sm.dir.buildsys)/tools/$(sm.temp._toolset).mk),)
+         $$(error smart: no toolset '$(sm.temp._toolset)')
+       else
+         include $(sm.dir.buildsys)/loadtool.mk
+       endif
      endif
      ######
      ifeq ($$(sm.tool.$$(sm.this.toolset)),)
@@ -237,10 +241,9 @@ $(eval \
   endif
   ##########
   $$(info smart: load '$(sm.temp._smartfile)'..)
-  include $(sm.dir.buildsys)/preload.mk
+  $$(call sm-reset-module, sm.this)
   include $(sm.temp._smartfile)
   sm.result.module.name := $$(sm.this.name)
-  -include $(sm.dir.buildsys)/postload.mk
   ##########
  )
 endef #sm-load-module
@@ -477,7 +480,9 @@ define sm-compile-sources-internal
         $(sm._this)._intermediates_only := true
         include $(sm.dir.buildsys)/rules.mk
         $(sm._this)._intermediates_only :=
-        sm.this.intermediates := $$($(sm._this).intermediates)
+        #sm.this.intermediates := $$($(sm._this).intermediates)
+        #sm.this.lang := $$($(sm._this).lang)
+        $$(call sm-clone-module, $(sm._this), sm.this)
       endif
      )\
    ,$(error smart: No sources defined))
