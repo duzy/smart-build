@@ -240,7 +240,7 @@ endef #sm.fun.compute-module-targets-static
 
 ## <!!!>
 ## make targets for modules of type static, shared, exe, t
-define sm.fun.make-module-targets
+define sm.fun.make-rules-targets
 $(eval \
   $(call sm-check-not-empty,				\
       $(sm._this).lang					\
@@ -319,13 +319,13 @@ $(eval \
 
   $$(call sm-check-defined, $(sm._this).targets, no targets)
  )
-endef #sm.fun.make-module-targets
+endef #sm.fun.make-rules-targets
 
 ##################################################
 
 ## <!!!>
 ## copy headers according to sm.this.headers.PREFIX
-define sm.fun.copy-headers-of-prefix
+define sm.fun.make-rules-headers-of-prefix
 $(eval \
     ifneq ($(call is-true,$($(sm._this).headers.$(sm.var.temp._hp)!)),true)
     ifneq ($($(sm._this).headers.$(sm.var.temp._hp)),)
@@ -333,11 +333,11 @@ $(eval \
     endif # $(sm._this).headers.$(sm.var.temp._hp)! != true
     endif # $(sm._this).headers.$(sm.var.temp._hp) != ""
  )
-endef #sm.fun.copy-headers-of-prefix
+endef #sm.fun.make-rules-headers-of-prefix
 
 ## <!!!>
 ## copy headers according to all sm.this.headers.XXX variables
-define sm.fun.copy-headers
+define sm.fun.make-rules-headers
 $(eval \
   ## sm-copy-files will append items to sm.this.depends.copyfiles
   sm.this.depends.copyfiles_saved := $(sm.this.depends.copyfiles)
@@ -353,7 +353,7 @@ $(eval \
 
   ifdef sm.var._headers_vars
     $$(foreach sm.var.temp._hp, $(sm.var._headers_vars:$(sm._this).headers.%=%),\
-        $$(sm.fun.copy-headers-of-prefix))
+        $$(sm.fun.make-rules-headers-of-prefix))
   endif # $(sm._this).headers.* != ""
 
   ## export the final copy rule
@@ -367,10 +367,10 @@ $(eval \
   sm.this.depends.copyfiles := $(sm.this.depends.copyfiles_saved)
   sm.this.depends.copyfiles_saved :=
  )
-endef #sm.fun.copy-headers
+endef #sm.fun.make-rules-headers
 
 ## <!!!>
-define sm.fun.make-goal-rules
+define sm.fun.make-rules-goal
 $(eval \
   ifneq ($(MAKECMDGOALS),clean)
     ifneq ($($(sm._this).type),depends)
@@ -391,20 +391,20 @@ $(eval \
 
   doc-$($(sm._this).name) : $($(sm._this).documents)
  )
-endef #sm.fun.make-goal-rules
+endef #sm.fun.make-rules-goal
 
 ## <!!!>
 ##
-define sm.fun.make-test-rules
+define sm.fun.make-rules-test
 $(if $(call equal,$($(sm._this).type),t), $(eval \
   sm.global.tests += test-$($(sm._this).name)
   test-$($(sm._this).name): $($(sm._this).targets)
 	@echo test: $($(sm._this).name) - $$< && $$<
  ))
-endef #sm.fun.make-test-rules
+endef #sm.fun.make-rules-test
 
 ## <!!!>
-define sm.fun.make-clean-rules
+define sm.fun.make-rules-clean
 $(if $(call equal,$($(sm._this).type),depends), $(eval \
     clean-$($(sm._this).name):
 	rm -vf $$($(sm._this).depends) $$($(sm._this).depends.copyfiles)
@@ -447,7 +447,7 @@ $(if $(call equal,$($(sm._this).type),depends), $(eval \
   endif
   )\
  )
-endef #sm.fun.make-clean-rules
+endef #sm.fun.make-rules-clean
 
 ## <!!!>
 ##
@@ -522,7 +522,7 @@ $(if $($(sm._this).using_list), $(eval \
   $(sm._this).used.libs           :=
   ${foreach sm.var._use, $($(sm._this).using_list),
     sm._that := sm.module.$(sm.var._use)
-    include $(sm.dir.buildsys)/cused.mk
+    include $(sm.dir.buildsys)/funs/use.mk
    }
  ))
 endef #sm.fun.compute-using-list
@@ -536,7 +536,7 @@ $(eval \
   $(sm._this).unterminated.external := $($(sm._this).sources.external)
 
   ## Reduce the unterminated list to produce terminated intermediates.
-  include $(sm.dir.buildsys)/reduce.mk
+  include $(sm.dir.buildsys)/funs/reduce.mk
 
   ## All unterminated intermediates are expected to be reduced!
  )\

@@ -35,7 +35,7 @@ ifneq ($(or $($(sm._this).unterminated),$($(sm._this).unterminated.external)),)
   else
     ## Go on if unterminated intermediates reproduced.
     ifneq ($(or $($(sm._this).unterminated),$($(sm._this).unterminated.external)),)
-      include $(sm.dir.buildsys)/reduce.mk
+      include $(sm.dir.buildsys)/funs/reduce.mk
     endif #$(sm._this).unterminated != <EMPTY>
   endif # $(sm._this).unterminated.strange != <EMPTY>
 endif #$(sm._this).unterminated != <EMPTY>

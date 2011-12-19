@@ -11,11 +11,8 @@
 #  requires sm.this.lang to be specified.
 #  
 
-ifndef sm._this
-  $(error sm._this is empty)
-endif # sm._this == ""
-
 $(call sm-check-not-empty,	\
+      sm._this			\
     $(sm._this).dir		\
     $(sm._this).name		\
     $(sm._this).type		\
@@ -53,12 +50,6 @@ ifndef sm.args.docs_format
   sm.args.docs_format := .dvi
 endif
 
-## We copy the public headers first, since the module itself may make use on
-## the headers.
-#ifneq ($($(sm._this)._intermediates_only),true)
-  $(call sm.fun.copy-headers)
-#endif
-
 ## Store the unterminated intermediates, all terminated intermediates are stored
 ## in $(sm._this).intermediates, and the final module targets produced from it.
 ##
@@ -71,7 +62,11 @@ $(sm._this).unterminated.external :=
 ## reported to users.
 $(sm._this).unterminated.strange  :=
 
-## Firstly, we compute the using list.
+## We copy the public headers first, since the module itself may make use on
+## the headers. This call will produce "headers-MODULE-NAME" rule.
+$(call sm.fun.make-rules-headers)
+
+## Then we compute the using list.
 $(call sm.fun.compute-using-list)
 
 ## And toolset must be initialized.
@@ -90,12 +85,12 @@ sm.var.temp._should_make_targets := \
             $(call is-true,$($(sm._this)._intermediates_only))),\
    ,true)
 ifeq ($(sm.var.temp._should_make_targets),true)
-  $(call sm.fun.make-module-targets)
+  $(call sm.fun.make-rules-targets)
 endif #$(sm.var.temp._should_make_targets) == true
 
 ifneq ($($(sm._this)._intermediates_only),true)
-  $(call sm.fun.make-goal-rules)
-  $(call sm.fun.make-test-rules)
-  $(call sm.fun.make-clean-rules)
+  $(call sm.fun.make-rules-goal)
+  $(call sm.fun.make-rules-test)
+  $(call sm.fun.make-rules-clean)
   $(call sm.fun.invoke-toolset-built-target-mk)
 endif
