@@ -1,6 +1,5 @@
 #
-
-$(call sm-new-module, foo, executable, gcc)
+$(call sm-new-module, foo, gcc: executable)
 
 sm.this.verbose := true
 sm.this.sources := foo.go bar.c

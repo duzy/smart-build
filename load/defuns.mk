@@ -123,89 +123,57 @@ sm-new-module = $(sm-new-module-internal)
 define sm-new-module-internal
  $(eval \
    sm.temp._name := $(strip $1)
-   sm.temp._type := $(strip $2)
-   sm.temp._toolset := $(strip $3)
+   sm.temp._toolset := $(strip $2)
    sm.temp._toolset_args := $$(subst :, ,$$(sm.temp._toolset))
-
-   ifeq ($$(sm.temp._name),)
+   ifeq ($(origin toolset),command line)
+     sm.temp._toolset_args := $(toolset)
+   endif
+  )\
+ $(if $(sm.temp._toolset_args),,$(error toolset is empty))\
+ $(eval \
+   ifeq ($(sm.temp._name),)
      $$(error module name(as arg 1) required)
    endif
 
-   ifneq ($$(filter $$(sm.temp._name),$(sm.global.modules)),)
-     $$(error module "$$(sm.temp._name)" already defined in "$$(sm.global.modules.$$(sm.temp._name))")
+   ifdef sm.module.$(sm.temp._name).name
+     $$(error module "$(sm.temp._name)" already defined in "$(sm.module.$(sm.temp._name).makefile)")
    endif
 
-   ifeq ($(origin toolset),command line)
-     sm.temp._toolset := $(toolset)
-   endif
-
-   sm.temp._type := $$(call sm-module-type-name,$$(sm.temp._type))
-   sm.temp._suffix := $$(suffix $$(sm.temp._name))
-   sm.temp._name := $$(basename $$(sm.temp._name))
-
-   ifeq ($$(sm.temp._name),)
+   sm.temp._suffix := $(suffix $(sm.temp._name))
+   sm.temp._name := $(basename $(sm.temp._name))
+   ifndef sm.temp._name
      $$(error smart: module name is empty)
    endif
-  )\
- $(eval \
-   sm.this.type := $(sm.temp._type)
-   sm.this.name := $(sm.temp._name)
-   sm.this.suffix := $(sm.temp._suffix)
-   sm.this.dir := $$(call sm-module-dir)
-   sm.this.dirs :=
-   sm.this.makefile := $$(call sm-this-makefile)
-   sm.this.gen_deps := true
 
-   sm.global.modules += $(sm.temp._name)
-   #sm.global.modules.$(sm.temp._name) := $$(sm.this.makefile)
-   sm.global.modules.$(sm.temp._name) = $$(error sm.global.modules.XXX is deprecated)
-
-   ifeq ($$(sm.this.type),shared)
-     sm.this.out_implib := $$(sm.this.name)
-   endif
-   ifeq ($$(sm.this.type),docs)
-     sm.temp._toolset := common
-   endif
-   sm.this.docs.format := .pdf
-
-   ifeq ($$(filter $$(sm.this.type),$(sm.global.module_types)),)
-     $$(error smart "$$(sm.this.type)" is not valid module type(see: $(sm.global.module_types)))
-   endif
-  )\
- $(if $(sm.temp._toolset),$(eval \
    sm.temp._toolset := $(firstword $(sm.temp._toolset_args))
    sm.temp._toolset_args := $(wordlist 2,$(words $(sm.temp._toolset_args)),$(sm.temp._toolset_args))
-   )$(eval \
-   ifeq ($(sm.this.type),depends)
-     ifeq ($(wildcard $(sm.dir.buildsys)/tools/$(sm.temp._toolset).mk),)
-       $$(error smart: toolset $(sm.temp._toolset) not unknown)
-     endif
-   endif
-   ######
+   )\
+ $(if $(sm.temp._toolset),,$(error toolset is empty))\
+ $(eval \
+   sm.this.name := $(sm.temp._name)
+   sm.this.suffix := $(sm.temp._suffix)
    sm.this.toolset := $(sm.temp._toolset)
    sm.this.toolset.args := $(sm.temp._toolset_args)
-   ######
-   ifeq ($$(sm.this.toolset),common)
-     #$$(warning TODO: common toolset...)
-   else
-     ifeq ($$(sm.tool.$(sm.temp._toolset)),)
-       ifeq ($(wildcard $(sm.dir.buildsys)/tools/$(sm.temp._toolset).mk),)
-         $$(error smart: no toolset '$(sm.temp._toolset)')
-       else
-         include $(sm.dir.buildsys)/loadtool.mk
-       endif
-     endif
-     ######
-     ifeq ($$(sm.tool.$$(sm.this.toolset)),)
-       $$(error smart: sm.tool.$$(sm.this.toolset) is not defined)
-     endif
-     ######
-     ifeq ($$(sm.this.suffix),)
-       $$(call sm-check-defined,sm.tool.$$(sm.this.toolset).suffix.target.$(sm.this.type).$(sm.os.name))
-       sm.this.suffix := $$(sm.tool.$$(sm.this.toolset).suffix.target.$(sm.this.type).$(sm.os.name))
+   sm.this.makefile := $$(call sm-this-makefile)
+   sm.this.dir := $$(call sm-module-dir)
+   sm.this.dirs :=
+  )\
+ $(eval \
+   ifndef sm.tool.$(sm.temp._toolset)
+     ifeq ($(wildcard $(sm.dir.buildsys)/tools/$(sm.temp._toolset).mk),)
+       $$(error smart: no toolset '$(sm.temp._toolset)')
+     else
+       include $(sm.dir.buildsys)/loadtool.mk
      endif
    endif
-  ))\
+   ######
+   ifndef sm.tool.$(sm.temp._toolset)
+     $$(error smart: sm.tool.$(sm.temp._toolset) is undefined)
+   endif
+   ######
+   sm.var.tool := sm.tool.$(sm.temp._toolset)
+  )\
+ $(call sm.tool.$(sm.temp._toolset).config-module)\
  $(eval \
    ifeq ($(filter $(sm.this.type),none depends docs),)
      $(if $(sm.this.toolset),,$$(error smart: toolset is not set))
@@ -267,6 +235,7 @@ $(eval \
  )
 endef #sm-export-this
 
+#sm.global.using := $(wordlist 1,$(words $(sm.global.using))-1,$(sm.global.using))
 ##
 ## This is a alternative option for sm.this.using.
 ##
@@ -280,10 +249,9 @@ define sm-import
    sm.temp._modir := $(strip $1)
    sm.temp._using := $$(wildcard $$(sm.temp._modir)/smart.mk)
 
-   ifeq ($(sm.this.name),)
+   ifndef sm.this.name
      $$(error smart: sm.this.name is empty, must use sm-new-module first)
    endif
-
    sm._this := sm.module.$(sm.this.name)
   )\
  $(eval \
@@ -293,8 +261,9 @@ define sm-import
 
    ifeq ($(filter $(sm.this.name),$(sm.global.using)),$(sm.this.name))
      $$(error smart: internal: recursive using: $(sm.this.name): $(sm.global.using))
+   else
+     sm.global.using += $(sm.this.name)
    endif
-   sm.global.using += $(sm.this.name)
   )\
  $(info smart: import "$(sm.temp._modir)" for "$(sm.this.name)"..)\
  $(call sm-clone-module, sm.this, $(sm._this))\
@@ -306,10 +275,9 @@ define sm-import
    sm.this.name := $(lastword $(sm.global.using))
   )\
  $(eval \
-   ifeq ($(sm.this.name),)
+   ifndef sm.this.name
      $$(error smart: internal: sm.global.using damaged: $(sm.global.using))
    else
-     #sm.global.using := $$(wordlist 1,$(words $(sm.global.using))-1,$(sm.global.using))
      sm.global.using := $(filter-out $(sm.this.name),$(sm.global.using))
    endif
    sm._this := sm.module.$(sm.this.name)
@@ -317,8 +285,9 @@ define sm-import
  $(eval \
    $(sm._this).using_list += $($(sm._that).name)
   )\
- $(info smart: module "$(sm.result.module.name)" used by "$(sm.this.name)")\
- $(call sm-clone-module, $(sm._this), sm.this)
+ $(call sm-reset-module, sm.this)\
+ $(call sm-clone-module, $(sm._this), sm.this)\
+ $(info smart: module "$(sm.result.module.name)" used by "$(sm.this.name)")
 endef #sm-import
 
 ##
@@ -391,8 +360,9 @@ define sm-use-external
  $(eval \
    ifeq ($(filter $(sm.this.name),$(sm.global.using)),$(sm.this.name))
      $$(error smart: internal: recursive using: $(sm.this.name)(external): $(sm.global.using))
+   else
+     sm.global.using += $(sm.this.name)
    endif
-   sm.global.using += $(sm.this.name)
   )\
  $(no-info smart: use external "$(sm.temp._modir)" for "$(sm.this.name)"..)\
  $(eval \
@@ -404,7 +374,6 @@ define sm-use-external
    sm-build-this = $$(sm-build-this-external)
 
    ## use include here instead of sm-load-module
-   include $(sm.dir.buildsys)/preload.mk
    include $(sm.temp._using)
   )\
  $(eval \
@@ -414,10 +383,9 @@ define sm-use-external
    sm.this.name := $(lastword $(sm.global.using))
   )\
  $(eval \
-   ifeq ($(sm.this.name),)
+   ifndef sm.this.name
      $$(error smart: internal: sm.global.using damaged: $(sm.global.using))
    else
-     #sm.global.using := $$(wordlist 1,$(words $(sm.global.using))-1,$(sm.global.using))
      sm.global.using := $(filter-out $(sm.this.name),$(sm.global.using))
    endif
 
@@ -432,11 +400,12 @@ define sm-use-external
    sm-copy-files = $$(sm-copy-files-internal)
    sm-build-depends = $$(sm-build-depends-internal)
    sm-build-this = $$(sm-build-this-internal)
-   $$(call sm-clone-module, $$(sm._this), sm.this)
   )\
  $(eval \
    $(sm._this).using_list += $($(sm._that).name)
   )\
+ $(call sm-reset-module, sm.this)\
+ $(call sm-clone-module, $(sm._this), sm.this)\
  $(info smart: external module "$($(sm._that).name)" used by "$(sm.this.name)")
 endef #sm-use-external
 

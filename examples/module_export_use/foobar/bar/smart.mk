@@ -2,11 +2,11 @@
 
 $(info foobar/bar: using: foobar/bar/smart.mk loaded)
 
-$(call sm-new-module, bar, shared, gcc)
+$(call sm-new-module, bar, gcc: shared)
 
 sm.this.verbose := true
 sm.this.sources := bar.cpp
-sm.this.compile.flags := -fPIC
+sm.this.compile.flags += -fPIC
 
 sm.this.export.defines := -DTEST_BAR=defined_by_foobar_bar
 sm.this.export.includes := $(sm.this.dir)/inc

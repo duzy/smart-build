@@ -53,10 +53,7 @@ SUFFIXES :=
 sm.global.smartfiles.toplevel := $(wildcard $(sm.top)/smart.mk)
 
 ifneq ($(strip $(sm.global.smartfiles.toplevel)),)
-  sm.global.goals :=
-  sm.global.modules :=
   $(foreach v,$(sm.global.smartfiles.toplevel),$(eval $$(call sm-load-module,$v)))
-  #$(foreach v,$(sm.global.modules),$(info smart: module '$v' by $(sm.global.modules.$v)))
 else
   $(info smart: ************************************************************)
   $(info smart:  You have to provide the root build script 'smart.mk' at top)

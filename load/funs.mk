@@ -1,11 +1,5 @@
 #
 #
-sm.var.action.depends := none
-sm.var.action.static := archive
-sm.var.action.shared := link
-sm.var.action.exe := link
-sm.var.action.t := link
-
 sm.var.target_type.static := static-library
 sm.var.target_type.shared := shared-library
 sm.var.target_type.exe := executable
@@ -240,7 +234,7 @@ endef #sm.fun.compute-module-targets-static
 
 ## <!!!>
 ## make targets for modules of type static, shared, exe, t
-define sm.fun.make-rules-targets
+define sm.fun.make-rules-targets-deprecated
 $(eval \
   $(call sm-check-not-empty,				\
       $(sm._this).lang					\
@@ -289,7 +283,7 @@ $(eval \
     sm.var.temp._flag_files += $$(sm.var.temp._flag_file_prefix).libs
   endif ## libs.infile == true
 
-  sm.args.action := $$(sm.var.action)
+  #sm.args.action := $$(sm.var.action)
   sm.args.lang := $$($(sm._this).lang)
   sm.args.target := $$($(sm._this).targets)
   sm.args.sources := $$($(sm._this)._link.intermediates)
@@ -319,6 +313,16 @@ $(eval \
 
   $$(call sm-check-defined, $(sm._this).targets, no targets)
  )
+endef #sm.fun.make-rules-targets-deprecated
+
+define sm.fun.make-rules-targets
+$(call sm-check-not-empty,\
+    sm._this $(sm._this).name \
+ )\
+$(eval \
+  $(sm._this).targets :=
+ )\
+$(call $(sm.var.tool).transform-intermediates)
 endef #sm.fun.make-rules-targets
 
 ##################################################
@@ -496,15 +500,14 @@ $(eval \
     $$(call sm-check-not-empty, $(sm._this).lang, 'sm.this.lang' must be specified for "tests")
     sm.var.lang.t := $($(sm._this).lang)
   endif
-
-  ifneq ($($(sm._this).toolset),common)
-    ifndef $(sm._this).suffix
-      ${call sm-check-defined,$(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name)}
-      $(sm._this).suffix := $($(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name))
-    endif
-  endif # $(sm._this).toolset != common
  )
 endef #sm.fun.init-toolset
+  # ifneq ($($(sm._this).toolset),common)
+  #   ifndef $(sm._this).suffix
+  #     ${call sm-check-defined,$(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name)}
+  #     $(sm._this).suffix := $($(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name))
+  #   endif
+  # endif # $(sm._this).toolset != common
 
 ## <NEW>
 ## 
@@ -556,11 +559,11 @@ endef #sm.fun.compute-terminated-intermediates
 ## OUTPUT:
 ##     *) $(sm._this).intermediates (append to it)
 ## 
-define sm.fun.make-intermediates-rules
+define sm.fun.make-rules-intermediates
 $(eval sm.var.source.type := local)   $(foreach sm.var.source, $(sm.var.sources),          $(sm.fun.make-intermediate-rule))\
 $(eval sm.var.source.type := external)$(foreach sm.var.source, $(sm.var.sources.external), $(sm.fun.make-intermediate-rule))\
 $(eval sm.var.source.type :=)
-endef #sm.fun.make-intermediates-rules
+endef #sm.fun.make-rules-intermediates
 
 ## <NEW>
 ##
@@ -573,16 +576,19 @@ endef #sm.fun.make-intermediates-rules
 ## OUTPUT:
 ##     *) $(sm._this).intermediates
 ##     *) sm.var.source.suffix
+##     *) sm.var.source.lang
 ##
 define sm.fun.make-intermediate-rule
 $(call sm-check-not-empty, \
+    sm.var.tool \
     sm.var.source \
     sm.var.source.type \
- , no source or unknown source type \
+ , no source or unknown source type or toolset \
  )\
 $(eval \
   sm.var.source.suffix := $(suffix $(sm.var.source))
   sm.var.source.lang := $$(sm.var.lang$$(sm.var.source.suffix))
+  sm.var.intermediate := $$(sm.fun.compute-intermediates-of-$$(sm.var.source.type))
 
   ## Use a foreach on $(sm.var.tool).langs to keep the orders
   $(sm._this).langs := $$(foreach _, $($(sm.var.tool).langs),$$(filter $$_,$$(sm.var.source.lang) $($(sm._this).langs))) $($(sm._this).langs)
@@ -590,32 +596,15 @@ $(eval \
   $(sm._this).lang := $$(firstword $$($(sm._this).langs))
  )\
 $(call sm-check-not-empty, \
-    sm.var.source.suffix \
     sm.var.source.lang \
+    sm.var.source.suffix \
+    sm.var.intermediate \
  , source "$(sm.var.source)" is strange (lang: $(sm.var.source.lang)) \
  )\
-$(eval \
-  sm.temp._result := $$(sm.fun.make-intermediate-rule-with-the-toolset)
-  sm.temp._result := $$(strip $$(sm.temp._result))
-  ifneq ($$(sm.temp._result),ok)
-    ifneq ($$(sm.var.tool),sm.tool.commom)
-      $$(info smart:1: try commom toolset for '$(sm.var.source)')
-      sm.var.tool.saved := $(sm.var.tool)
-      sm.var.tool := sm.tool.common
-      sm.temp._result := $$(sm.fun.make-intermediate-rule-with-the-toolset)
-      sm.temp._result := $$(strip $$(sm.temp._result))
-      sm.var.tool := $$(sm.var.tool.saved)
-      sm.var.tool.saved :=
-    endif
-    ifneq ($$(sm.temp._result),ok)
-      $(sm._this).unterminated.strange += $(sm.var.source)
-    endif
-  endif
-  sm.temp._result :=
- )
+$(call $(sm.var.tool).transform-single-source)
 endef #sm.fun.make-intermediate-rule
 
-## <NEW>
+## <NEW> XXX
 ##
 ## RETURN:
 ##   *) "ok" on success

@@ -10,7 +10,6 @@ $(sm._this).unterminated.external := $(strip $($(sm._this).unterminated.external
 
 ifneq ($(or $($(sm._this).unterminated),$($(sm._this).unterminated.external)),)
   $(sm._this).reduce_level := $($(sm._this).reduce_level)x
-  #$(info xxx: $($(sm._this).name): $($(sm._this).reduce_level))
 
   ## Store unterminated intermediates into sm.var.sources for make intermediates
   ## rules.
@@ -21,11 +20,10 @@ ifneq ($(or $($(sm._this).unterminated),$($(sm._this).unterminated.external)),)
   $(sm._this).unterminated          :=
   $(sm._this).unterminated.external :=
 
-  $(call sm-check-flavor, sm.fun.make-intermediates-rules, recursive)
-
   ## Call the make-intermediates-rules function to reduce $(sm.var.sources) for
   ## terminated intermediates generation rules.
-  $(call sm.fun.make-intermediates-rules)
+  $(call sm-check-flavor, sm.fun.make-rules-intermediates, recursive)
+  $(call sm.fun.make-rules-intermediates)
 
   ifdef $(sm._this).unterminated.strange
     ## Does nothing in this case except that the unterminated list should be

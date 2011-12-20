@@ -15,7 +15,6 @@ $(call sm-check-not-empty,	\
       sm._this			\
     $(sm._this).dir		\
     $(sm._this).name		\
-    $(sm._this).type		\
  )
 
 ##################################################
@@ -36,8 +35,8 @@ sm.var.temp._ := $(sm.var.temp._:/%=%)
 sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
 $(sm._this).prefix := $(sm.var.temp._)
 
-sm.var.action := $(sm.var.action.$($(sm._this).type))
-$(call sm-check-not-empty, sm.var.action)
+#sm.var.action := $(sm.var.action.$($(sm._this).type))
+#$(call sm-check-not-empty, sm.var.action)
 
 sm.var._headers_vars := $(filter $(sm._this).headers.%,$(.VARIABLES))
 sm.var._headers_vars := $(filter-out \

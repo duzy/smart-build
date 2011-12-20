@@ -1,21 +1,21 @@
 #
 
-$(call sm-new-module, foo, shared, gcc)
+$(call sm-new-module, foo, gcc: shared)
 
 $(call sm-check-not-empty,sm.this.dir)
 $(call sm-check-not-empty,sm.this.name)
-$(call sm-check-not-empty,sm.this.suffix)
+#$(call sm-check-not-empty,sm.this.suffix)
 $(call sm-check-not-empty,sm.this.makefile)
-$(call sm-check-not-empty,sm.this.out_implib)
-$(call sm-check-in-list,foo,sm.global.modules)
+#$(call sm-check-not-empty,sm.this.out_implib)
+#$(call sm-check-in-list,foo,sm.global.modules)
 $(call sm-check-equal,$(sm.this.name),foo)
 ifeq ($(sm.this.is_external),true)
   $(call sm-check-equal,$(sm.this.type),shared+external)
 else
   $(call sm-check-equal,$(sm.this.type),shared)
 endif
-$(call sm-check-equal,$(sm.this.suffix),.so)
-$(call sm-check-equal,$(sm.this.out_implib),foo)
+#$(call sm-check-equal,$(sm.this.suffix),.so)
+#$(call sm-check-equal,$(sm.this.out_implib),foo)
 
 ifeq ($(shell uname -m),x86_64)
 M64_FLAGS := -fPIC
