@@ -1,7 +1,7 @@
 #
 #
 $(call test-check-undefined, sm.this.dir)
-$(call sm-new-module, mixture-sources, exe, gcc)
+$(call sm-new-module, mixture-sources, gcc: exe)
 
 sm.this.compile.flags := -DTEST=\"foo\"
 sm.this.sources := foo.c foo.cpp foo.go main.c

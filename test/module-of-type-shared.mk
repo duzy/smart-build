@@ -10,7 +10,7 @@ $(call sm-new-module, module-of-type-shared, gcc: shared)
 $(call test-check-defined, sm.this.dir)
 $(call test-check-value-pat-of,sm.this.dir,%/test)
 $(call test-check-value-pat-of,sm.this.makefile,%/test/module-of-type-shared.mk)
-#$(call test-check-value-of,sm.this.suffix,.so)
+$(call test-check-value-of,sm.this.suffix,.so)
 
 sm.this.sources := foo.c
 

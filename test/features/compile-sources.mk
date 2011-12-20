@@ -1,7 +1,7 @@
 #
 #
 $(call test-check-undefined, sm.this.dir)
-$(call sm-new-module, feature-compile-sources, exe, gcc)
+$(call sm-new-module, feature-compile-sources, gcc: exe)
 
 sm.this.compile.flags := -DTEST=\"foo\"
 sm.this.sources := foo.c

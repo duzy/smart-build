@@ -1,7 +1,7 @@
 #
 #
 $(call test-check-undefined, sm.this.dir)
-$(call sm-new-module, feature-compile-sources-flags-in-file, exe, gcc)
+$(call sm-new-module, feature-compile-sources-flags-in-file, gcc: exe)
 
 sm.this.compile.flags.infile := true
 

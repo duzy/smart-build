@@ -102,7 +102,6 @@ $(call test-check-value-of,test.case.subdir-loaded,1)
 $(call test-check-not-value,$(sm.this.dir),$(test.temp.this-dir))
 $(call test-check-defined,sm.this.dir) ## should not be empty
 $(call test-check-value-pat,$(sm.this.dir),%/test/subdir)
-$(call test-check-value,$(filter subdir-foo,$(sm.global.modules)),subdir-foo)
 $(call test-check-defined, sm.module.subdir-foo.name)
 $(call test-check-defined, sm.module.subdir-foo.type)
 $(call test-check-defined, sm.module.subdir-foo.dir)
