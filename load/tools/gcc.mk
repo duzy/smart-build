@@ -111,6 +111,7 @@ $(call sm-check-not-empty, \
 $(eval \
    sm.this.gen_deps := true
    sm.this.type := $(firstword $(sm.this.toolset.args))
+   sm.this.suffix := $$(sm.tool.gcc.suffix.target.$$(sm.this.type).$(sm.os.name))
    sm.this.compile.flags := $(sm.tool.gcc.flags.compile.variant.$(sm.config.variant))
    sm.this.compile.flags += $(sm.tool.gcc.flags.compile.os.$(sm.os.name))
    sm.this.link.flags := $(sm.tool.gcc.flags.link.variant.$(sm.config.variant))
@@ -168,8 +169,7 @@ $(call sm-check-not-empty, sm._this \
   $(sm._this).intermediates \
  )\
 $(eval #
-  sm.var.target.suffix := $(sm.tool.gcc.suffix.target.$($(sm._this).type).$(sm.os.name))
-  sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$$(sm.var.target.suffix)
+  sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
   sm.var.intermediates := $($(sm._this).intermediates)
   sm.var.flags :=
   ifeq ($($(sm._this).type),static)
