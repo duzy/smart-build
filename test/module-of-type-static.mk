@@ -6,7 +6,7 @@ test.case.module-of-type-static-mk-loaded := 1
 
 $(call test-check-undefined, sm.this.dir)
 ########## case in -- make a new module
-$(call sm-new-module, module-of-type-static, static, gcc)
+$(call sm-new-module, module-of-type-static, gcc: static)
 ########## case out
 $(call test-check-defined, sm.this.dir)
 $(call test-check-value-pat-of,sm.this.dir,%/test)

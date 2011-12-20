@@ -13,7 +13,7 @@ $(call test-check-defined, sm.this.makefile)
 $(call test-check-value-of,sm.this.name,module-of-type-none)
 $(call test-check-value-pat-of,sm.this.dir,%/test)
 $(call test-check-value-pat-of,sm.this.makefile,%/test/module-of-type-none.mk)
-$(call test-check-value,$(filter module-of-type-none,$(sm.global.modules)),module-of-type-none)
+#$(call test-check-value,$(filter module-of-type-none,$(sm.global.modules)),module-of-type-none)
 
 test.temp.module-of-type-none.dir := $(sm.this.dir)
 

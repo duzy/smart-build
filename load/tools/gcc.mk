@@ -9,6 +9,8 @@
 ## make sure that gcc.mk is included only once
 $(call sm-check-origin, sm.tool.gcc, undefined)
 
+#$(call sm-new-module, foo, gcc: static+shared)
+
 sm.tool.gcc := true
 
 ## basic command names
@@ -45,48 +47,174 @@ sm.tool.gcc.suffix.target.exe.linux :=
 sm.tool.gcc.suffix.target.t.linux := .test
 sm.tool.gcc.suffix.target.depends.linux :=
 
-######################################################################
-# define sm.tool.gcc.compile.c
-# define sm.tool.gcc.compile.c++
-# define sm.tool.gcc.compile.asm
-#
-# define sm.tool.gcc.dependency.c
-# define sm.tool.gcc.dependency.c++
-# define sm.tool.gcc.dependency.asm
-#
-# define sm.tool.gcc.link.c
-# define sm.tool.gcc.link.c++
-# define sm.tool.gcc.link.asm
-#
-# sm.tool.gcc.archive.c
-# sm.tool.gcc.archive.c++
-# sm.tool.gcc.archive.asm
-#
-######################################################################
-# Options
+sm.tool.gcc.flags.compile.variant.debug := -g -ggdb
+sm.tool.gcc.flags.compile.variant.release := -O3
+sm.tool.gcc.flags.link.variant.debug := -g -ggdb
+sm.tool.gcc.flags.link.variant.release := -O3
 
-sm.tool.gcc.compile.flags :=
-sm.tool.gcc.link.flags :=
+sm.tool.gcc.flags.compile.os.linux :=
+sm.tool.gcc.flags.compile.os.win32 := -mwindows
+sm.tool.gcc.flags.link.os.linux :=
+sm.tool.gcc.flags.link.os.win32 := -mwindows \
+  -Wl,--enable-runtime-pseudo-reloc \
+  -Wl,--enable-auto-import \
 
-ifeq ($(strip $(sm.config.variant)),debug)
-  sm.tool.gcc.compile.flags += -g -ggdb
-  sm.tool.gcc.link.flags +=
-else
-ifeq ($(strip $(sm.config.variant)),release)
-  sm.tool.gcc.compile.flags += -O3
-  sm.tool.gcc.link.flags +=
-endif
-endif
+##
+## Compile Commands
+define sm.tool.gcc.command.compile.c
+gcc $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+endef #sm.tool.gcc.command.compile.c
 
-ifeq ($(sm.os.name),linux)
-else
-ifeq ($(sm.os.name),win32)
-  sm.tool.gcc.compile.flags += -mwindows
-  sm.tool.gcc.link.flags += -mwindows \
-    -Wl,--enable-runtime-pseudo-reloc \
-    -Wl,--enable-auto-import \
-    $(null)
-endif#win32
-endif#linux
+define sm.tool.gcc.command.compile.c++
+g++ $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+endef #sm.tool.gcc.command.compile.c++
 
-#sm.tool.gcc.link.flags += -Wl,--no-undefined
+define sm.tool.gcc.command.compile.go
+gccgo $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+endef #sm.tool.gcc.command.compile.go
+
+define sm.tool.gcc.command.compile.asm
+gcc $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+endef #sm.tool.gcc.command.compile.asm
+
+##
+##
+define sm.tool.gcc.command.link.c
+gcc $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+endef #sm.tool.gcc.command.link.c
+
+define sm.tool.gcc.command.link.c++
+g++ $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+endef #sm.tool.gcc.command.link.c++
+
+define sm.tool.gcc.command.link.go
+gccgo $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+endef #sm.tool.gcc.command.link.go
+
+define sm.tool.gcc.command.link.asm
+gcc $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+endef #sm.tool.gcc.command.link.asm
+
+##
+##
+define sm.tool.gcc.command.archive
+ar crs $(sm.var.target) $(sm.var.intermediates)
+endef #sm.tool.gcc.command.archive
+
+##
+##
+define sm.tool.gcc.config-module
+$(call sm-check-not-empty, \
+    sm.os.name \
+    sm.config.variant \
+ )\
+$(eval \
+   sm.this.gen_deps := true
+   sm.this.type := $(firstword $(sm.this.toolset.args))
+   sm.this.compile.flags := $(sm.tool.gcc.flags.compile.variant.$(sm.config.variant))
+   sm.this.compile.flags += $(sm.tool.gcc.flags.compile.os.$(sm.os.name))
+   sm.this.link.flags := $(sm.tool.gcc.flags.link.variant.$(sm.config.variant))
+   sm.this.link.flags += $(sm.tool.gcc.flags.link.os.$(sm.os.name))
+ )
+endef #sm.tool.gcc.config-module
+
+## sm.var.source
+## sm.var.intermediate (source -> intermediate)
+define sm.tool.gcc.transform-single-source
+$(call sm-check-not-empty, \
+    sm._this $(sm._this).name \
+    sm.var.source \
+    sm.var.source.lang \
+    sm.var.source.suffix \
+    sm.var.intermediate \
+ )\
+$(eval #
+  $(sm._this).intermediates += $(sm.var.intermediate)
+  sm.var.source.computed := $(call sm.fun.compute-source-of-$(sm.var.source.type))
+  sm.var.flags :=
+  sm.var.flags += $($(sm._this).used.defines)
+  sm.var.flags += $($(sm._this).used.defines.$(sm.var.source.lang))
+  sm.var.flags += $($(sm._this).used.compile.flags)
+  sm.var.flags += $($(sm._this).used.compile.flags.$(sm.var.source.lang))
+  sm.var.flags += $($(sm._this).compile.flags)
+  $$(call sm.fun.append-items-with-fix, sm.var.flags, \
+         $($(sm._this).includes)\
+         $($(sm._this).used.includes)\
+         $($(sm.var.tool).includes)\
+        , -I, , -%)
+  sm.var.flags += $(strip $($(sm._this).compile.flags-$(sm.var.source)))
+  $$(call sm-remove-duplicates,sm.var.flags)
+ )\
+$(eval #
+  sm.var.command := $(sm.tool.gcc.command.compile.$(sm.var.source.lang))
+ )\
+$(eval #
+  ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
+    $(sm.var.intermediate) : $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang)
+  endif
+  $(sm.var.intermediate) : $(sm.var.source.computed)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.wrap-rule-commands, gcc: $(sm.var.source.lang), $(sm.var.command))
+ )
+endef #sm.tool.gcc.transform-single-source
+
+##
+##
+define sm.tool.gcc.transform-intermediates
+$(call sm-check-not-empty, sm._this \
+  $(sm._this).name \
+  $(sm._this).lang \
+  $(sm._this).type \
+  $(sm._this).intermediates \
+ )\
+$(eval #
+  sm.var.target.suffix := $(sm.tool.gcc.suffix.target.$($(sm._this).type).$(sm.os.name))
+  sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$$(sm.var.target.suffix)
+  sm.var.intermediates := $($(sm._this).intermediates)
+  sm.var.flags :=
+  ifeq ($($(sm._this).type),static)
+    sm.var.flags += $($(sm._this).used.archive.flags)
+    sm.var.flags += $($(sm._this).used.archive.flags.$($(sm._this).lang))
+    sm.var.flags += $($(sm._this).archive.flags)
+    sm.var.flags += $($(sm._this).archive.flags.$($(sm._this).lang))
+  else
+    sm.var.flags += $($(sm._this).used.link.flags)
+    sm.var.flags += $($(sm._this).used.link.flags.$($(sm._this).lang))
+    sm.var.flags += $($(sm._this).link.flags)
+    sm.var.flags += $($(sm._this).link.flags.$($(sm._this).lang))
+    ifeq ($($(sm._this).type),shared)
+      sm.var.flags := -shared $$(filter-out -shared,$$(sm.var.flags))
+    endif
+  endif
+  sm.var.loadlibs :=
+ )\
+$(call sm.fun.append-items-with-fix, sm.var.loadlibs, \
+      $($(sm._this).libdirs) \
+      $($(sm._this).used.libdirs)\
+      $($(sm.var.tool).libdirs)\
+     , -L, , -% -Wl%)\
+$(call sm.fun.append-items-with-fix, sm.var.loadlibs, \
+      $($(sm._this).libs) \
+      $($(sm._this).used.libs)\
+      $($(sm.var.tool).libs)\
+     , -l, , -% -Wl% %.a %.so %.lib %.dll)\
+$(call sm-remove-duplicates,sm.var.flags)\
+$(call sm-remove-duplicates,sm.var.loadlibs)\
+$(eval #
+  $(sm._this).targets += $$(sm.var.target)
+
+  ifeq ($($(sm._this).type),static)
+    sm.var.command := $(sm.tool.gcc.command.archive)
+  else
+    sm.var.command := $(sm.tool.gcc.command.link.$($(sm._this).lang))
+  endif
+ )\
+$(eval #
+  $(sm.var.target) : $(sm.var.intermediates)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.wrap-rule-commands, gcc, $(sm.var.command))
+  ifeq ($($(sm._this).type),shared)
+    $$(info TODO: gcc: linkable target)
+  endif
+ )
+endef #sm.tool.gcc.transform-intermediates

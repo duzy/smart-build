@@ -17,10 +17,10 @@ $(call sm-new-module, foobar, none) ## make a new module
 ########## case out
 $(call test-check-value-of,sm.this.name,foobar)
 $(call test-check-value-of,sm.this.type,none)
-$(call test-check-value,$(sm.this.toolset),)
-$(call test-check-value,$(filter foobar,$(sm.global.modules)),foobar)
-# $(call test-check-value-of,sm.module.foobar.name,foobar)
-# $(call test-check-value-of,sm.module.foobar.type,none)
+$(call test-check-value,$(sm.this.toolset),none)
+#$(call test-check-value,$(filter foobar,$(sm.global.modules)),foobar)
+#$(call test-check-value-of,sm.module.foobar.name,foobar)
+#$(call test-check-value-of,sm.module.foobar.type,none)
 
 test.temp.this-dir := $(sm.this.dir)
 

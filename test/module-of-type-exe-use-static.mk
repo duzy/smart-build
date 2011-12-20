@@ -4,7 +4,7 @@
 test.case.module-of-type-exe-use-static-mk-loaded := 1
 ####
 $(call test-check-undefined, sm.this.dir)
-$(call sm-new-module, module-of-type-exe-use-static, exe, gcc)
+$(call sm-new-module, module-of-type-exe-use-static, gcc: exe)
 $(call test-check-defined, sm.this.dir)
 $(call test-check-value-pat-of,sm.this.dir,%/test)
 $(call test-check-value-pat-of,sm.this.makefile,%/test/module-of-type-exe-use-static.mk)
