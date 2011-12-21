@@ -39,54 +39,6 @@ $(call sm-load-module, $(sm.this.dir)/module-of-type-none.mk)
 ########## case out
 $(call test-check-value-of,test.case.module-of-type-none-mk-loaded,1)
 
-$(call test-check-defined, sm.this.dir)
-$(call test-check-value-pat-of,sm.this.dir,%/test)
-$(call test-check-flavor,  sm-load-module, recursive)
-########## case in  -- load a single module
-$(call sm-load-module, $(sm.this.dir)/module-of-type-static.mk)
-########## case out
-$(call test-check-value-of,test.case.module-of-type-static-mk-loaded,1)
-
-$(call test-check-defined, sm.this.dir)
-$(call test-check-value-pat-of,sm.this.dir,%/test)
-$(call test-check-flavor,  sm-load-module, recursive)
-########## case in  -- load a single module
-$(call sm-load-module, $(sm.this.dir)/module-of-type-shared.mk)
-########## case out
-$(call test-check-value-of,test.case.module-of-type-shared-mk-loaded,1)
-
-$(call test-check-defined, sm.this.dir)
-$(call test-check-value-pat-of,sm.this.dir,%/test)
-$(call test-check-flavor,  sm-load-module, recursive)
-########## case in  -- load a single module
-$(call sm-load-module, $(sm.this.dir)/module-of-type-exe-use-static.mk)
-########## case out
-$(call test-check-value-of,test.case.module-of-type-exe-use-static-mk-loaded,1)
-
-$(call test-check-defined, sm.this.dir)
-$(call test-check-value-pat-of,sm.this.dir,%/test)
-$(call test-check-flavor,  sm-load-module, recursive)
-########## case in  -- load a single module
-$(call sm-load-module, $(sm.this.dir)/module-of-type-exe-use-shared.mk)
-########## case out
-$(call test-check-value-of,test.case.module-of-type-exe-use-shared-mk-loaded,1)
-
-$(call test-check-defined, sm.this.dir)
-$(call test-check-value-pat-of,sm.this.dir,%/test)
-$(call test-check-flavor,  sm-load-module, recursive)
-########## case in  -- load a single module
-$(call sm-load-module, $(sm.this.dir)/module-of-type-depends.mk)
-########## case out
-$(call test-check-value-of,test.case.module-of-type-depends-mk-loaded,1)
-
-$(call test-check-defined, sm.this.dir)
-$(call test-check-value-pat-of,sm.this.dir,%/test)
-$(call test-check-flavor,  sm-load-module, recursive)
-########## case in  -- load a single module
-$(call sm-load-module, $(sm.this.dir)/module-of-type-t.mk)
-########## case out
-$(call test-check-value-of,test.case.module-of-type-t-mk-loaded,1)
-
 ##################################################
 
 $(call test-check-defined, sm.this.dir) ## defined by last loaded module
@@ -117,11 +69,30 @@ $(call test-check-value-of,test.case.module-nothing-loaded,1)
 $(call test-check-undefined, sm.this.dir) ## fake-module make nothing, sm-load-module unset this
 
 ##################################################
+define check-module
+$(call test-check-flavor, sm-load-module, recursive)\
+$(eval module.pre := $(wildcard $(module:%.mk=%.pre)))\
+$(eval #
+  ifdef module.pre
+    PRE :=
+    LOCAL := $(patsubst %/,%,$(dir $(module)))
+    include $(module.pre)
+    $$(info test: preload "$$(PRE)" for "$(module)")
+    ifdef PRE
+      $$(call sm-load-module, $$(PRE))
+      modules.loaded += $$(PRE)
+    endif
+  endif
+ )\
+$(if $(filter $(module), $(modules.loaded))\
+    ,,$(call sm-load-module, $(module))\
+      $(eval modules.loaded += $(module)))
+endef #check-module
 
-features := $(wildcard $(test.temp.this-dir)/features/*.mk)
-$(foreach feature, $(features),$(call sm-load-module, $(feature)))
-
-toolsets := \
+modules.loaded :=
+modules := \
+  $(wildcard $(test.temp.this-dir)/features/*.mk) \
   $(wildcard $(test.temp.this-dir)/toolsets/*.mk) \
-  $(wildcard $(test.temp.this-dir)/toolsets/*/*.mk)
-$(foreach toolset, $(toolsets),$(call sm-load-module, $(toolset)))
+  $(wildcard $(test.temp.this-dir)/toolsets/*/*.mk) \
+  $(wildcard $(test.temp.this-dir)/toolsets/*/features/*.mk)
+$(foreach module, $(modules), $(check-module))
