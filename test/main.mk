@@ -86,4 +86,27 @@ $(eval \
  )
 endef #test-check-value-pat
 
+define test-foreach-module-prop
+$(eval \
+  MOD := $(strip $1)
+  FUN := $(strip $2)
+ )\
+$(eval \
+  PROPS := $(filter $(MOD).%, $(.VARIABLES))
+ )\
+$(foreach PROP, $(PROPS), $($(FUN)))
+endef #test-foreach-module-prop
+
+define test-check-prop-empty
+$(eval \
+  ifdef $(PROP)
+    $$(error test: "$(PROP)" is not empty)
+  endif
+ )
+endef #test-check-prop-empty
+
+define test-check-module-empty
+$(call test-foreach-module-prop, $1, test-check-prop-empty)
+endef #test-check-module-empty
+
 include ../load/main.mk
