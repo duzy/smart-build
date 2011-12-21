@@ -9,8 +9,6 @@
 ## make sure that gcc.mk is included only once
 $(call sm-check-origin, sm.tool.gcc, undefined)
 
-#$(call sm-new-module, foo, gcc: static+shared)
-
 sm.tool.gcc := true
 
 ## basic command names
@@ -120,23 +118,28 @@ $(eval \
 endef #sm.tool.gcc.config-module
 
 ## sm.var.source
+## sm.var.source.computed
+## sm.var.source.lang
+## sm.var.source.suffix
 ## sm.var.intermediate (source -> intermediate)
 define sm.tool.gcc.transform-single-source
 $(call sm-check-not-empty, \
     sm._this $(sm._this).name \
     sm.var.source \
+    sm.var.source.computed \
     sm.var.source.lang \
     sm.var.source.suffix \
     sm.var.intermediate \
  )\
 $(eval #
   $(sm._this).intermediates += $(sm.var.intermediate)
-  sm.var.source.computed := $(call sm.fun.compute-source-of-$(sm.var.source.type))
   sm.var.flags :=
   sm.var.flags += $($(sm._this).used.defines)
   sm.var.flags += $($(sm._this).used.defines.$(sm.var.source.lang))
   sm.var.flags += $($(sm._this).used.compile.flags)
   sm.var.flags += $($(sm._this).used.compile.flags.$(sm.var.source.lang))
+  sm.var.flags += $($(sm._this).defines)
+  sm.var.flags += $($(sm._this).defines$(sm.var.source.lang))
   sm.var.flags += $($(sm._this).compile.flags)
   $$(call sm.fun.append-items-with-fix, sm.var.flags, \
          $($(sm._this).includes)\

@@ -21,6 +21,7 @@ $(call sm-use, module-of-type-static)
 ########## case out
 $(call test-check-value-of,sm.this.using_list,module-of-type-static)
 
+sm.this.defines += -DTEST=\"foo\"
 sm.this.sources := main.c
 
 $(call test-check-undefined,sm.module.module-of-type-exe-use-static.used.libs)
