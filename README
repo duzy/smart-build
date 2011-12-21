@@ -48,7 +48,7 @@ TODO: documentation for these:
       * sm.this.sources.common.LANG
       * sm.this.objects
       * sm.this.depends
-      * sm.this.depends.copyfiles
+      * sm.this.depends.copy
       * sm.this.targets
       * sm.this.objects
       * sm.this.defines

@@ -66,10 +66,10 @@ endif
 # .DELETE_ON_ERROR: foo bar
 
 .PHONY: all clean test $(sm.rules.phony.*)
-ifneq ($(sm.global.goals),)
-  all: $(sm.global.goals)
-  clean: $(sm.global.goals:goal-%=clean-%)
-  doc: $(sm.global.goals:goal-%=doc-%)
+ifdef sm.goals
+  all: $(sm.goals)
+  clean: $(sm.goals:goal-%=clean-%)
+  doc: $(sm.goals:goal-%=doc-%)
 
   ifneq ($(sm.global.tests),)
     test: $(sm.global.tests)

@@ -488,7 +488,8 @@ define sm-generate-implib-external
 endef #sm-generate-implib-external
 
 ## sm-copy-files -- make rules for copying files
-sm-copy-files = $(sm-copy-files-internal)
+sm-copy-files_ = $(sm-copy-files-internal)
+sm-copy-files = $(error sm-copy-files is deprecated, use "utils: copy" instead)
 define sm-copy-files-internal
 $(eval \
   sm.temp._files := $(strip $1)
@@ -507,14 +508,13 @@ $(eval \
   ##########
   sm.var.temp._d := $(sm.temp._location:$(sm.top)/%=%)
  )\
-$(foreach v, $(sm.temp._files),\
+$(foreach v, $(sm.temp._files),$(info copy: $(sm.var.temp._d)/$(notdir $v))\
    $(eval \
-     sm.this.depends.copyfiles += $(sm.var.temp._d)/$(notdir $v)
+     sm.this.depends.copy += $(sm.var.temp._d)/$(notdir $v)
      $(sm.var.temp._d)/$(notdir $v): $(sm.this.dir:$(sm.top)/%=%)/$v
 	@( echo smart: copy: $$@ ) &&\
 	 ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@)) &&\
-	 (cp -u $$< $$@) &&\
-	$(if $(sm.temp._mode), (chmod +x $$@), true)
+	 (cp -u $$< $$@) && $(if $(sm.temp._mode), (chmod +x $$@), true)
     ))
 endef #sm-copy-files-internal
 #####
@@ -537,65 +537,42 @@ $(eval \
     $$(error sm.this.name is empty)
   endif
   ######
+  ifeq ($(sm.this.toolset),)
+    $$(error sm.this.toolset is empty)
+  endif
+  ######
   ifdef sm.this.headers.*
     $$(error "sm.this.headers.* := XXX" is deprecated, using sm.this.headers.XXX directly)
   endif
-  ifdef sm.this.archive.flags
-    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
-  endif
-  ifdef sm.this.archive.flags.infile
-    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
-  endif
-  ifdef sm.this.archive.libs
-    $$(error sm.this.archive.* is deprecated, using sm.this.link.* instead)
-  endif
   ######
-  ifeq ($(filter $(strip $(sm.this.type)),depends none),)
-    ifeq ($(sm.this.toolset),)
-      $$(error sm.this.toolset is empty)
-    endif
-    ifeq (${strip \
-             $(sm.this.sources)\
-             $(sm.this.sources.external)\
-             $(sm.this.intermediates)},)
+  ifeq ($(filter $(strip $(sm.this.toolset)),none),)
+    sm.temp._sources =
+    $(foreach _, $(filter sm.this.sources%,$(.VARIABLES)), sm.temp._sources += $$($_))
+    ifeq ($$(strip $$(sm.temp._sources) $(sm.this.intermediates)),)
       $$(error no source or intermediates defined for '$(sm.this.name)')
     endif
-  else
-    ifeq ($(strip $(sm.this.type)),depends)
-      ifeq (${strip \
-               $(sm.this.depends)\
-               $(sm.this.depends.copyfiles)\
-               $(sm.this.sources)\
-               $(sm.this.headers)\
-               $(foreach _,$(filter sm.this.headers.%,$(.VARIABLES)),$($(_)))\
-             },)
-        $$(error no dependencies defined for '$(sm.this.name)')
-      endif
-    endif
-  endif
-  ######
-  ifneq ($(filter $(strip $(sm.this.type)),t tests),)
-    ifeq ($(sm.this.lang),)
-      $$(error sm.this.lang must be defined for tests module)
-    endif
   endif
   ##########
-  $(foreach _,$(sm.global.hooks.build),$($_))
+  $(foreach _,$(sm.hooks.build),$($_))
   ##########
   sm._this := sm.module.$(sm.this.name)
+  ifeq ($$($$(sm._this)._already_built),true)
+    $$(error module "$(sm.this.name)" has been built already)
+  endif
+
   $$(call sm-clone-module, sm.this, $$(sm._this))
-  ifneq ($$($$(sm._this).type),none)
-    ifeq ($$($$(sm._this)._already_built),true)
-      $$(error module "$(sm.this.name)" has been built already)
-    endif
 
-    $$(sm._this)._cnum := 0
-    include $(sm.dir.buildsys)/build.mk
-    $$(sm._this)._already_built := true
+  $$(sm._this)._cnum := 0
+  include $(sm.dir.buildsys)/build.mk
+  $$(sm._this)._already_built := true
 
-    ifdef $$(sm._this).unterminated.strange
-      $$(error strange source:$$($$(sm._this).unterminated.strange))
-    endif
+  ifdef $$(sm._this).unterminated.strange
+    $$(error strange sources:$$($$(sm._this).unterminated.strange))
+  endif
+
+  #ifneq ($(MAKECMDGOALS),clean)
+  ifndef $$(sm._this).intermediates
+    $$(no-warning no intermediates)
   endif
  )\
 $(eval \
@@ -608,7 +585,7 @@ endef #sm-build-this-internal
 define sm-build-this-external
 $(eval \
   sm._this := sm.module.$(sm.this.name)
-  $(foreach _,$(sm.global.hooks.build),$($_))
+  $(foreach _,$(sm.hooks.build),$($_))
  )\
 $(call sm-clone-module, sm.this, $(sm._this))
 endef #sm-build-this-external
@@ -622,10 +599,10 @@ $(eval \
   ifneq ($(flavor $(sm.temp._name)),recursive)
     $$(error a hook must be a recursive macro)
   endif
-  ifneq ($(filter $(sm.temp._name),$(sm.global.hooks.build)),)
+  ifneq ($(filter $(sm.temp._name),$(sm.hooks.build)),)
     $$(error hook $(sm.temp._name) already setup)
   endif
-  sm.global.hooks.build += $(sm.temp._name)
+  sm.hooks.build += $(sm.temp._name)
  )
 endef #sm-add-module-build-hook
 

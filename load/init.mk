@@ -108,7 +108,7 @@ ifeq ($(sm.config.variant),release)
   sm.global.compile.flags += -O2
 endif
 
-sm.global.hooks.build :=
+sm.hooks.build :=
 
 ###
 sm.global.using :=

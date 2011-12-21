@@ -1,9 +1,9 @@
 #
 #  For any source list of mixture suffixes, e.g. 'foo.cpp foo.S foo.w',
 #  I will first check sm.tool.$(sm.this.toolset) to see if the toolset
-#  can process the source files, if not I will check sm.tool.common for
+#  can process the source files, if not, I will check sm.tool.common for
 #  the source files, if sm.tool.common can't handle it, I will complain
-#  with a error.
+#  with an error.
 #
 #  The source files with suffix '.t' are special fot unit test projects.
 #  They are special because event if no toolset will handle with them, 
@@ -44,11 +44,6 @@ sm.var._headers_vars := $(filter-out \
     %.headers.??? \
    ,$(sm.var._headers_vars))
 
-sm.args.docs_format := ${strip $($(sm._this).docs.format)}
-ifndef sm.args.docs_format
-  sm.args.docs_format := .dvi
-endif
-
 ## Store the unterminated intermediates, all terminated intermediates are stored
 ## in $(sm._this).intermediates, and the final module targets produced from it.
 ##
@@ -63,7 +58,7 @@ $(sm._this).unterminated.strange  :=
 
 ## We copy the public headers first, since the module itself may make use on
 ## the headers. This call will produce "headers-MODULE-NAME" rule.
-$(call sm.fun.make-rules-headers)
+#$(call sm.fun.make-rules-headers)
 
 ## Then we compute the using list.
 $(call sm.fun.compute-using-list)
@@ -78,17 +73,20 @@ $(call sm.fun.compute-terminated-intermediates)
 
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $($(sm._this).sources.unknown)),),\
-            $(call equal,$(strip $($(sm._this).toolset)),common),\
-            $(call equal,$(strip $($(sm._this).type)),depends),\
-            $(call equal,$(strip $($(sm._this).intermediates)),),\
             $(call is-true,$($(sm._this)._intermediates_only))),\
    ,true)
 ifeq ($(sm.var.temp._should_make_targets),true)
   $(call sm.fun.make-rules-targets)
 endif #$(sm.var.temp._should_make_targets) == true
 
+$(sm._this).targets := $(strip $($(sm._this).targets))
+$(sm._this).depends := $(strip $($(sm._this).depends))
+$(sm._this).documents := $(strip $($(sm._this).documents))
+
+goal-$($(sm._this).name): $($(sm._this).targets) $($(sm._this).depends)
+doc-$($(sm._this).name): $($(sm._this).documents)
+
 ifneq ($($(sm._this)._intermediates_only),true)
-  $(call sm.fun.make-rules-goal)
   $(call sm.fun.make-rules-test)
   $(call sm.fun.make-rules-clean)
   $(call sm.fun.invoke-toolset-built-target-mk)

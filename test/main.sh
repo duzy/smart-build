@@ -75,6 +75,14 @@ function test-load-check-scripts
     test-load-scripts-recursively post $D
 }
 
+function test-readfile
+{
+    local F=$1
+    [[ -f $F ]] && {
+        cat $F
+    }
+}
+
 test-load-precondition-scripts .
 
 rm -rf out && make -f main.mk && make -f main.mk doc

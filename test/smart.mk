@@ -1,6 +1,8 @@
 #
 #	2011-11-04 Duzy Chan <code@duzy.info>
 #
+THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+test.temp.this-dir := $(patsubst %/,%,$(dir $(THIS_MAKEFILE)))
 $(call test-check-defined,  test.case.smart-config-loaded)
 $(call test-check-value-of, test.case.smart-config-loaded,1)
 
@@ -22,7 +24,7 @@ $(call test-check-value,$(sm.this.toolset),none)
 #$(call test-check-value-of,sm.module.foobar.name,foobar)
 #$(call test-check-value-of,sm.module.foobar.type,none)
 
-test.temp.this-dir := $(sm.this.dir)
+$(call test-check-value,$(test.temp.this-dir),$(sm.this.dir))
 
 $(call test-check-defined, sm-build-this)
 $(call test-check-flavor,  sm-build-this, recursive)
