@@ -172,15 +172,17 @@ $(call sm-check-not-empty, sm._this \
   $(sm._this).intermediates \
  )\
 $(eval #
-  sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
   sm.var.intermediates := $($(sm._this).intermediates)
+  sm.var.target :=
   sm.var.flags :=
   ifeq ($($(sm._this).type),static)
+    sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name)$($(sm._this).suffix)
     sm.var.flags += $($(sm._this).used.archive.flags)
     sm.var.flags += $($(sm._this).used.archive.flags.$($(sm._this).lang))
     sm.var.flags += $($(sm._this).archive.flags)
     sm.var.flags += $($(sm._this).archive.flags.$($(sm._this).lang))
   else
+    sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
     sm.var.flags += $($(sm._this).used.link.flags)
     sm.var.flags += $($(sm._this).used.link.flags.$($(sm._this).lang))
     sm.var.flags += $($(sm._this).link.flags)
