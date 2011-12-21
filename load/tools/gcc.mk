@@ -11,14 +11,6 @@ $(call sm-check-origin, sm.tool.gcc, undefined)
 
 sm.tool.gcc := true
 
-## basic command names
-sm.tool.gcc.cmd.c := gcc
-sm.tool.gcc.cmd.c++ := g++
-sm.tool.gcc.cmd.go := gccgo
-sm.tool.gcc.cmd.asm := gcc
-sm.tool.gcc.cmd.ld := gcc
-sm.tool.gcc.cmd.ar := ar crs
-
 ## Languages supported by this toolset, the order is significant,
 ## the order defines the priority of linker
 sm.tool.gcc.langs := c++ go c asm
@@ -117,12 +109,30 @@ $(eval \
  )
 endef #sm.tool.gcc.config-module
 
+sm.tool.gcc.transform.headers := h
+sm.tool.gcc.transform.static  := bin
+sm.tool.gcc.transform.shared  := bin
+sm.tool.gcc.transform.exe     := bin
+
 ## sm.var.source
 ## sm.var.source.computed
 ## sm.var.source.lang
 ## sm.var.source.suffix
 ## sm.var.intermediate (source -> intermediate)
 define sm.tool.gcc.transform-single-source
+$(foreach _, $($(sm._this).toolset.args), \
+  $(call sm.tool.gcc.transform-source-$(sm.tool.gcc.transform.$_)))
+endef #sm.tool.gcc.transform-single-source
+
+##
+##
+define sm.tool.gcc.transform-source-h
+$(info TODO: gcc: header: $(sm.var.source.computed))
+endef #sm.tool.gcc.transform-source-h
+
+##
+##
+define sm.tool.gcc.transform-source-bin
 $(call sm-check-not-empty, \
     sm._this $(sm._this).name \
     sm.var.source \
@@ -160,17 +170,30 @@ $(eval #
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, gcc: $(sm.var.source.lang), $(sm.var.command))
  )
-endef #sm.tool.gcc.transform-single-source
+endef #sm.tool.gcc.transform-source-bin
 
 ##
 ##
 define sm.tool.gcc.transform-intermediates
+$(foreach _, $($(sm._this).toolset.args), \
+  $(call sm.tool.gcc.transform-intermediates-$(sm.tool.gcc.transform.$_)))
+endef #sm.tool.gcc.transform-intermediates
+
+##
+##
+define sm.tool.gcc.transform-intermediates-h
+$(info TODO: gcc: header: $(sm.var.source.computed))
+endef #sm.tool.gcc.transform-intermediates-h
+
+##
+##
+define sm.tool.gcc.transform-intermediates-bin
 $(call sm-check-not-empty, sm._this \
   $(sm._this).name \
   $(sm._this).lang \
   $(sm._this).type \
   $(sm._this).intermediates \
- )\
+ , gcc: unknown language)\
 $(eval #
   sm.var.intermediates := $($(sm._this).intermediates)
   sm.var.target :=
@@ -222,4 +245,4 @@ $(eval #
     $$(info TODO: gcc: linkable target)
   endif
  )
-endef #sm.tool.gcc.transform-intermediates
+endef #sm.tool.gcc.transform-intermediates-bin
