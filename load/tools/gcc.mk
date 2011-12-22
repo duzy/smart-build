@@ -190,7 +190,7 @@ $(eval #
 	$(call sm.fun.wrap-rule-commands, gcc: $(sm.var.source.lang), $(sm.var.command))
 
   ifdef sm.var.command.d
-  ifeq ($(call true,$($(sm._this).gen_deps)),true)
+  ifeq ($(call sm-true,$($(sm._this).gen_deps)),true)
     -include $(sm.var.intermediate).d
     $(sm.var.intermediate).d : $(sm.var.source.computed)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
