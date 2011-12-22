@@ -1,6 +1,6 @@
 #
 #
-ifeq ($($(sm._this).type),shared)
+ifeq ($(filter shared,$($(sm._this).toolset.args)),shared)
   ndk-libs: ndk-libs-$($(sm._this).name)
 
   define android-ndk-prepare-libs

@@ -83,7 +83,7 @@ $(sm._this).documents := $(strip $($(sm._this).documents))
 goal-$($(sm._this).name): $($(sm._this).targets) $($(sm._this).depends)
 doc-$($(sm._this).name): $($(sm._this).documents)
 
-ifneq ($($(sm._this)._intermediates_only),true)
+ifneq ($(call sm-true,$($(sm._this)._intermediates_only)),true)
   $(call sm.fun.make-rules-test)
   $(call sm.fun.make-rules-clean)
   $(call sm.fun.invoke-toolset-built-target-mk)

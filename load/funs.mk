@@ -170,6 +170,9 @@ $(foreach sm.var.source_var, $(sm.var.source_vars),\
        $(sm.fun.make-intermediate-rule))\
   $(eval \
     sm.var.source.type :=
+
+    ## must clear the sources
+    $(sm.var.source_var) :=
    )\
  )
 endef #sm.fun.make-rules-intermediates
@@ -322,13 +325,13 @@ endef #sm.fun.compute-intermediates
 ##
 define sm.fun.invoke-toolset-built-target-mk
 $(eval \
-  ifeq ($(sm.var.temp._should_make_targets),true)
+  #ifeq ($(sm.var.temp._should_make_targets),true)
     sm.var.temp._built_mk := $(sm.dir.buildsys)/tools/$($(sm._this).toolset)/built-target.mk
     sm.var.temp._built_mk := $$(wildcard $$(sm.var.temp._built_mk))
     ifdef sm.var.temp._built_mk
-      include $(sm.var.temp._built_mk)
+      include $$(sm.var.temp._built_mk)
     endif #sm.var.temp._built_mk
-  endif # sm.var.temp._should_make_targets == true
+  #endif # sm.var.temp._should_make_targets == true
  )
 endef #sm.fun.invoke-toolset-built-target-mk
 
