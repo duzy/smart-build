@@ -2,8 +2,8 @@
 #
 $(call sm-new-module, native-activity, android-ndk: shared ABI=armeabi PLATFORM=android-9)
 
-## TODO: get rid of the usage of android-ndk-import-module
-$(call android-ndk-import-module, android/native_app_glue)
+## TODO: get rid of the usage of android-ndk-import
+$(call android-ndk-import, android/native_app_glue)
 $(info includes: $(sm.module.android_native_app_glue.export.includes))
 $(info libs: $(sm.module.android_native_app_glue.export.libs))
 

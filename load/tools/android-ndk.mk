@@ -10,7 +10,9 @@ $(call sm-check-origin, sm.tool.android-ndk, undefined)
 
 android.tool.dir := $(call sm-this-dir)
 
-ANDROID_NDK_PATH := $(wildcard ~/open/android-ndk-r6)
+#ANDROID_NDK_PATH := $(wildcard ~/open/android-ndk-r6)
+#ANDROID_NDK_PATH := $(wildcard ~/open/android-ndk-r6b)
+ANDROID_NDK_PATH := $(wildcard ~/open/android-ndk-r7)
 
 sm.tool.android-ndk := true
 sm.tool.android-ndk.path := $(ANDROID_NDK_PATH)
@@ -49,6 +51,16 @@ sm.tool.android-ndk.flags.link.variant.release := -O3
 ##
 define sm.tool.android-ndk.link
 $(eval \
+  # these vars is used in android-ndk-r6b, android-ndk-r7, see build-binary.mk
+  PRIVATE_LD := $(TARGET_LD)
+  PRIVATE_LDFLAGS := $(TARGET_LDFLAGS) $(LOCAL_LDFLAGS)
+  PRIVATE_LDLIBS  := $(LOCAL_LDLIBS) $(TARGET_LDLIBS)
+  PRIVATE_LIBGCC := $(TARGET_LIBGCC)
+  PRIVATE_CXX := $(TARGET_CXX)
+  PRIVATE_CC := $(TARGET_CC)
+  PRIVATE_SYSROOT := $(SYSROOT)
+  PRIVATE_NAME := $(notdir $(sm.var.target))
+
   PRIVATE_OBJECTS := $(sm.var.intermediates)
   PRIVATE_WHOLE_STATIC_LIBRARIES :=
   PRIVATE_STATIC_LIBRARIES :=
@@ -64,15 +76,26 @@ $(eval \
     sm.temp._class := shared-library
     PRIVATE_LDFLAGS += -Wl,-no-undefined
   endif # is shared library
+
+  ifndef cmd-build-$$(sm.temp._class)
+    $$(error android-ndk: "cmd-build-$$(sm.temp._class)" is undefined)
+  endif
  )$(cmd-build-$(sm.temp._class))
 endef #sm.tool.android-ndk.link
 
+#$(info $(value cmd-build-static-library))
 define sm.tool.android-ndk.archive
 $(eval \
+  # PRIVATE_AR is used in android-ndk-r6b, android-ndk-r7, see build-binary.mk
+  PRIVATE_AR := $(TARGET_AR) $(TARGET_ARFLAGS)
   PRIVATE_OBJECTS := $(sm.var.intermediates)
   @ := $(sm.var.target)
   ^ := $(sm.var.intermediates)
   < := $(firstword $(sm.var.intermediates))
+
+  ifndef cmd-build-static-library
+    $$(error android-ndk: "cmd-build-static-library" is undefined)
+  endif
  )$(cmd-build-static-library)
 endef #sm.tool.android-ndk.archive
 
@@ -195,7 +218,7 @@ $(call sm-check-not-empty, \
     sm.var.source.lang \
     sm.var.source.suffix \
     sm.var.intermediate \
- )\
+ , android-ndk: strange parameters for "$(sm.var.source)" of "$($(sm._this).name)")\
 $(eval #
   sm.var.flags :=
   sm.var.flags += $($(sm._this).used.defines)

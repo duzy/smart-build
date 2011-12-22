@@ -45,7 +45,7 @@ $(call import-add-path-optional,$(NDK_ROOT)/sources)
 $(call import-add-path-optional,$(NDK_ROOT)/../development/ndk/sources)
 ################################################## end setup imports
 
-define android-ndk-import-module
+define android-ndk-import
 $(import-module)\
 $(eval \
   ifndef __ndk_modules
@@ -93,4 +93,4 @@ $(eval \
   sm.this.depends += goal-$($(sm.temp._ndk_m).MODULE)
   sm.goals += goal-$($(sm.temp._ndk_m).MODULE)
  )
-endef #android-ndk-import-module
+endef #android-ndk-import

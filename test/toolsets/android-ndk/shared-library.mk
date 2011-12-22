@@ -6,13 +6,13 @@ $(call sm-new-module, native-activity, android-ndk: shared ABI=armeabi PLATFORM=
 $(call test-check-defined,NDK_ROOT)
 $(call test-check-defined,TOOLCHAIN_PREFIX)
 
-## TODO: get rid of the usage of android-ndk-import-module
+## TODO: get rid of the usage of android-ndk-import
 
 $(call test-check-undefined,sm.module.android_native_app_glue.dir)
 $(call test-check-undefined,sm.module.android_native_app_glue.name)
 $(call test-check-undefined,sm.module.android_native_app_glue.type)
-$(call test-check-flavor,android-ndk-import-module,recursive)
-$(call android-ndk-import-module, android/native_app_glue)
+$(call test-check-flavor,android-ndk-import,recursive)
+$(call android-ndk-import, android/native_app_glue)
 $(call test-check-value-pat-of,sm.module.android_native_app_glue.dir,%/sources/android/native_app_glue)
 $(call test-check-value-of,sm.module.android_native_app_glue.type,static)
 $(call test-check-value-of,sm.module.android_native_app_glue.name,android_native_app_glue)
