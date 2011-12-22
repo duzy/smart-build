@@ -53,7 +53,7 @@ define sm.fun.shift-flags-to-file
 $(strip $(eval #
   sm.temp._flagsvar := $(strip $1)
   sm.temp._what  := $(strip $2)
-  sm.temp._shift := $(call true,$(strip $3))
+  sm.temp._shift := $(call sm-true,$(strip $3))
  )\
 $(eval #
   sm.temp._flag_file :=
@@ -141,12 +141,10 @@ $(eval \
   ## Reduce the unterminated list to produce terminated intermediates.
   include $(sm.dir.buildsys)/funs/reduce.mk
 
+  $$(call sm-check-empty, sm.any-unterminated-sources)
+
   sm.any-unterminated-sources :=
   ## All unterminated intermediates are expected to be reduced at this point!
- )\
-$(call sm-check-empty, \
-    $(sm._this).unterminated.external \
-    $(sm._this).unterminated \
  )
 endef #sm.fun.compute-terminated-intermediates
 
@@ -226,7 +224,7 @@ $(strip $(eval \
   sm.temp._command_prompt := $(strip $1)
   sm.temp._command_text := $(filter %,$2)
  )\
-$(if $(call true,$($(sm._this).verbose)),\
+$(if $(call sm-true,$($(sm._this).verbose)),\
     $(sm.temp._command_text) \
  ,\
     $(sm.temp._command_text) \
@@ -352,7 +350,7 @@ endef #sm.fun.make-rules-targets
 ## copy headers according to sm.this.headers.PREFIX
 define sm.fun.make-rules-headers-of-prefix
 $(eval \
-    ifneq ($(call true,$($(sm._this).headers.$(sm.var.temp._hp)!)),true)
+    ifneq ($(call sm-true,$($(sm._this).headers.$(sm.var.temp._hp)!)),true)
     ifneq ($($(sm._this).headers.$(sm.var.temp._hp)),)
       $$(call sm-copy-files, $($(sm._this).headers.$(sm.var.temp._hp)), $(sm.out.inc)/$(sm.var.temp._hp))
     endif # $(sm._this).headers.$(sm.var.temp._hp)! != true
@@ -370,7 +368,7 @@ $(eval \
  )\
 $(eval \
   ## headers from sm.this.headers
-  ifneq ($(call true,$($(sm._this).headers!)),true)
+  ifneq ($(call sm-true,$($(sm._this).headers!)),true)
     ifdef $(sm._this).headers
       $$(call sm-copy-files, $($(sm._this).headers), $(sm.out.inc))
     endif # $(sm._this).headers != ""
@@ -428,7 +426,7 @@ $(if $(call equal,$($(sm._this).type),depends), $(eval \
     clean-$($(sm._this).name)-depends \
     $($(sm._this).clean-steps)
 
-  ifeq ($(call true,$($(sm._this).verbose)),true)
+  ifeq ($(call sm-true,$($(sm._this).verbose)),true)
     clean-$($(sm._this).name)-flags:
 	rm -f $$($(sm._this).flag_files)
     clean-$($(sm._this).name)-targets:

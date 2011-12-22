@@ -23,16 +23,18 @@ define not-equal
 $(if $(findstring x$1x,x$2x),,true)
 endef #not-equal
 
-is-true = $(error use "true" instead of "is-true")
-is-false = $(error use "false" instead of "is-false")
+is-true = $(error use "sm-true" instead of "is-true")
+is-false = $(error use "sm-false" instead of "is-false")
+is-true = $(error use "sm-true" instead of "true")
+is-false = $(error use "sm-false" instead of "false")
 
-define true
+define sm-true
 $(or $(call equal,$1,true),$(call equal,$1,yes),$(call equal,$1,1))
-endef #true
+endef #sm-true
 
-define false
-$(if $(call true,$1),,true)
-endef #false
+define sm-false
+$(if $(call sm-true,$1),,true)
+endef #sm-false
 
 #####
 # Exported callable macros.

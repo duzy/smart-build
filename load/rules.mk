@@ -71,11 +71,8 @@ endif ## $(sm._this).type != depends
 ## Computes the terminated intermediates.
 $(call sm.fun.compute-terminated-intermediates)
 
-sm.var.temp._should_make_targets := \
-  $(if $(or $(call not-equal,$(strip $($(sm._this).sources.unknown)),),\
-            $(call true,$($(sm._this)._intermediates_only))),\
-   ,true)
-ifeq ($(sm.var.temp._should_make_targets),true)
+# $(strip $($(sm._this).sources.unknown))
+ifneq ($(call sm-true,$($(sm._this)._intermediates_only)),true)
   $(call sm.fun.make-rules-targets)
 endif #$(sm.var.temp._should_make_targets) == true
 
