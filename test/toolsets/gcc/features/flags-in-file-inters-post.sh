@@ -1,7 +1,7 @@
 # -*- bash -*-
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/intermediates/features/feature-flags-in-file-inters/main.c.o
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/intermediates/features/feature-flags-in-file-inters/main.c.o.d
-test-check-file ${BASH_SOURCE}:${LINENO} $OUT_TEMP/feature-flags-in-file-inters/link.intermediates
+test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/intermediates/feature-flags-in-file-inters/toolsets/gcc/features/main.c.o
+test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/intermediates/feature-flags-in-file-inters/toolsets/gcc/features/main.c.o.d
+test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/temp/feature-flags-in-file-inters/flags.intermediates.link.0
 
-out=`cat $OUT_TEMP/feature-flags-in-file-inters/link.intermediates`
-test-check-value ${BASH_SOURCE}:${LINENO} "$out" "out/gcc/debug/intermediates/features/feature-flags-in-file-inters/main.c.o"
+out=`test-readfile $TOP/out/gcc/debug/temp/feature-flags-in-file-inters/flags.intermediates.link.0`
+test-check-value ${BASH_SOURCE}:${LINENO} "$out" "out/gcc/debug/intermediates/feature-flags-in-file-inters/toolsets/gcc/features/main.c.o"

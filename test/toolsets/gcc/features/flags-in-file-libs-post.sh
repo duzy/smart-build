@@ -1,9 +1,9 @@
 # -*- bash -*-
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/intermediates/features/feature-flags-in-file-libs/main.c.o
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/intermediates/features/feature-flags-in-file-libs/main.c.o.d
-test-check-file ${BASH_SOURCE}:${LINENO} $OUT_TEMP/feature-flags-in-file-libs/link.libs
+test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/intermediates/feature-flags-in-file-libs/toolsets/gcc/features/main.c.o
+test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/intermediates/feature-flags-in-file-libs/toolsets/gcc/features/main.c.o.d
+test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/temp/feature-flags-in-file-libs/flags.libs.link.0
 
-out=`cat $OUT_TEMP/feature-flags-in-file-libs/link.libs`
+out=`test-readfile $TOP/out/gcc/debug/temp/feature-flags-in-file-libs/flags.libs.link.0`
 test-check-value-contains ${BASH_SOURCE}:${LINENO} "$out" "-Ltest"
 test-check-value-contains ${BASH_SOURCE}:${LINENO} "$out" "-lm"
 test-check-value ${BASH_SOURCE}:${LINENO} "$out" "-Ltest -lm"

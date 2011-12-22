@@ -15,8 +15,10 @@ $(call test-check-value-of,sm.this.suffix,.so)
 $(call test-check-value-of,sm.this.toolset,gcc)
 $(call test-check-value-of,sm.this.toolset.args,shared)
 
-sm.this.sources := foo.c foo.go
-sm.this.compile.flags += -fPIC
+sm.this.sources := foo.c bar.c foo.go
+sm.this.compile.flags.c += -DC -fPIC
+sm.this.compile.flags-bar.c += -DBAR
+sm.this.compile.flags.go += -DG -fPIC
 
 sofilename := $(sm.out.bin)/$(sm.this.name)$(sm.this.suffix)
 sm.this.export.libs := $(sofilename)

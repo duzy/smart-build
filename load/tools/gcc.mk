@@ -142,30 +142,38 @@ $(call sm-check-not-empty, \
     sm.var.intermediate \
  )\
 $(eval #
-  $(sm._this).intermediates += $(sm.var.intermediate)
   sm.var.flags :=
   sm.var.flags += $($(sm._this).used.defines)
   sm.var.flags += $($(sm._this).used.defines.$(sm.var.source.lang))
   sm.var.flags += $($(sm._this).used.compile.flags)
   sm.var.flags += $($(sm._this).used.compile.flags.$(sm.var.source.lang))
   sm.var.flags += $($(sm._this).defines)
-  sm.var.flags += $($(sm._this).defines$(sm.var.source.lang))
+  sm.var.flags += $($(sm._this).defines.$(sm.var.source.lang))
   sm.var.flags += $($(sm._this).compile.flags)
+  sm.var.flags += $($(sm._this).compile.flags.$(sm.var.source.lang))
+
   $$(call sm.fun.append-items-with-fix, sm.var.flags, \
          $($(sm._this).includes)\
          $($(sm._this).used.includes)\
          $($(sm.var.tool).includes)\
         , -I, , -%)
-  sm.var.flags += $(strip $($(sm._this).compile.flags-$(sm.var.source)))
+
   $$(call sm-remove-duplicates,sm.var.flags)
- )\
-$(eval #
-  sm.var.command := $(sm.tool.gcc.command.compile.$(sm.var.source.lang))
- )\
-$(eval #
-  ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
-    $(sm.var.intermediate) : $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang)
+
+  sm.var.flags.file := $$(call sm.fun.shift-flags-to-file, sm.var.flags, compile.$(sm.var.source.lang), $($(sm._this).compile.flags.infile))
+  ifdef sm.var.flags.file
+    $(sm.var.intermediate) : $$(sm.var.flags.file)
+    sm.var.flags := @$$(sm.var.flags.file)
   endif
+
+  sm.var.flags += $(strip $($(sm._this).compile.flags-$(sm.var.source)))
+
+  $$(call sm-remove-duplicates,sm.var.flags)
+
+  sm.var.command := $$(sm.tool.gcc.command.compile.$(sm.var.source.lang))
+ )\
+$(eval #
+  $(sm._this).intermediates += $(sm.var.intermediate)
   $(sm.var.intermediate) : $(sm.var.source.computed)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, gcc: $(sm.var.source.lang), $(sm.var.command))
@@ -229,7 +237,26 @@ $(call sm.fun.append-items-with-fix, sm.var.loadlibs, \
 $(call sm-remove-duplicates,sm.var.flags)\
 $(call sm-remove-duplicates,sm.var.loadlibs)\
 $(eval #
-  $(sm._this).targets += $$(sm.var.target)
+  sm.var.flags.file := $$(call sm.fun.shift-flags-to-file, sm.var.flags, link, $($(sm._this).link.flags.infile))
+  ifdef sm.var.flags.file
+    $(sm.var.intermediate) : $$(sm.var.flags.file)
+    sm.var.flags := @$$(sm.var.flags.file)
+  endif
+
+  sm.var.flags.file := $$(call sm.fun.shift-flags-to-file, sm.var.intermediates, intermediates.link, $($(sm._this).link.intermediates.infile))
+  ifdef sm.var.flags.file
+    $(sm.var.intermediate) : $$(sm.var.flags.file)
+    sm.var.intermediates.preq := $(sm.var.intermediates)
+    sm.var.intermediates := @$$(sm.var.flags.file)
+  else
+    sm.var.intermediates.preq = $(sm.var.intermediates)
+  endif
+
+  sm.var.flags.file := $$(call sm.fun.shift-flags-to-file, sm.var.loadlibs, libs.link, $($(sm._this).libs.infile))
+  ifdef sm.var.flags.file
+    $(sm.var.intermediate) : $$(sm.var.flags.file)
+    sm.var.loadlibs := @$$(sm.var.flags.file)
+  endif
 
   ifeq ($($(sm._this).type),static)
     sm.var.command := $(sm.tool.gcc.command.archive)
@@ -238,7 +265,8 @@ $(eval #
   endif
  )\
 $(eval #
-  $(sm.var.target) : $(sm.var.intermediates)
+  $(sm._this).targets += $$(sm.var.target)
+  $(sm.var.target) : $(sm.var.intermediates.preq)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, gcc, $(sm.var.command))
   ifeq ($($(sm._this).type),shared)
