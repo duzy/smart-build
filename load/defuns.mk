@@ -211,7 +211,7 @@ $(eval \
     $$(error smart file '$(sm.temp._smartfile)' missed)
   endif
   ##########
-  $$(info smart: load '$(sm.temp._smartfile)'..)
+  $$(info smart: load '$(sm.temp._smartfile:$(sm.top)/%=%)'..)
   $$(call sm-reset-module, sm.this)
   include $(sm.temp._smartfile)
   sm.result.module.name := $$(sm.this.name)
