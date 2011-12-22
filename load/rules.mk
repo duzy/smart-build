@@ -73,7 +73,7 @@ $(call sm.fun.compute-terminated-intermediates)
 
 sm.var.temp._should_make_targets := \
   $(if $(or $(call not-equal,$(strip $($(sm._this).sources.unknown)),),\
-            $(call is-true,$($(sm._this)._intermediates_only))),\
+            $(call true,$($(sm._this)._intermediates_only))),\
    ,true)
 ifeq ($(sm.var.temp._should_make_targets),true)
   $(call sm.fun.make-rules-targets)

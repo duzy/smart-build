@@ -13,7 +13,7 @@
 #####
 define equal
 $(if $(findstring x$1x,x$2x),true,)
-endef
+endef #equal
 # $(info equal: $(call equal,foo,foo))
 # $(info equal: $(call equal,foo, foo))
 # $(info equal: $(call equal,foobar,foo))
@@ -21,15 +21,18 @@ endef
 
 define not-equal
 $(if $(findstring x$1x,x$2x),,true)
-endef
+endef #not-equal
 
-define is-true
-$(or $(call equal,$1,true),$(call equal,$1,yes))
-endef
+is-true = $(error use "true" instead of "is-true")
+is-false = $(error use "false" instead of "is-false")
 
-define is-false
-$(if $(call is-true,$1),,true)
-endef
+define true
+$(or $(call equal,$1,true),$(call equal,$1,yes),$(call equal,$1,1))
+endef #true
+
+define false
+$(if $(call true,$1),,true)
+endef #false
 
 #####
 # Exported callable macros.

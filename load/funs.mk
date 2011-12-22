@@ -72,6 +72,30 @@ define sm.code.shift-flags-to-file
 $$(eval $$(call sm.code.shift-flags-to-file-r,$(strip $1),$(strip $2)))
 endef #sm.code.shift-flags-to-file
 
+## (bool,var,what)
+define sm.fun.shift-flags-to-file
+$(strip $(eval #
+  sm.temp._flagsvar := $(strip $1)
+  sm.temp._what  := $(strip $2)
+  sm.temp._shift := $(call true,$(strip $3))
+ )\
+$(eval #
+  sm.temp._flag_file :=
+  ifeq ($(sm.temp._shift),true)
+    sm.temp._flag_file := $($(sm._this).out.tmp)/flags.$(sm.temp._what).$($(sm._this)._cnum)
+    sm.temp._flat_flags := $(subst \",\\\",$($(sm.temp._flagsvar)))
+  endif
+ )\
+$(if $(sm.temp._flag_file),\
+  $(eval #
+    $(sm.temp._flag_file) : $($(sm._this).makefile)
+	$$(info smart: flags: $$@)\
+	mkdir -p $$(@D) && echo "$(sm.temp._flat_flags)" > $$@
+   )\
+ )\
+$(sm.temp._flag_file))
+endef #sm.fun.shift-flags-to-file
+
 ## <!!!>
 define sm.fun.compute-compile-flags
 ${eval \
@@ -115,7 +139,7 @@ ${eval \
 
     $$(call sm-remove-duplicates,$(sm.var.temp._fvar_name))
 
-    ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
+    ifeq ($(call true,$($(sm._this).compile.flags.infile)),true)
       $(call sm.code.shift-flags-to-file,$(sm.temp._fvar_prop))
     endif
   endif
@@ -143,7 +167,7 @@ ${eval \
 
     $$(call sm-remove-duplicates,$(sm._this)._link.flags)
 
-    ifeq ($(call is-true,$($(sm._this).link.flags.infile)),true)
+    ifeq ($(call true,$($(sm._this).link.flags.infile)),true)
       $(call sm.code.shift-flags-to-file,_link.flags)
     endif
   endif
@@ -165,7 +189,7 @@ $(eval \
     $(sm._this)._link.intermediates.computed := true
     $(sm._this)._link.intermediates := $(filter $(sm.temp._intermediates_filters), $($(sm._this).intermediates))
 
-    ifeq ($(call is-true,$($(sm._this).link.intermediates.infile)),true)
+    ifeq ($(call true,$($(sm._this).link.intermediates.infile)),true)
       $(call sm.code.shift-flags-to-file,_link.intermediates)
     endif
   endif
@@ -200,7 +224,7 @@ ${eval \
        $$($(sm._this)._link.libdirs) \
        $$($(sm._this)._link.libs)
 
-    ifeq ($(call is-true,$($(sm._this).libs.infile)),true)
+    ifeq ($(call true,$($(sm._this).libs.infile)),true)
       $(call sm.code.shift-flags-to-file,_link.libs)
     endif
   endif
@@ -249,7 +273,7 @@ endef #sm.fun.make-rules-targets
 ## copy headers according to sm.this.headers.PREFIX
 define sm.fun.make-rules-headers-of-prefix
 $(eval \
-    ifneq ($(call is-true,$($(sm._this).headers.$(sm.var.temp._hp)!)),true)
+    ifneq ($(call true,$($(sm._this).headers.$(sm.var.temp._hp)!)),true)
     ifneq ($($(sm._this).headers.$(sm.var.temp._hp)),)
       $$(call sm-copy-files, $($(sm._this).headers.$(sm.var.temp._hp)), $(sm.out.inc)/$(sm.var.temp._hp))
     endif # $(sm._this).headers.$(sm.var.temp._hp)! != true
@@ -267,7 +291,7 @@ $(eval \
  )\
 $(eval \
   ## headers from sm.this.headers
-  ifneq ($(call is-true,$($(sm._this).headers!)),true)
+  ifneq ($(call true,$($(sm._this).headers!)),true)
     ifdef $(sm._this).headers
       $$(call sm-copy-files, $($(sm._this).headers), $(sm.out.inc))
     endif # $(sm._this).headers != ""
@@ -324,7 +348,7 @@ $(if $(call equal,$($(sm._this).type),depends), $(eval \
     clean-$($(sm._this).name)-depends \
     $($(sm._this).clean-steps)
 
-  ifeq ($(call is-true,$($(sm._this).verbose)),true)
+  ifeq ($(call true,$($(sm._this).verbose)),true)
     clean-$($(sm._this).name)-flags:
 	rm -f $$($(sm._this).flag_files)
     clean-$($(sm._this).name)-targets:
@@ -378,30 +402,14 @@ $(eval \
   endif
 
   $(foreach sm.var.lang, $($(sm.var.tool).langs),
-    $(foreach sm.temp._suffix, $($(sm.var.tool).suffix.$(sm.var.lang)),
-      sm.var.lang$(sm.temp._suffix) := $(sm.var.lang)
-     )
-   )
-  $(foreach sm.var.lang, $(sm.tool.common.langs),
-    $(foreach sm.temp._suffix, $(sm.tool.common.suffix.$(sm.var.lang)),
-      sm.var.lang$(sm.temp._suffix) := $(sm.var.lang)
+    $(foreach _, $($(sm.var.tool).suffix.$(sm.var.lang)),
+      sm.var.lang$_ := $(sm.var.lang)
      )
    )
 
   sm.var.lang :=
-
-  ifeq ($($(sm._this).type),t)
-    $$(call sm-check-not-empty, $(sm._this).lang, 'sm.this.lang' must be specified for "tests")
-    sm.var.lang.t := $($(sm._this).lang)
-  endif
  )
 endef #sm.fun.init-toolset
-  # ifneq ($($(sm._this).toolset),common)
-  #   ifndef $(sm._this).suffix
-  #     ${call sm-check-defined,$(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name)}
-  #     $(sm._this).suffix := $($(sm.var.tool).suffix.target.$($(sm._this).type).$(sm.os.name))
-  #   endif
-  # endif # $(sm._this).toolset != common
 
 ## <NEW>
 ## 
@@ -535,7 +543,7 @@ $(strip $(eval \
   sm.temp._command_prompt := $(strip $1)
   sm.temp._command_text := $(filter %,$2)
  )\
-$(if $(call is-true,$($(sm._this).verbose)),\
+$(if $(call true,$($(sm._this).verbose)),\
     $(sm.temp._command_text) \
  ,\
     $(sm.temp._command_text) \
@@ -675,7 +683,7 @@ $(eval sm.temp._intermediate_d := $(sm.temp._intermediate).d)\
 $(eval \
   -include $(sm.temp._intermediate_d)
 
-  ifeq ($(call is-true,$($(sm._this).compile.flags.infile)),true)
+  ifeq ($(call true,$($(sm._this).compile.flags.infile)),true)
     sm.temp._flag_file := $($(sm._this).out.tmp)/compile.flags.$($(sm._this)._cnum).$(sm.var.source.lang)
   else
     sm.temp._flag_file :=
