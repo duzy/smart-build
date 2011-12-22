@@ -53,13 +53,25 @@ define sm.tool.gcc.command.compile.c
 gcc $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
 endef #sm.tool.gcc.command.compile.c
 
+define sm.tool.gcc.command.compile.c.d
+gcc -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+endef #sm.tool.gcc.command.compile.c.d
+
 define sm.tool.gcc.command.compile.c++
 g++ $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
 endef #sm.tool.gcc.command.compile.c++
 
+define sm.tool.gcc.command.compile.c++.d
+g++ -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+endef #sm.tool.gcc.command.compile.c++.d
+
 define sm.tool.gcc.command.compile.go
 gccgo $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
 endef #sm.tool.gcc.command.compile.go
+
+define sm.tool.gcc.command.compile.go.d
+gccgo -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+endef #sm.tool.gcc.command.compile.go.d
 
 define sm.tool.gcc.command.compile.asm
 gcc $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
@@ -160,7 +172,7 @@ $(eval #
 
   sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.flags, compile.$(sm.var.source.lang), $($(sm._this).compile.flags.infile))
   ifdef sm.temp._flagsfile
-    $(sm.var.intermediate) : $$(sm.temp._flagsfile)
+    $(sm.var.intermediate) $(sm.var.intermediate).d : $$(sm.temp._flagsfile)
     sm.var.flags := @$$(sm.temp._flagsfile)
   endif
 
@@ -169,12 +181,22 @@ $(eval #
   $$(call sm-remove-duplicates,sm.var.flags)
 
   sm.var.command := $$(sm.tool.gcc.command.compile.$(sm.var.source.lang))
+  sm.var.command.d := $$(sm.tool.gcc.command.compile.$(sm.var.source.lang).d)
  )\
 $(eval #
   $(sm._this).intermediates += $(sm.var.intermediate)
   $(sm.var.intermediate) : $(sm.var.source.computed)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, gcc: $(sm.var.source.lang), $(sm.var.command))
+
+  ifdef sm.var.command.d
+  ifeq ($(call true,$($(sm._this).gen_deps)),true)
+    -include $(sm.var.intermediate).d
+    $(sm.var.intermediate).d : $(sm.var.source.computed)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.wrap-rule-commands, gcc: $(sm.var.source.lang), $(sm.var.command.d))
+  endif
+  endif
  )
 endef #sm.tool.gcc.transform-source-bin
 
