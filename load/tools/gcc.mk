@@ -26,16 +26,14 @@ sm.tool.gcc.suffix.intermediate.go := .o
 sm.tool.gcc.suffix.intermediate.asm := .o
 
 ## Target link output file suffix.
-sm.tool.gcc.suffix.target.static.win32 := .a
-sm.tool.gcc.suffix.target.shared.win32 := .so
-sm.tool.gcc.suffix.target.exe.win32 := .exe
-sm.tool.gcc.suffix.target.t.win32 := .test.exe
-sm.tool.gcc.suffix.target.depends.win32 :=
-sm.tool.gcc.suffix.target.static.linux := .a
-sm.tool.gcc.suffix.target.shared.linux := .so
-sm.tool.gcc.suffix.target.exe.linux :=
-sm.tool.gcc.suffix.target.t.linux := .test
-sm.tool.gcc.suffix.target.depends.linux :=
+sm.tool.gcc.suffix.target.win32.static := .a
+sm.tool.gcc.suffix.target.win32.shared := .so
+sm.tool.gcc.suffix.target.win32.exe := .exe
+sm.tool.gcc.suffix.target.win32.t := .test.exe
+sm.tool.gcc.suffix.target.linux.static := .a
+sm.tool.gcc.suffix.target.linux.shared := .so
+sm.tool.gcc.suffix.target.linux.exe :=
+sm.tool.gcc.suffix.target.linux.t := .test
 
 sm.tool.gcc.flags.compile.variant.debug := -g -ggdb
 sm.tool.gcc.flags.compile.variant.release := -O3
@@ -101,7 +99,7 @@ $(call sm-check-not-empty, \
 $(eval \
    sm.this.gen_deps := true
    sm.this.type := $(firstword $(sm.this.toolset.args))
-   sm.this.suffix := $$(sm.tool.gcc.suffix.target.$$(sm.this.type).$(sm.os.name))
+   sm.this.suffix := $$(sm.tool.gcc.suffix.target.$(sm.os.name).$$(sm.this.type))
    sm.this.compile.flags := $(sm.tool.gcc.flags.compile.variant.$(sm.config.variant))
    sm.this.compile.flags += $(sm.tool.gcc.flags.compile.os.$(sm.os.name))
    sm.this.link.flags := $(sm.tool.gcc.flags.link.variant.$(sm.config.variant))
@@ -160,10 +158,10 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
-  sm.var.flags.file := $$(call sm.fun.shift-flags-to-file, sm.var.flags, compile.$(sm.var.source.lang), $($(sm._this).compile.flags.infile))
-  ifdef sm.var.flags.file
-    $(sm.var.intermediate) : $$(sm.var.flags.file)
-    sm.var.flags := @$$(sm.var.flags.file)
+  sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.flags, compile.$(sm.var.source.lang), $($(sm._this).compile.flags.infile))
+  ifdef sm.temp._flagsfile
+    $(sm.var.intermediate) : $$(sm.temp._flagsfile)
+    sm.var.flags := @$$(sm.temp._flagsfile)
   endif
 
   sm.var.flags += $(strip $($(sm._this).compile.flags-$(sm.var.source)))
@@ -237,25 +235,25 @@ $(call sm.fun.append-items-with-fix, sm.var.loadlibs, \
 $(call sm-remove-duplicates,sm.var.flags)\
 $(call sm-remove-duplicates,sm.var.loadlibs)\
 $(eval #
-  sm.var.flags.file := $$(call sm.fun.shift-flags-to-file, sm.var.flags, link, $($(sm._this).link.flags.infile))
-  ifdef sm.var.flags.file
-    $(sm.var.intermediate) : $$(sm.var.flags.file)
-    sm.var.flags := @$$(sm.var.flags.file)
+  sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.flags, link, $($(sm._this).link.flags.infile))
+  ifdef sm.temp._flagsfile
+    $(sm.var.intermediate) : $$(sm.temp._flagsfile)
+    sm.var.flags := @$$(sm.temp._flagsfile)
   endif
 
-  sm.var.flags.file := $$(call sm.fun.shift-flags-to-file, sm.var.intermediates, intermediates.link, $($(sm._this).link.intermediates.infile))
-  ifdef sm.var.flags.file
-    $(sm.var.intermediate) : $$(sm.var.flags.file)
+  sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.intermediates, intermediates.link, $($(sm._this).link.intermediates.infile))
+  ifdef sm.temp._flagsfile
+    $(sm.var.intermediate) : $$(sm.temp._flagsfile)
     sm.var.intermediates.preq := $(sm.var.intermediates)
-    sm.var.intermediates := @$$(sm.var.flags.file)
+    sm.var.intermediates := @$$(sm.temp._flagsfile)
   else
     sm.var.intermediates.preq = $(sm.var.intermediates)
   endif
 
-  sm.var.flags.file := $$(call sm.fun.shift-flags-to-file, sm.var.loadlibs, libs.link, $($(sm._this).libs.infile))
-  ifdef sm.var.flags.file
-    $(sm.var.intermediate) : $$(sm.var.flags.file)
-    sm.var.loadlibs := @$$(sm.var.flags.file)
+  sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.loadlibs, libs.link, $($(sm._this).libs.infile))
+  ifdef sm.temp._flagsfile
+    $(sm.var.intermediate) : $$(sm.temp._flagsfile)
+    sm.var.loadlibs := @$$(sm.temp._flagsfile)
   endif
 
   ifeq ($($(sm._this).type),static)
