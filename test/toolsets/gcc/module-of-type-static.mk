@@ -6,6 +6,7 @@ test.case.module-of-type-static-mk-loaded := 1
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 THIS_DIR := $(patsubst %/,%,$(dir $(THIS_MAKEFILE)))
 $(call test-check-undefined, sm.this.dir)
+$(call test-check-module-empty, sm.this)
 ########## case in -- make a new module
 $(call sm-new-module, module-of-type-static, gcc: static)
 ########## case out

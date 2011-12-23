@@ -212,7 +212,10 @@ $(eval \
 $(call sm-check-not-empty, \
     sm.var.intermediate \
  , source "$(sm.var.source)" is strange (type: "$(sm.var.source.type)", lang: "$(sm.var.source.lang)"))\
-$(call $(sm.var.tool).transform-single-source)
+$(call $(sm.var.tool).transform-single-source)\
+$(eval #
+  sm.var.source.computed :=
+ )
 endef #sm.fun.make-intermediate-rule
 
 ##

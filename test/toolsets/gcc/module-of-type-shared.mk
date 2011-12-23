@@ -6,6 +6,8 @@ test.case.module-of-type-shared-mk-loaded := 1
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 THIS_DIR := $(patsubst %/,%,$(dir $(THIS_MAKEFILE)))
 $(call test-check-undefined, sm.this.dir)
+$(call test-check-module-empty, sm.this)
+$(call test-check-module-empty, sm.module.module-of-type-shared)
 ########## case in -- make a new module
 $(call sm-new-module, module-of-type-shared, gcc: shared)
 ########## case out

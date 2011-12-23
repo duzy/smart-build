@@ -108,6 +108,10 @@ define sm.tool.gcc.command.archive
 ar crs $(sm.var.target) $(sm.var.intermediates)
 endef #sm.tool.gcc.command.archive
 
+define sm.tool.gcc.args.types
+$(filter-out -%, $($(sm._this).toolset.args))
+endef #sm.tool.gcc.args.types
+
 ##
 ##
 define sm.tool.gcc.config-module
@@ -139,7 +143,7 @@ sm.tool.gcc.transform.exe     := bin
 ## sm.var.source.suffix
 ## sm.var.intermediate (source -> intermediate)
 define sm.tool.gcc.transform-single-source
-$(foreach _, $($(sm._this).toolset.args), \
+$(foreach _, $(sm.tool.gcc.args.types), \
   $(call sm.tool.gcc.transform-source-$(sm.tool.gcc.transform.$_)))
 endef #sm.tool.gcc.transform-single-source
 
@@ -212,14 +216,40 @@ endef #sm.tool.gcc.transform-source-bin
 ##
 ##
 define sm.tool.gcc.transform-intermediates
-$(foreach _, $($(sm._this).toolset.args), \
+$(foreach _, $(sm.tool.gcc.args.types), \
   $(call sm.tool.gcc.transform-intermediates-$(sm.tool.gcc.transform.$_)))
 endef #sm.tool.gcc.transform-intermediates
 
 ##
 ##
 define sm.tool.gcc.transform-intermediates-h
-$(info TODO: gcc: header: $(sm.var.source.computed))
+$(eval #
+  sm.temp._headervars := $(filter $(sm._this).headers%,$(.VARIABLES))
+  sm.temp._pubheaders :=
+ )\
+$(foreach _, $(sm.temp._headervars),\
+  $(eval #
+    sm.temp._pubprefix := $(_:$(sm._this).headers%=%)
+    sm.temp._pubprefix := $$(sm.temp._pubprefix:.%=%)
+    ifdef sm.temp._pubprefix
+      sm.temp._pubprefix := $$(sm.temp._pubprefix)/
+    endif
+   )\
+  $(foreach _h, $($_),\
+    $(eval sm.var.source := $(_h))\
+    $(eval #
+      sm.temp._pubheader := $(sm.out)/include/$(sm.temp._pubprefix)$(_h)
+      sm.temp._pubheaders += $$(sm.temp._pubheader)
+      $$(sm.temp._pubheader) : $(call sm.fun.compute-source-of-local)
+	@( echo smart: header: $$@ ) &&\
+	 ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@)) && (cp -u $$< $$@)
+     )\
+   )\
+ )\
+$(eval #
+  headers-$($(sm._this).name) : $(sm.temp._pubheaders)
+  $(sm._this).targets += headers-$($(sm._this).name)
+ )
 endef #sm.tool.gcc.transform-intermediates-h
 
 ##

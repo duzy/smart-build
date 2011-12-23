@@ -6,6 +6,7 @@ test.case.module-of-type-exe-use-static-mk-loaded := 1
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 THIS_DIR := $(patsubst %/,%,$(dir $(THIS_MAKEFILE)))
 $(call test-check-undefined, sm.this.dir)
+$(call test-check-module-empty, sm.this)
 $(call sm-new-module, module-of-type-exe-use-static, gcc: exe)
 $(call test-check-value-of,sm.this.dir,$(THIS_DIR))
 $(call test-check-value-of,sm.this.makefile,$(THIS_MAKEFILE))
