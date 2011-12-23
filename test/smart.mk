@@ -96,5 +96,5 @@ modules := \
   $(wildcard $(test.temp.this-dir)/features/*.mk) \
   $(wildcard $(test.temp.this-dir)/toolsets/*.mk) \
   $(wildcard $(test.temp.this-dir)/toolsets/*/*.mk) \
-  $(wildcard $(test.temp.this-dir)/toolsets/*/features/*.mk)
+  $(wildcard $(test.temp.this-dir)/toolsets/*/*/*.mk)
 $(foreach module, $(modules), $(check-module))

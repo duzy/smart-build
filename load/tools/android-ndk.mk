@@ -1,5 +1,5 @@
 #
-#	Copyright(c) 2009-2011, by Zhan Xin-ming <code@duzy.info>
+#	Copyright(c) 2009, 2010, 2011, 2012 by Zhan Xin-ming <code@duzy.info>
 #
 
 ##

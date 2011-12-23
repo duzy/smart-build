@@ -784,6 +784,22 @@ endef #sm-remove-sequence-duplicates
 # $(call sm-remove-sequence-duplicates,vvvvvvv)
 # $(info test: $(vvvvvvv))
 
+##
+##
+define sm-find-files-in
+$(strip \
+ $(eval #
+   sm.temp._find_root := $(strip $1)
+   sm.temp._find_pattern := $(strip $2)
+   sm.temp._find_levels :=
+   sm.temp._find_next := $$(sm.temp._find_root)
+   sm.temp._find_stack :=
+   sm.temp._all_found_files :=
+   include $(sm.dir.buildsys)/funs/fifi.mk
+  )\
+ $(sm.temp._all_found_files))
+endef #sm-find-files-in
+
 ################
 # Check helpers
 ################
