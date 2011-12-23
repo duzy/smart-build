@@ -117,7 +117,7 @@ endef #sm.tool.android-sdk.transform-intermediates
 
 ##
 ##
-define sm.tool.android-sdk.transform-intermediates-apk
+define sm.tool.android-sdk.transform-intermediates-dex
 $(call sm-check-not-empty, sm._this \
   $(sm._this).name \
   $(sm._this).lang \
@@ -152,7 +152,7 @@ $(eval #
   $($(sm._this).classes.path).list:
 	@[[ -d $($(sm._this).classes.path) ]] || mkdir -p $($(sm._this).classes.path)
 	@[[ -d $(sm.out)/$($(sm._this).name)/res ]] || mkdir -p $(sm.out)/$($(sm._this).name)/res
-	aapt package -m \
+	$(sm.tool.android-sdk.path)/platform-tools/aapt package -m \
 	  -I $(sm.tool.android-sdk.path)/platforms/$($(sm._this).platform)/android.jar\
 	  -J $(sm.out)/$($(sm._this).name)/res\
 	  -M $($(sm._this).dir)/AndroidManifest.xml\
@@ -160,73 +160,26 @@ $(eval #
 	  -A $($(sm._this).dir)/res
 	$(call sm.fun.wrap-rule-commands, android-sdk:, $(sm.var.command))
 	@find $($(sm._this).classes.path) -type f -name '*.class' > $$@
+
+  sm.var.target := $($(sm._this).classes.path).dex
  )\
 $(eval #
-  sm.var.intermediates := $($(sm._this).intermediates)
-  sm.var.target :=
-  sm.var.flags :=
-  ifeq ($($(sm._this).type),static)
-    sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name)$($(sm._this).suffix)
-    sm.var.flags += $($(sm._this).used.archive.flags)
-    sm.var.flags += $($(sm._this).used.archive.flags.$($(sm._this).lang))
-    sm.var.flags += $($(sm._this).archive.flags)
-    sm.var.flags += $($(sm._this).archive.flags.$($(sm._this).lang))
-  else
-    sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
-    sm.var.flags += $($(sm._this).used.link.flags)
-    sm.var.flags += $($(sm._this).used.link.flags.$($(sm._this).lang))
-    sm.var.flags += $($(sm._this).link.flags)
-    sm.var.flags += $($(sm._this).link.flags.$($(sm._this).lang))
-    ifeq ($($(sm._this).type),shared)
-      sm.var.flags := -shared $$(filter-out -shared,$$(sm.var.flags))
-    endif
-  endif
-  sm.var.loadlibs :=
- )\
-$(call sm.fun.append-items-with-fix, sm.var.loadlibs, \
-      $($(sm._this).libdirs) \
-      $($(sm._this).used.libdirs)\
-      $($(sm.var.tool).libdirs)\
-     , -L, , -% -Wl%)\
-$(call sm.fun.append-items-with-fix, sm.var.loadlibs, \
-      $($(sm._this).libs) \
-      $($(sm._this).used.libs)\
-      $($(sm.var.tool).libs)\
-     , -l, , -% -Wl% %.a %.so %.lib %.dll)\
-$(call sm-remove-duplicates,sm.var.flags)\
-$(call sm-remove-duplicates,sm.var.loadlibs)\
-$(eval #
-  sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.flags, link, $($(sm._this).link.flags.infile))
-  ifdef sm.temp._flagsfile
-    $(sm.var.intermediate) : $$(sm.temp._flagsfile)
-    sm.var.flags := @$$(sm.temp._flagsfile)
-  endif
-
-  sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.intermediates, intermediates.link, $($(sm._this).link.intermediates.infile))
-  ifdef sm.temp._flagsfile
-    $(sm.var.intermediate) : $$(sm.temp._flagsfile)
-    sm.var.intermediates.preq := $(sm.var.intermediates)
-    sm.var.intermediates := @$$(sm.temp._flagsfile)
-  else
-    sm.var.intermediates.preq = $(sm.var.intermediates)
-  endif
-
-  sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.loadlibs, libs.link, $($(sm._this).libs.infile))
-  ifdef sm.temp._flagsfile
-    $(sm.var.intermediate) : $$(sm.temp._flagsfile)
-    sm.var.loadlibs := @$$(sm.temp._flagsfile)
-  endif
-
-  ifeq ($($(sm._this).type),static)
-    sm.var.command := $(sm.tool.android-sdk.command.archive)
-  else
-    sm.var.command := $(sm.tool.android-sdk.command.link.$($(sm._this).lang))
-  endif
- )\
-$(eval #
-  $(sm._this).targets += $$(sm.var.target)
-  $(sm.var.target) : $(sm.var.intermediates.preq)
+  $(sm._this).targets += $(sm.var.target)
+  $(sm.var.target) : $($(sm._this).classes.path).list
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.wrap-rule-commands, gcc, $(sm.var.command))
+	cd $($(sm._this).classes.path) &&\
+	$(sm.tool.android-sdk.path)/platform-tools/dx \
+	  $(if $(findstring windows,$(sm.os.name)),,-JXms16M -JXmx1536M)\
+	  --dex --output=_.dex\
+	  `cat ../classes.list | sed 's|^$($(sm._this).classes.path)/||'` &&\
+	cd - && mv $($(sm._this).classes.path)/_.dex $$@
+ )
+endef #sm.tool.android-sdk.transform-intermediates-dex
+
+##
+##
+define sm.tool.android-sdk.transform-intermediates-apk
+$(sm.tool.android-sdk.transform-intermediates-dex)\
+$(eval #
  )
 endef #sm.tool.android-sdk.transform-intermediates-apk
