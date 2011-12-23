@@ -552,7 +552,7 @@ $(eval \
   ######
   ifeq ($(filter $(strip $(sm.this.toolset)),none),)
     sm.temp._sources =
-    $(foreach _, $(filter sm.this.sources%,$(.VARIABLES)), sm.temp._sources += $$($_))
+    $(foreach _, $(filter sm.this.headers% sm.this.sources%,$(.VARIABLES)), sm.temp._sources += $$($_))
     ifeq ($$(strip $$(sm.temp._sources) $(sm.this.intermediates)),)
       $$(error no source or intermediates defined for '$(sm.this.name)')
     endif
