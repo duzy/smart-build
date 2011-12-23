@@ -15,10 +15,13 @@ $(call test-check-value-of,sm.this.suffix,.so)
 $(call test-check-value-of,sm.this.toolset,gcc)
 $(call test-check-value-of,sm.this.toolset.args,shared)
 
-sm.this.sources := foo.c bar.c foo.go
+sm.this.sources := foo.c foo.go bar.c
 sm.this.compile.flags.c += -DC -fPIC
 sm.this.compile.flags-bar.c += -DBAR
 sm.this.compile.flags.go += -DG -fPIC
+
+## it looks like gccgo has a bug, we must add -lgcc for symbol "__morestack"
+sm.this.libs += -lgcc
 
 sofilename := $(sm.out.bin)/$(sm.this.name)$(sm.this.suffix)
 sm.this.export.libs := $(sofilename)

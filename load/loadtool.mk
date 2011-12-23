@@ -10,5 +10,7 @@ ifeq ($(wildcard $(sm.temp._toolset_mk)),)
   $(error smart: toolset '$(strip $3)' unsupported.)
 endif
 
+$(call sm-check-origin, sm.tool.$(sm.this.toolset), undefined)
+
 sm.tool.$(sm.this.toolset).args := $(strip $(sm.this.toolset.args))
 include $(sm.temp._toolset_mk)

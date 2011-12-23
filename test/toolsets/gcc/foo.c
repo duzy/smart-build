@@ -1,6 +1,5 @@
-extern int bar(int n) __asm__("go.main.Foo");
-
-int foo(int n) 
+int foo(int n)
 {
-  return bar(n) * bar(n) / 2 / 2;
+  extern int go_foo(int n) __asm__("go.foo.Foo");
+  return go_foo(n) * go_foo(n) / 2 / 2;
 }

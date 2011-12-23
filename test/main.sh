@@ -12,7 +12,7 @@ EXE=
 
 function test-log
 {
-    echo "$1:$2: $3"
+    true #echo "$1:$2: $3"
 }
 
 function test-check-file
@@ -83,8 +83,10 @@ function test-readfile
     }
 }
 
-test-load-precondition-scripts .
-
-rm -rf out && make -f main.mk && make -f main.mk doc
-
-test-load-check-scripts $TOP
+test-load-precondition-scripts . && {
+    rm -rf out && make -f main.mk && make -f main.mk doc
+} && {
+    test-load-check-scripts $TOP
+} || {
+    echo ${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]} "FAILED"
+}

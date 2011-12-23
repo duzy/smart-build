@@ -20,7 +20,7 @@ $(call sm-use, module-of-type-shared)
 ########## case out
 $(call test-check-value-of,sm.this.using_list,module-of-type-shared)
 
-sm.this.defines += -DTEST=\"foo\"
+sm.this.defines += -DTEST_STR=\"foo\" -DTEST_NUM=10
 sm.this.sources := main.c
 
 $(call test-check-undefined,sm.module.module-of-type-exe-use-shared.used.libs)

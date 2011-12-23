@@ -38,7 +38,7 @@ sm.tool.gcc.suffix.target.linux.t := .test
 sm.tool.gcc.flags.compile.variant.debug := -g -ggdb
 sm.tool.gcc.flags.compile.variant.release := -O3
 sm.tool.gcc.flags.link.variant.debug := -g -ggdb
-sm.tool.gcc.flags.link.variant.release := -O3
+sm.tool.gcc.flags.link.variant.release := -O3 -Wl,-flto
 
 sm.tool.gcc.flags.compile.os.linux :=
 sm.tool.gcc.flags.compile.os.win32 := -mwindows
@@ -46,6 +46,13 @@ sm.tool.gcc.flags.link.os.linux :=
 sm.tool.gcc.flags.link.os.win32 := -mwindows \
   -Wl,--enable-runtime-pseudo-reloc \
   -Wl,--enable-auto-import \
+
+sm.tool.gcc.flags.compile.type.shared :=
+sm.tool.gcc.flags.compile.type.static :=
+sm.tool.gcc.flags.compile.type.exe :=
+sm.tool.gcc.flags.link.type.shared := -Wl,--no-undefined
+sm.tool.gcc.flags.link.type.static :=
+sm.tool.gcc.flags.link.type.exe :=
 
 ##
 ## Compile Commands
@@ -114,8 +121,10 @@ $(eval \
    sm.this.suffix := $$(sm.tool.gcc.suffix.target.$(sm.os.name).$$(sm.this.type))
    sm.this.compile.flags := $(sm.tool.gcc.flags.compile.variant.$(sm.config.variant))
    sm.this.compile.flags += $(sm.tool.gcc.flags.compile.os.$(sm.os.name))
+   sm.this.compile.flags += $$(sm.tool.gcc.flags.compile.type.$$(sm.this.type))
    sm.this.link.flags := $(sm.tool.gcc.flags.link.variant.$(sm.config.variant))
    sm.this.link.flags += $(sm.tool.gcc.flags.link.os.$(sm.os.name))
+   sm.this.link.flags += $$(sm.tool.gcc.flags.link.type.$$(sm.this.type))
  )
 endef #sm.tool.gcc.config-module
 
