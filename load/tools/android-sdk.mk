@@ -31,7 +31,7 @@ sm.tool.android-sdk.flags.link.variant.release :=
 ##
 ## Compile Commands
 define sm.tool.android-sdk.command.compile.java
-javac $(sm.var.flags) $$$$^ $(sm.var.argfiles)
+javac $(sm.var.flags) $(sm.var.source.R) $$$$^ $(sm.var.argfiles)
 endef #sm.tool.android-sdk.command.compile.java
 
 ##
@@ -145,11 +145,19 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
+  sm.var.source.R := `find $(sm.out)/$($(sm._this).name)/res -type f -name R.java`
   sm.var.command := $$(sm.tool.android-sdk.command.compile.$(sm.var.source.lang))
  )\
 $(eval #
   $($(sm._this).classes.path).list:
 	@[[ -d $($(sm._this).classes.path) ]] || mkdir -p $($(sm._this).classes.path)
+	@[[ -d $(sm.out)/$($(sm._this).name)/res ]] || mkdir -p $(sm.out)/$($(sm._this).name)/res
+	aapt package -m \
+	  -I $(sm.tool.android-sdk.path)/platforms/$($(sm._this).platform)/android.jar\
+	  -J $(sm.out)/$($(sm._this).name)/res\
+	  -M $($(sm._this).dir)/AndroidManifest.xml\
+	  -S $($(sm._this).dir)/res\
+	  -A $($(sm._this).dir)/res
 	$(call sm.fun.wrap-rule-commands, android-sdk:, $(sm.var.command))
 	@find $($(sm._this).classes.path) -type f -name '*.class' > $$@
  )\
