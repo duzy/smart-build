@@ -264,6 +264,7 @@ $(call sm-check-not-empty, sm._this \
 $(eval #
   sm.var.intermediates := $($(sm._this).intermediates)
   sm.var.target :=
+  sm.var.target.link :=
   sm.var.flags :=
   ifeq ($($(sm._this).type),static)
     sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name)$($(sm._this).suffix)
@@ -279,6 +280,7 @@ $(eval #
     sm.var.flags += $($(sm._this).link.flags.$($(sm._this).lang))
     ifeq ($($(sm._this).type),shared)
       sm.var.flags := -shared $$(filter-out -shared,$$(sm.var.flags))
+      sm.var.target.link := $(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name)$($(sm._this).suffix)
     endif
   endif
   sm.var.loadlibs :=
@@ -324,12 +326,16 @@ $(eval #
   endif
  )\
 $(eval #
-  $(sm._this).targets += $$(sm.var.target)
+  $(sm._this).targets += $(sm.var.target)
   $(sm.var.target) : $(sm.var.intermediates.preq)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, gcc, $(sm.var.command))
-  ifeq ($($(sm._this).type),shared)
-    $$(info TODO: gcc: linkable target)
+
+  ifdef sm.var.target.link
+    $(sm._this).targets += $(sm.var.target.link)
+    $(sm.var.target.link) : $(sm.var.target)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.wrap-rule-commands, gcc, ln -sf $(sm.top)/$(sm.var.target) $(sm.var.target.link))
   endif
  )
 endef #sm.tool.gcc.transform-intermediates-bin
