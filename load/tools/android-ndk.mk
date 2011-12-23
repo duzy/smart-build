@@ -357,8 +357,5 @@ $(eval #
   $(sm.var.target) : $(sm.var.intermediates.preq)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, gcc, $(sm.var.command))
-  ifeq ($($(sm._this).type),shared)
-    $$(info TODO: android-ndk: linkable target)
-  endif
  )
 endef #sm.tool.android-ndk.transform-intermediates-bin
