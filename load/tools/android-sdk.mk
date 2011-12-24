@@ -39,7 +39,7 @@ sm.tool.android-sdk.flags.link.variant.release :=
 
 ifneq ($(shell which keytool),)
 android-genkey:
-	keytool -genkey -keystore sign.keystore -alias smart \
+	keytool -genkey -keystore sign.keystore -alias cert \
 	  -keyalg RSA -keysize 2048 -validity 10000
 else
 ifneq ($(shell which openssl),)
@@ -193,12 +193,20 @@ $(eval #see definitions.mk(add-assets-to-package) for this
 	@[[ -d $($(sm._this).path.classes) ]] || mkdir -p $($(sm._this).path.classes)
 	@[[ -d $($(sm._this).path.res)     ]] || mkdir -p $($(sm._this).path.res)
 	$(sm.tool.android-sdk.aapt) package -m \
-	  -J $($(sm._this).path.res)\
-	  -I $(sm.tool.android-sdk.android_jar)\
-	  -M $($(sm._this).dir)/AndroidManifest.xml\
-	  $(if $(sm.var.dir.res),-S $(sm.var.dir.res))\
-	  $(if $(sm.var.dir.assets),-A $(sm.var.dir.assets))\
-	  ;
+	    $(addprefix -J ,$($(sm._this).path.res))\
+	    $(addprefix -M ,$($(sm._this).dir)/AndroidManifest.xml)\
+	    $(addprefix -P ,$(TODO-resource_publics_output))\
+	    $(addprefix -S ,$(sm.var.dir.res))\
+	    $(addprefix -A ,$(sm.var.dir.assets))\
+	    $(addprefix -I ,$(sm.tool.android-sdk.android_jar))\
+	    $(addprefix -G ,$(TODO-proguard_options_file))\
+	    $(addprefix --min-sdk-version ,$(TODO-default_app_target_sdk))\
+	    $(addprefix --target-sdk-version ,$(TODO-default_app_target_sdk))\
+	    $(addprefix --version-code ,$(TODO-platform_sdk_version))\
+	    $(addprefix --version-name ,$(TODO-platform_version)$(TODO-build_number))\
+	    $(addprefix --rename-manifest-package , $(TODO-manifest_package_name))\
+	    $(addprefix --rename-instrumentation-target-package , $(TODO-manifest_instrumentation_for))\
+	;
 	$(call sm.fun.wrap-rule-commands, android-sdk:, $(sm.var.command))
 	@find $($(sm._this).path.classes) -type f -name '*.class' > $$@
 
@@ -218,27 +226,38 @@ $(eval #
  )\
 $(eval #
   $(sm.var.target) : $(sm.var.target.dex)
-	( cd $(dir $(sm.var.target)) &&\
-	  jar cf $(notdir $(sm.var.target)) $(notdir $(sm.var.target.dex)) &&\
-	  cd - ) > /dev/null && \
+	@# create empty package
+	( cd $(dir $(sm.var.target)) && touch dummy &&\
+	  jar  cf $(notdir $(sm.var.target)) dummy &&\
+	  zip -qd $(notdir $(sm.var.target)) dummy &&\
+	  rm -f dummy && cd - ) > /dev/null
+	@# add assets to the package
 	$(sm.tool.android-sdk.aapt) package -u \
-	    -F $(sm.var.target)\
-	    -I $(sm.tool.android-sdk.android_jar)\
-	    -M $($(sm._this).dir)/AndroidManifest.xml\
-	    $(if $(sm.var.dir.res),-S $(sm.var.dir.res))\
-	    $(if $(sm.var.dir.assets),-A $(sm.var.dir.assets))\
-	    --version-code 7\
-	    --version-name 10-1\
-	    --rename-manifest-package $(rename_manifest)\
-	    --rename-instrumentation-target-package $(rename_instrumentation) \
-	$(add-jni-shared-libs-to-package)\
+	    $(addprefix -F ,$(sm.var.target))\
+	    $(addprefix -c ,$(TODO-product_aapt_config))\
+	    $(addprefix --preferred-configurations ,$(TODO-product_aapt_pref_config))\
+	    $(addprefix -M ,$($(sm._this).dir)/AndroidManifest.xml)\
+	    $(addprefix -S ,$(sm.var.dir.res))\
+	    $(addprefix -A ,$(sm.var.dir.assets))\
+	    $(addprefix -I ,$(sm.tool.android-sdk.android_jar))\
+	    $(addprefix --min-sdk-version ,$(TODO-default_app_target_sdk))\
+	    $(addprefix --target-sdk-version ,$(TODO-default_app_target_sdk))\
+	    $(addprefix --product ,$(TODO-aapt_characteristics))\
+	    $(addprefix --version-code ,$(TODO-platform_sdk_version))\
+	    $(addprefix --version-name ,$(TODO-platform_version)$(TODO-build_number))\
+	    $(addprefix --rename-manifest-package , $(TODO-manifest_package_name))\
+	    $(addprefix --rename-instrumentation-target-package , $(TODO-manifest_instrumentation_for))\
+	;
+	@# add DEX to package
+	$(sm.tool.android-sdk.aapt) add -k $(sm.var.target) $(sm.var.target.dex)
+	@# add JNI shared libs to package
 
   sm.var.target.unsigned := $(sm.var.target)
   sm.var.target := $(sm.var.target:%unsigned.apk=%signed.apk)
 
   sm.var.keystore := $(wildcard $($(sm._this).keystore))
   ifndef sm.var.keystore
-    sm.var.keystore := $(wildcard $($(sm._this).dir)/sign.keystore)
+    sm.var.keystore := $(wildcard $($(sm._this).dir)/.keystore)
   endif
 
   sm.var.storepass := $(wildcard $($(sm._this).dir)/.storepass)
@@ -267,10 +286,11 @@ $(eval #
 	jarsigner \
 	    $(if $(sm.var.storepass),-storepass "$(sm.var.storepass)")\
 	    $(if $(sm.var.keypass),-keypass "$(sm.var.keypass)")\
-	    -keystore $(sm.var.keystore) $(sm.var.target) smart &&\
+	    -keystore $(sm.var.keystore) $(sm.var.target) cert &&\
+	\
 	$(sm.tool.android-sdk.zipalign) 4 $(sm.var.target) $(sm.var.target).aligned &&\
-	rm -f $(sm.var.target) &&\
-	mv $(sm.var.target).aligned $(sm.var.target)\
+	rm -f $(sm.var.target) && mv $(sm.var.target).aligned $(sm.var.target)\
+	\
 	|| ( rm -f $(sm.var.target).aligned $(sm.var.target) ; false )
  )
 endef #sm.tool.android-sdk.transform-intermediates-apk
