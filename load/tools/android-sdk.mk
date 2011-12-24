@@ -185,6 +185,8 @@ $(eval #
 
   sm.var.source.R := `find $($(sm._this).path.res) -type f -name R.java`
   sm.var.command := $$(sm.tool.android-sdk.command.compile.$(sm.var.source.lang))
+  sm.var.dir.assets := $(wildcard $($(sm._this).dir)/assets)
+  sm.var.dir.res := $(wildcard $($(sm._this).dir)/res)
  )\
 $(eval #see definitions.mk(add-assets-to-package) for this
   $($(sm._this).path.classes).list:
@@ -192,10 +194,10 @@ $(eval #see definitions.mk(add-assets-to-package) for this
 	@[[ -d $($(sm._this).path.res)     ]] || mkdir -p $($(sm._this).path.res)
 	$(sm.tool.android-sdk.aapt) package -m \
 	  -J $($(sm._this).path.res)\
-	  -M $($(sm._this).dir)/AndroidManifest.xml\
-	  -S $($(sm._this).dir)/res\
-	  -A $($(sm._this).dir)/res\
 	  -I $(sm.tool.android-sdk.android_jar)\
+	  -M $($(sm._this).dir)/AndroidManifest.xml\
+	  $(if $(sm.var.dir.res),-S $(sm.var.dir.res))\
+	  $(if $(sm.var.dir.assets),-A $(sm.var.dir.assets))\
 	  ;
 	$(call sm.fun.wrap-rule-commands, android-sdk:, $(sm.var.command))
 	@find $($(sm._this).path.classes) -type f -name '*.class' > $$@
@@ -221,10 +223,10 @@ $(eval #
 	  cd - ) > /dev/null && \
 	$(sm.tool.android-sdk.aapt) package -u \
 	    -F $(sm.var.target)\
-	    -M $($(sm._this).dir)/AndroidManifest.xml\
-	    -S $($(sm._this).dir)/res\
-	    -A $($(sm._this).dir)/res\
 	    -I $(sm.tool.android-sdk.android_jar)\
+	    -M $($(sm._this).dir)/AndroidManifest.xml\
+	    $(if $(sm.var.dir.res),-S $(sm.var.dir.res))\
+	    $(if $(sm.var.dir.assets),-A $(sm.var.dir.assets))\
 	    --version-code 7\
 	    --version-name 10-1\
 	    --rename-manifest-package $(rename_manifest)\
