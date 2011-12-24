@@ -11,3 +11,6 @@ test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/android-sdk/debug/android-sdk-
 test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/android-sdk/debug/android-sdk-notepad/classes.dex
 test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/android-sdk/debug/android-sdk-notepad/unsigned.apk
 test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/android-sdk/debug/android-sdk-notepad/signed.apk
+
+out=`jarsigner -verify $TOP/out/android-sdk/debug/android-sdk-notepad/signed.apk`
+test-check-value ${BASH_SOURCE}:${LINENO} "$out" "jar verified."
