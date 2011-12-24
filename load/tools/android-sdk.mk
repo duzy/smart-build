@@ -8,10 +8,19 @@
 
 $(call sm-check-origin, sm.tool.android-sdk, undefined)
 
-ANDROID_SDK_PATH := $(wildcard ~/open/android-sdk-linux_x86)
+ANDROID_SDK_PATH := \
+ $(or \
+   $(wildcard ~/open/android-sdk-linux_x86),\
+   $(wildcard ~/open/android-sdk-linux_86),\
+   $(wildcard ~/open/android-sdk),\
+  )
 
 sm.tool.android-sdk := true
 sm.tool.android-sdk.path := $(ANDROID_SDK_PATH)
+sm.tool.android-sdk.aapt := $(sm.tool.android-sdk.path)/platform-tools/aapt
+sm.tool.android-sdk.dx := $(sm.tool.android-sdk.path)/platform-tools/dx
+sm.tool.android-sdk.zipalign := $(sm.tool.android-sdk.path)/tools/zipalign
+sm.tool.android-sdk.android_jar = $(sm.tool.android-sdk.path)/platforms/$($(sm._this).platform)/android.jar
 
 sm.tool.android-sdk.langs := java
 sm.tool.android-sdk.suffix.java := .java
@@ -59,15 +68,20 @@ $(eval \
   sm.this.platform := $$(subst PLATFORM=,,$$(sm.this.platform))
  )\
 $(eval \
+  ifndef sm.tool.android-sdk.path
+    $$(error Android SDK not found)
+  endif
+
    sm.this.gen_deps := true
    sm.this.type := $(firstword $(sm.this.toolset.args))
    sm.this.suffix := $$(sm.tool.android-sdk.suffix.target.$(sm.os.name).$$(sm.this.type))
    sm.this.sources := $(call sm-find-files-in,$(sm.this.dir)/src,%.java)
    sm.this.sources := $$(sm.this.sources:$(sm.this.dir)/%=%)
-   sm.this.classes.path := $(sm.out)/$(sm.this.name)/classes
+   sm.this.path.classes := $(sm.out)/$(sm.this.name)/classes
+   sm.this.path.res := $(sm.out)/$(sm.this.name)/res
    sm.this.compile.flags := -cp $(sm.tool.android-sdk.path)/platforms/$(sm.this.platform)/android.jar
    sm.this.compile.flags += -sourcepath $(sm.this.dir)/src
-   sm.this.compile.flags += -d $$(sm.this.classes.path)
+   sm.this.compile.flags += -d $$(sm.this.path.classes)
    sm.this.link.flags :=
  )
 endef #sm.tool.android-sdk.config-module
@@ -100,10 +114,10 @@ $(call sm-check-not-empty, \
     sm.var.intermediate \
  , android-sdk: strange parameters for "$(sm.var.source)" of "$($(sm._this).name)")\
 $(eval #
-  $($(sm._this).classes.path).list: $(sm.var.source.computed)
+  $($(sm._this).path.classes).list: $(sm.var.source.computed)
 
-  ifneq ($($(sm._this).intermediates),$($(sm._this).classes.path).list)
-    $(sm._this).intermediates := $($(sm._this).classes.path).list
+  ifneq ($($(sm._this).intermediates),$($(sm._this).path.classes).list)
+    $(sm._this).intermediates := $($(sm._this).path.classes).list
   endif
  )
 endef #sm.tool.android-sdk.transform-source-apk
@@ -116,8 +130,13 @@ $(foreach _, $(sm.tool.android-sdk.args.types), \
 endef #sm.tool.android-sdk.transform-intermediates
 
 ##
+## see: android/build: package.mk, definitions.mk
+##	$(add-assets-to-package)
+##	$(add-jni-shared-libs-to-package)
+##	$(sign-package)
+##	$(align-package)
 ##
-define sm.tool.android-sdk.transform-intermediates-dex
+define sm.tool.android-sdk.transform-intermediates-apk
 $(call sm-check-not-empty, sm._this \
   $(sm._this).name \
   $(sm._this).lang \
@@ -145,41 +164,70 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
-  sm.var.source.R := `find $(sm.out)/$($(sm._this).name)/res -type f -name R.java`
+  sm.var.source.R := `find $($(sm._this).path.res) -type f -name R.java`
   sm.var.command := $$(sm.tool.android-sdk.command.compile.$(sm.var.source.lang))
  )\
-$(eval #
-  $($(sm._this).classes.path).list:
-	@[[ -d $($(sm._this).classes.path) ]] || mkdir -p $($(sm._this).classes.path)
-	@[[ -d $(sm.out)/$($(sm._this).name)/res ]] || mkdir -p $(sm.out)/$($(sm._this).name)/res
-	$(sm.tool.android-sdk.path)/platform-tools/aapt package -m \
-	  -I $(sm.tool.android-sdk.path)/platforms/$($(sm._this).platform)/android.jar\
-	  -J $(sm.out)/$($(sm._this).name)/res\
+$(eval #see definitions.mk(add-assets-to-package) for this
+  $($(sm._this).path.classes).list:
+	@[[ -d $($(sm._this).path.classes) ]] || mkdir -p $($(sm._this).path.classes)
+	@[[ -d $($(sm._this).path.res)     ]] || mkdir -p $($(sm._this).path.res)
+	$(sm.tool.android-sdk.aapt) package -m \
+	  -J $($(sm._this).path.res)\
 	  -M $($(sm._this).dir)/AndroidManifest.xml\
 	  -S $($(sm._this).dir)/res\
-	  -A $($(sm._this).dir)/res
+	  -A $($(sm._this).dir)/res\
+	  -I $(sm.tool.android-sdk.android_jar)\
+	  ;
 	$(call sm.fun.wrap-rule-commands, android-sdk:, $(sm.var.command))
-	@find $($(sm._this).classes.path) -type f -name '*.class' > $$@
+	@find $($(sm._this).path.classes) -type f -name '*.class' > $$@
 
-  sm.var.target := $($(sm._this).classes.path).dex
+  sm.var.target := $($(sm._this).path.classes).dex
  )\
 $(eval #
-  $(sm._this).targets += $(sm.var.target)
-  $(sm.var.target) : $($(sm._this).classes.path).list
+  $(sm.var.target) : $($(sm._this).path.classes).list
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	cd $($(sm._this).classes.path) &&\
-	$(sm.tool.android-sdk.path)/platform-tools/dx \
-	  $(if $(findstring windows,$(sm.os.name)),,-JXms16M -JXmx1536M)\
-	  --dex --output=_.dex\
-	  `cat ../classes.list | sed 's|^$($(sm._this).classes.path)/||'` &&\
-	cd - && mv $($(sm._this).classes.path)/_.dex $$@
- )
-endef #sm.tool.android-sdk.transform-intermediates-dex
+	cd $($(sm._this).path.classes) > /dev/null &&\
+	$(sm.tool.android-sdk.dx) \
+	    $(if $(findstring windows,$(sm.os.name)),,-JXms16M -JXmx1536M)\
+	    --dex --output=_.dex `cat ../classes.list | sed 's|^$($(sm._this).path.classes)/||'` &&\
+	cd - > /dev/null && mv $($(sm._this).path.classes)/_.dex $$@
 
-##
-##
-define sm.tool.android-sdk.transform-intermediates-apk
-$(sm.tool.android-sdk.transform-intermediates-dex)\
+  sm.var.target.dex := $(sm.var.target)
+  sm.var.target := $(dir $(sm.var.target))unsigned.apk
+ )\
 $(eval #
+  $(sm.var.target) : $(sm.var.target.dex)
+	( cd $(dir $(sm.var.target)) &&\
+	  jar cf $(notdir $(sm.var.target)) $(notdir $(sm.var.target.dex)) &&\
+	  cd - ) > /dev/null && \
+	$(sm.tool.android-sdk.aapt) package -u \
+	    -F $(sm.var.target)\
+	    -M $($(sm._this).dir)/AndroidManifest.xml\
+	    -S $($(sm._this).dir)/res\
+	    -A $($(sm._this).dir)/res\
+	    -I $(sm.tool.android-sdk.android_jar)\
+	    --version-code 7\
+	    --version-name 10-1\
+	    --rename-manifest-package $(rename_manifest)\
+	    --rename-instrumentation-target-package $(rename_instrumentation) \
+	$(add-jni-shared-libs-to-package)\
+
+  sm.var.target.unsigned := $(sm.var.target)
+  sm.var.target := $(sm.var.target:%unsigned.apk=%signed.apk)
+  sm.var.keystore := $(wildcard $($(sm._this).keystore))
+  ifndef sm.var.keystore
+    sm.var.keystore := $(wildcard $($(sm._this).dir))/sign.keystore
+  endif
+ )\
+$(eval #
+  ifdef sm.var.keystore
+    $(sm._this).targets += $(sm.var.target)
+  else
+    $(sm._this).targets += $(sm.var.target.unsigned)
+    android-sign-apk: $(sm.var.target)
+  endif
+  $(sm.var.target) : $(sm.var.target.unsigned)
+	$(sign-package)\
+	$(sm.tool.android-sdk.zipalign) 4 $(sm.var.target.unsigned) $(sm.var.target)
  )
 endef #sm.tool.android-sdk.transform-intermediates-apk
