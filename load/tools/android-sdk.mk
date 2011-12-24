@@ -37,6 +37,25 @@ sm.tool.android-sdk.flags.link.variant.release :=
 
 ######################################################################
 
+ifneq ($(shell which keytool),)
+android-genkey:
+	keytool -genkey -keystore sign.keystore -alias smart \
+	  -keyalg RSA -keysize 2048 -validity 10000
+else
+ifneq ($(shell which openssl),)
+android-genkey:
+	openssl genrsa -out $(sm.out)/key.pem 1024
+	openssl req -new -key $(sm.out)/key.pem -out $(sm.out)/request.pem
+	openssl x509 -req -days 10000 -signkey $(sm.out)/key.pem \
+	  -in $(sm.out)/request.pem -out $(sm.out)/certificate.pem
+	openssl pkcs8 -topk8 -nocrypt \
+	  -inform PEM -in $(sm.out)/key.pem \
+	  -outform DER -out $(sm.out)/key.pk8
+endif
+endif
+
+######################################################################
+
 ##
 ## Compile Commands
 define sm.tool.android-sdk.command.compile.java
@@ -214,9 +233,24 @@ $(eval #
 
   sm.var.target.unsigned := $(sm.var.target)
   sm.var.target := $(sm.var.target:%unsigned.apk=%signed.apk)
+
   sm.var.keystore := $(wildcard $($(sm._this).keystore))
   ifndef sm.var.keystore
-    sm.var.keystore := $(wildcard $($(sm._this).dir))/sign.keystore
+    sm.var.keystore := $(wildcard $($(sm._this).dir)/sign.keystore)
+  endif
+
+  sm.var.storepass := $(wildcard $($(sm._this).dir)/.storepass)
+  ifdef sm.var.storepass
+    sm.var.storepass := $$(shell cat $$(sm.var.storepass))
+  else
+    sm.var.storepass :=
+  endif
+
+  sm.var.keypass := $(wildcard $($(sm._this).dir)/.keypass)
+  ifdef sm.var.keypass
+    sm.var.keypass := $$(shell cat $$(sm.var.keypass))
+  else
+    sm.var.keypass :=
   endif
  )\
 $(eval #
@@ -227,7 +261,14 @@ $(eval #
     android-sign-apk: $(sm.var.target)
   endif
   $(sm.var.target) : $(sm.var.target.unsigned)
-	$(sign-package)\
-	$(sm.tool.android-sdk.zipalign) 4 $(sm.var.target.unsigned) $(sm.var.target)
+	cp $(sm.var.target.unsigned) $(sm.var.target) &&\
+	jarsigner \
+	    $(if $(sm.var.storepass),-storepass "$(sm.var.storepass)")\
+	    $(if $(sm.var.keypass),-keypass "$(sm.var.keypass)")\
+	    -keystore $(sm.var.keystore) $(sm.var.target) smart &&\
+	$(sm.tool.android-sdk.zipalign) 4 $(sm.var.target) $(sm.var.target).aligned &&\
+	rm -f $(sm.var.target) &&\
+	mv $(sm.var.target).aligned $(sm.var.target)\
+	|| ( rm -f $(sm.var.target).aligned $(sm.var.target) ; false )
  )
 endef #sm.tool.android-sdk.transform-intermediates-apk
