@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-        fmt.Fprintf(os.Stdout, "Hello, Go! (%d)\n", foo.Foo(2))
+        fmt.Fprintf(os.Stdout, "Hello, Go! (%d)\n", foo.Foo2(foo.Foo(2)))
 }
