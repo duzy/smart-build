@@ -47,7 +47,7 @@ sm.tool.gcc.flags.link.os.win32 := -mwindows \
   -Wl,--enable-runtime-pseudo-reloc \
   -Wl,--enable-auto-import \
 
-sm.tool.gcc.flags.compile.type.shared :=
+sm.tool.gcc.flags.compile.type.shared := -fPIC
 sm.tool.gcc.flags.compile.type.static :=
 sm.tool.gcc.flags.compile.type.exe :=
 sm.tool.gcc.flags.link.type.shared := -Wl,--no-undefined
