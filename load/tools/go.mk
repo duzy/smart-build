@@ -136,10 +136,18 @@ $(call sm-check-not-empty, \
     sm.var.intermediate \
  )\
 $(eval #
+  ifeq ($(sm.var.source.type),gcc)
+    sm.var.intermediate := $(basename $(sm.var.source)).o
+  endif
+  ifeq ($(sm.var.source.type),goc)
+    sm.var.intermediate := $(basename $(sm.var.source)).$($(sm._this).o)
+  endif
+
   sm.var.intermediate.go := $($(sm._this).out)/_go_.$($(sm._this).o)
   sm.var.intermediate.cgo := $($(sm._this).out)/_cgo
   sm.var.intermediate.cgo_export := $($(sm._this).out)/_cgo_export.h
  )\
+$(info $(sm.var.source.type): $(sm.var.source.computed), $(sm.var.source), $(sm.var.intermediate))\
 $(eval #
   ifeq ($(sm.var.source.type),cgo)
     $(sm.var.intermediate.cgo_export) : $(sm.var.source.computed)
@@ -151,15 +159,18 @@ $(eval #
     ifeq ($(filter $(sm.var.intermediate.cgo_export),$($(sm._this).intermediates)),)
     sm.var.cgo_intermediates := \
         $(sm.var.intermediate.cgo)/_cgo_defun.c \
-        $(sm.var.intermediate.cgo)/_cgo_export.c \
         $(sm.var.intermediate.cgo)/_cgo_gotypes.go \
-        $(sm.var.sources.$(sm.var.source.type):%.go=%.cgo1.go) \
-        $(sm.var.sources.$(sm.var.source.type):%.go=%.cgo2.c) \
+        $(sm.var.sources.$(sm.var.source.type):%.go=$(sm.var.intermediate.cgo)/go_%.cgo1.go) \
+
+    sm.var.gcc_intermediates := \
+        $(sm.var.intermediate.cgo)/_cgo_export.c \
+        $(sm.var.sources.$(sm.var.source.type):%.go=$(sm.var.intermediate.cgo)/go_%.cgo2.c) \
 
     $(sm._this).compile.flags.c += -I$($(sm._this).out)
-    $(sm._this).unterminated.external += $$(sm.var.cgo_intermediates)
+    $(sm._this).unterminated.goc += $$(sm.var.cgo_intermediates)
+    $(sm._this).unterminated.gcc += $$(sm.var.gcc_intermediates)
     $$(sm.var.cgo_intermediates) : $(sm.var.intermediate.cgo_export)
-
+    $$(sm.var.gcc_intermediates) : $(sm.var.intermediate.cgo_export)
     $(sm.var.intermediate.cgo_export):
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	@[[ -d $(sm.var.intermediate.cgo) ]] || mkdir -p $(sm.var.intermediate.cgo)
