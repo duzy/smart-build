@@ -55,8 +55,10 @@ sm.tool.go.flags.compile.type.command :=
 sm.tool.go.flags.link.type.package :=
 sm.tool.go.flags.link.type.command :=
 
+goroot := $(patsubst %/,%,$(dir $(shell dirname `which go`)))
+
 ## Language Specific Flags
-sm.tool.go.flags.compile.lang.c   := -Fw #-Fvw
+sm.tool.go.flags.compile.lang.c   := -FVw -I$(goroot)/pkg/linux_amd64
 sm.tool.go.flags.compile.lang.go  :=
 sm.tool.go.flags.compile.lang.asm :=
 
@@ -121,32 +123,62 @@ $(eval #
  )
 endef #sm.tool.go.config-module
 
-## sm.var.source
-## sm.var.source.computed
-## sm.var.source.lang
-## sm.var.source.suffix
-## sm.var.intermediate (source -> intermediate)
+##
+##  (source -> intermediate)
 define sm.tool.go.transform-single-source
 $(call sm-check-not-empty, \
     sm._this $(sm._this).name \
     sm.var.source \
     sm.var.source.computed \
+    sm.var.source.type \
     sm.var.source.lang \
     sm.var.source.suffix \
     sm.var.intermediate \
  )\
 $(eval #
   sm.var.intermediate.go := $($(sm._this).out)/_go_.$($(sm._this).o)
+  sm.var.intermediate.cgo := $($(sm._this).out)/_cgo
+  sm.var.intermediate.cgo_export := $($(sm._this).out)/_cgo_export.h
  )\
 $(eval #
-  ifeq ($(sm.var.source.lang),go)
-    $(sm.var.intermediate.go) : $(sm.var.source.computed)
-    ifeq ($(filter $(sm.var.intermediate.go),$($(sm._this).intermediates)),)
-      $(sm._this).intermediates += $(sm.var.intermediate.go)
-      sm.var.intermediate := $(sm.var.intermediate.go)
+  ifeq ($(sm.var.source.type),cgo)
+    $(sm.var.intermediate.cgo_export) : $(sm.var.source.computed)
+
+    ifndef sm.var.sources.$(sm.var.source.type)
+      $$(error no sources of type "$(sm.var.source.type)")
     endif
+
+    ifeq ($(filter $(sm.var.intermediate.cgo_export),$($(sm._this).intermediates)),)
+    sm.var.cgo_intermediates := \
+        $(sm.var.intermediate.cgo)/_cgo_defun.c \
+        $(sm.var.intermediate.cgo)/_cgo_export.c \
+        $(sm.var.intermediate.cgo)/_cgo_gotypes.go \
+        $(sm.var.sources.$(sm.var.source.type):%.go=%.cgo1.go) \
+        $(sm.var.sources.$(sm.var.source.type):%.go=%.cgo2.c) \
+
+    $(sm._this).compile.flags.c += -I$($(sm._this).out)
+    $(sm._this).unterminated.external += $$(sm.var.cgo_intermediates)
+    $$(sm.var.cgo_intermediates) : $(sm.var.intermediate.cgo_export)
+
+    $(sm.var.intermediate.cgo_export):
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	@[[ -d $(sm.var.intermediate.cgo) ]] || mkdir -p $(sm.var.intermediate.cgo)
+	cgo -objdir="$(sm.var.intermediate.cgo)" -- $$^ && [[ -f $$(@F) ]] && mv -f $$(@F) $$@
+    endif
+  else
+    ifeq ($(sm.var.source.lang),go)
+      $(sm.var.intermediate.go) : $(sm.var.source.computed)
+      ifeq ($(filter $(sm.var.intermediate.go),$($(sm._this).intermediates)),)
+        $(sm._this).intermediates += $(sm.var.intermediate.go)
+        sm.var.intermediate := $(sm.var.intermediate.go)
+      endif
+    endif
+    $$(sm.tool.go.transform-gc-source)
   endif
- )\
+ )
+endef #sm.tool.go.transform-single-source
+
+define sm.tool.go.transform-gc-source
 $(eval #
   sm.var.flags :=
   sm.var.flags += $($(sm._this).used.defines)
@@ -187,7 +219,7 @@ $(eval #
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, go: $(sm.var.source.lang), $(sm.var.command))
  )
-endef #sm.tool.go.transform-single-source
+endef #sm.tool.go.transform-gc-source
 
 ##
 ##
@@ -197,7 +229,7 @@ $(call sm-check-not-empty, sm._this \
   $(sm._this).lang \
   $(sm._this).type \
   $(sm._this).intermediates \
- , go: unknown language)\
+ )\
 $(eval #
   sm.var.intermediates := $($(sm._this).intermediates)
   sm.var.target :=
