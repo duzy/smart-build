@@ -3,4 +3,4 @@ test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/go/debug/toolset-go-command2/_
 test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/go/debug/bin/toolset-go-command2$EXE
 
 out=`$TOP/out/go/debug/bin/toolset-go-command2$EXE`
-test-check-value ${BASH_SOURCE}:${LINENO} "$out" "Hello, Go! (4)"
+test-check-value ${BASH_SOURCE}:${LINENO} "$out" "Hello, Go! (16)"

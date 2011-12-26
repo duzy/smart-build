@@ -23,6 +23,9 @@ sm.tool.go.suffix.intermediate.c   = .$($(sm._this).o)
 sm.tool.go.suffix.intermediate.c++ = .$($(sm._this).o)
 sm.tool.go.suffix.intermediate.go  = .$($(sm._this).o)
 sm.tool.go.suffix.intermediate.asm = .$($(sm._this).o)
+sm.tool.go.o.x86_64 := 6
+sm.tool.go.o.i386   := 8
+sm.tool.go.o.arm    := 5
 
 ## Target link output file suffix.
 sm.tool.go.suffix.target.win32.package := .a
@@ -52,24 +55,29 @@ sm.tool.go.flags.compile.type.command :=
 sm.tool.go.flags.link.type.package :=
 sm.tool.go.flags.link.type.command :=
 
+## Language Specific Flags
+sm.tool.go.flags.compile.lang.c   := -Fw #-Fvw
+sm.tool.go.flags.compile.lang.go  :=
+sm.tool.go.flags.compile.lang.asm :=
+
 ##
 ## Compile Commands
 define sm.tool.go.command.compile.c
-6c $(sm.var.flags) -o $(sm.var.intermediate) $(sm.var.source.computed)
+$($(sm._this).o)c $(sm.var.flags) -o $(sm.var.intermediate) $(sm.var.source.computed)
 endef #sm.tool.go.command.compile.c
 
 define sm.tool.go.command.compile.go
-6g $(sm.var.flags) -o $(sm.var.intermediate) $$$$^
+$($(sm._this).o)g $(sm.var.flags) -o $(sm.var.intermediate) $$$$^
 endef #sm.tool.go.command.compile.go
 
 define sm.tool.go.command.compile.asm
-6a $(sm.var.flags) -o $(sm.var.intermediate) $(sm.var.source.computed)
+$($(sm._this).o)a $(sm.var.flags) -o $(sm.var.intermediate) $(sm.var.source.computed)
 endef #sm.tool.go.command.compile.asm
 
 ##
 ##
 define sm.tool.go.command.link
-6l $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+$($(sm._this).o)l $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
 endef #sm.tool.go.command.link
 
 ##
@@ -100,13 +108,16 @@ $(eval #
    sm.this.compile.flags := $(sm.tool.go.flags.compile.variant.$(sm.config.variant))
    sm.this.compile.flags += $(sm.tool.go.flags.compile.os.$(sm.os.name))
    sm.this.compile.flags += $(sm.tool.go.flags.compile.type.$(sm.this.type))
+   sm.this.compile.flags.c   := $(sm.tool.go.flags.compile.lang.c)
+   sm.this.compile.flags.go  := $(sm.tool.go.flags.compile.lang.go)
+   sm.this.compile.flags.asm := $(sm.tool.go.flags.compile.lang.asm)
    sm.this.link.flags := $(sm.tool.go.flags.link.variant.$(sm.config.variant))
    sm.this.link.flags += $(sm.tool.go.flags.link.os.$(sm.os.name))
    sm.this.link.flags += $(sm.tool.go.flags.link.type.$(sm.this.type))
    sm.this.pack.flags := $(sm.tool.go.flags.pack.variant.$(sm.config.variant))
    sm.this.pack.flags += $(sm.tool.go.flags.pack.os.$(sm.os.name))
    sm.this.pack.flags += $(sm.tool.go.flags.pack.type.$(sm.this.type))
-   sm.this.o := 6
+   sm.this.o := $(sm.tool.go.o.$(sm.config.machine))
  )
 endef #sm.tool.go.config-module
 

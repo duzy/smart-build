@@ -3,7 +3,7 @@ package main
 import (
         "os"
         "fmt"
-        "toolset-go-package"
+        "toolset_go_package"
 )
 
 func main() {
