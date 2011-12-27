@@ -270,7 +270,7 @@ $(eval #
   sm.var.target.link :=
   sm.var.flags :=
   ifeq ($($(sm._this).type),static)
-    sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name)$($(sm._this).suffix)
+    sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name:lib%=%)$($(sm._this).suffix)
     sm.var.flags += $($(sm._this).used.archive.flags)
     sm.var.flags += $($(sm._this).used.archive.flags.$($(sm._this).lang))
     sm.var.flags += $($(sm._this).archive.flags)
@@ -283,7 +283,7 @@ $(eval #
     sm.var.flags += $($(sm._this).link.flags.$($(sm._this).lang))
     ifeq ($($(sm._this).type),shared)
       sm.var.flags := -shared $$(filter-out -shared,$$(sm.var.flags))
-      sm.var.target.link := $(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name)$($(sm._this).suffix)
+      sm.var.target.link := $(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name:lib%=%)$($(sm._this).suffix)
     endif
   endif
   sm.var.loadlibs :=
