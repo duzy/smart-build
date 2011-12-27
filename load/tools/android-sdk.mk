@@ -59,14 +59,9 @@ endif
 
 ##
 ## Compile Commands
-define sm.tool.android-sdk.command.compile.java
-javac $(sm.var.flags) $(sm.var.sources) $(sm.var.argfiles)
-endef #sm.tool.android-sdk.command.compile.java
-
-##
-##
-define sm.tool.android-sdk.command.link.java
-endef #sm.tool.android-sdk.command.link.java
+define sm.tool.android-sdk.command.compile.sources
+javac $(sm.var.flags) $(sm.var.source.R) $$$$(filter-out %/AndroidManifest.xml,$$$$^) $(sm.var.argfiles)
+endef #sm.tool.android-sdk.command.compile.sources
 
 ##
 ##
@@ -184,9 +179,7 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
-  sm.var.sources = `find $($(sm._this).path.res) -type f -name R.java`
-  sm.var.sources += $$(filter-out $($(sm._this).dir)/AndroidManifest.xml,$$^)
-  sm.var.command = $$(sm.tool.android-sdk.command.compile.$(sm.var.source.lang))
+  sm.var.source.R := `find $($(sm._this).path.res) -type f -name R.java`
   sm.var.dir.assets := $(wildcard $($(sm._this).dir)/assets)
   sm.var.dir.res := $(wildcard $($(sm._this).dir)/res)
  )\
@@ -194,7 +187,7 @@ $(eval #see definitions.mk(add-assets-to-package) for this
   $($(sm._this).path.classes).list: $($(sm._this).dir)/AndroidManifest.xml
 	@[[ -d $($(sm._this).path.classes) ]] || mkdir -p $($(sm._this).path.classes)
 	@[[ -d $($(sm._this).path.res)     ]] || mkdir -p $($(sm._this).path.res)
-	$(sm.tool.android-sdk.aapt) package -m \
+	$(filter %,$(sm.tool.android-sdk.aapt) package -m \
 	    $(addprefix -J ,$($(sm._this).path.res))\
 	    $(addprefix -M ,$($(sm._this).dir)/AndroidManifest.xml)\
 	    $(addprefix -P ,$(TODO-resource_publics_output))\
@@ -208,8 +201,8 @@ $(eval #see definitions.mk(add-assets-to-package) for this
 	    $(addprefix --version-name ,$(TODO-platform_version)$(TODO-build_number))\
 	    $(addprefix --rename-manifest-package , $(TODO-manifest_package_name))\
 	    $(addprefix --rename-instrumentation-target-package , $(TODO-manifest_instrumentation_for))\
-	;
-	$$(call sm.fun.wrap-rule-commands, android-sdk:, $$(sm.var.command))
+	)
+	$(call sm.fun.wrap-rule-commands, android-sdk:, $(sm.tool.android-sdk.command.compile.sources))
 	@find $($(sm._this).path.classes) -type f -name '*.class' > $$@
 
   sm.var.target := $($(sm._this).path.classes).dex
