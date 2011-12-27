@@ -60,7 +60,7 @@ endif
 ##
 ## Compile Commands
 define sm.tool.android-sdk.command.compile.java
-javac $(sm.var.flags) $(sm.var.source.R) $$$$^ $(sm.var.argfiles)
+javac $(sm.var.flags) $(sm.var.sources) $(sm.var.argfiles)
 endef #sm.tool.android-sdk.command.compile.java
 
 ##
@@ -184,13 +184,14 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
-  sm.var.source.R := `find $($(sm._this).path.res) -type f -name R.java`
-  sm.var.command := $$(sm.tool.android-sdk.command.compile.$(sm.var.source.lang))
+  sm.var.sources = `find $($(sm._this).path.res) -type f -name R.java`
+  sm.var.sources += $$(filter-out $($(sm._this).dir)/AndroidManifest.xml,$$^)
+  sm.var.command = $$(sm.tool.android-sdk.command.compile.$(sm.var.source.lang))
   sm.var.dir.assets := $(wildcard $($(sm._this).dir)/assets)
   sm.var.dir.res := $(wildcard $($(sm._this).dir)/res)
  )\
 $(eval #see definitions.mk(add-assets-to-package) for this
-  $($(sm._this).path.classes).list:
+  $($(sm._this).path.classes).list: $($(sm._this).dir)/AndroidManifest.xml
 	@[[ -d $($(sm._this).path.classes) ]] || mkdir -p $($(sm._this).path.classes)
 	@[[ -d $($(sm._this).path.res)     ]] || mkdir -p $($(sm._this).path.res)
 	$(sm.tool.android-sdk.aapt) package -m \
@@ -208,7 +209,7 @@ $(eval #see definitions.mk(add-assets-to-package) for this
 	    $(addprefix --rename-manifest-package , $(TODO-manifest_package_name))\
 	    $(addprefix --rename-instrumentation-target-package , $(TODO-manifest_instrumentation_for))\
 	;
-	$(call sm.fun.wrap-rule-commands, android-sdk:, $(sm.var.command))
+	$$(call sm.fun.wrap-rule-commands, android-sdk:, $$(sm.var.command))
 	@find $($(sm._this).path.classes) -type f -name '*.class' > $$@
 
   sm.var.target := $($(sm._this).path.classes).dex
@@ -283,7 +284,7 @@ $(eval #
     android-sign-apk: $(sm.var.target)
   endif
   $(sm.var.target) : $(sm.var.target.unsigned)
-	@echo "signing '$$@'..." &&\
+	@echo "android-sdk: signing '$$@'.." &&\
 	cp $(sm.var.target.unsigned) $(sm.var.target) &&\
 	jarsigner \
 	    $(addprefix -storepass ,"$(sm.var.storepass)")\
