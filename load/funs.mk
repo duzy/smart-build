@@ -98,20 +98,11 @@ endef #sm.fun.init-toolset
 ## 
 define sm.fun.compute-using-list
 $(if $($(sm._this).using_list), $(eval \
-  ## FIXME: it looks like a gmake bug:
-  ##   if these variables is not initialized using ":=", those "+=" in cused.mk
-  ##   will act like a ":=".
   $(sm._this).using_list.computed :=
-  $(sm._this).used.defines        :=
-  $(sm._this).used.includes       :=
-  $(sm._this).used.compile.flags  :=
-  $(sm._this).used.link.flags     :=
-  $(sm._this).used.libdirs        :=
-  $(sm._this).used.libs           :=
-  ${foreach sm.var._use, $($(sm._this).using_list),
+  $(foreach sm.var._use, $($(sm._this).using_list),
     sm._that := sm.module.$(sm.var._use)
     include $(sm.dir.buildsys)/funs/use.mk
-   }
+   )
  ))
 endef #sm.fun.compute-using-list
 
