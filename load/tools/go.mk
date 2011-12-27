@@ -116,6 +116,14 @@ $(eval #
    sm.this.type := $(firstword $(sm.this.toolset.args))
  )\
 $(eval #
+   ifeq ($(sm.this.type),pkg)
+     sm.this.type := package
+   endif
+   ifeq ($(sm.this.type),cmd)
+     sm.this.type := command
+   endif
+ )\
+$(eval #
    sm.this.suffix := $(sm.tool.go.suffix.target.$(sm.os.name).$(sm.this.type))
    sm.this.compile.flags := $(sm.tool.go.flags.compile.variant.$(sm.config.variant))
    sm.this.compile.flags += $(sm.tool.go.flags.compile.os.$(sm.os.name))
@@ -131,6 +139,10 @@ $(eval #
    sm.this.pack.flags += $(sm.tool.go.flags.pack.os.$(sm.os.name))
    sm.this.pack.flags += $(sm.tool.go.flags.pack.type.$(sm.this.type))
    sm.this.o := $(sm.tool.go.o.$(sm.config.machine))
+   ifeq ($(sm.this.type),package)
+     sm.this.export.compile.flags := -I$(sm.out.pkg)
+     sm.this.export.link.flags := -L$(sm.out.pkg)
+   endif
  )
 endef #sm.tool.go.config-module
 
@@ -165,13 +177,23 @@ $(eval #
   sm.var.intermediate.cgo_import.o := $($(sm._this).out.inter)/_cgo/_cgo_import.$($(sm._this).o)
  )\
 $(eval #
+  sm.var.has_cgo_rules := $(filter $(sm.var.intermediate.cgo_import.o),$($(sm._this).intermediates))
+  ifndef sm.var.has_cgo_rules
+    sm.var._cgo1_o.libs :=
+    $$(call sm.fun.append-items-with-fix, sm.var._cgo1_o.libs, \
+        $($(sm._this).used.libdirs), -L, , -% -Wl%)
+    $$(call sm.fun.append-items-with-fix, sm.var._cgo1_o.libs, \
+        $($(sm._this).used.libs), -l, , -% -Wl% %.a %.so %.lib %.dll)
+  endif
+ )\
+$(eval #
   $(sm.var.intermediate.cgo_export.h) : $(sm.var.source.computed)
 
   ifndef sm.var.sources.$(sm.var.source.type)
     $$(error no sources of type "$(sm.var.source.type)")
   endif
 
-  ifeq ($(filter $(sm.var.intermediate.cgo_import.o),$($(sm._this).intermediates)),)
+  ifndef sm.var.has_cgo_rules
     sm.var.cgo_intermediates := \
         $(sm.var.intermediate.cgo_import.c)\
         $(sm.var.intermediate.cgo)/_cgo_defun.c \
@@ -186,7 +208,7 @@ $(eval #
 
     $(sm._this).cgo_flags := $(sm.var.intermediate.cgo)/_cgo_flags
     $(sm._this).compile.flags.c += -I$($(sm._this).out.inter)
-    $(sm._this).compile.flags.gcc += -I$($(sm._this).out.inter)
+    $(sm._this).compile.flags.gcc += -fPIC -I$($(sm._this).out.inter)
     $(sm._this).link.flags.gcc +=
     $(sm._this).unterminated.cgo.goc += $$(sm.var.cgo_intermediates)
     $(sm._this).unterminated.cgo.gcc += $$(sm.var.gcc_intermediates)
@@ -203,7 +225,7 @@ $(eval #
 	cgo -dynimport $(sm.var.intermediate.cgo)/_cgo1.o > $$@_ && mv -f $$@_ $$@
     $(sm.var.intermediate.cgo)/_cgo1.o: $$(sm.var.gcc_intermediates:%.c=%.o)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	gcc -g -fPIC -O2 -o $$@ $$^ -L./c/_obj -lphysics
+	gcc -g -fPIC -O2 -o $$@ $$^ $(sm.var._cgo1_o.libs)
   endif
  )
 endef #sm.tool.go.transform-cgo-source
