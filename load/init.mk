@@ -38,6 +38,7 @@ sm.dir.top = $(call sm-deprecated, sm.dir.top, sm.top)
 sm.out = out/$(if $(sm.this.toolset),$(sm.this.toolset)/)$(sm.config.variant)
 sm.out.bin = $(sm.out)/bin
 sm.out.lib = $(sm.out)/lib
+sm.out.pkg = $(sm.out)/pkg
 sm.out.inc = out/include
 sm.out.obj = $(call sm-deprecated, sm.out.obj, sm.out.inter)
 sm.out.tmp = $(sm.out)/temp

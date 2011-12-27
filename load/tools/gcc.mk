@@ -118,7 +118,7 @@ define sm.tool.gcc.config-module
 $(call sm-check-not-empty, \
     sm.os.name \
     sm.config.variant \
- )\
+ ,,gcc:)\
 $(eval \
    sm.this.gen_deps := true
    sm.this.type := $(firstword $(sm.this.toolset.args))
@@ -133,9 +133,9 @@ $(eval \
 endef #sm.tool.gcc.config-module
 
 sm.tool.gcc.transform.headers := h
-sm.tool.gcc.transform.static  := bin
-sm.tool.gcc.transform.shared  := bin
-sm.tool.gcc.transform.exe     := bin
+sm.tool.gcc.transform.static  := c
+sm.tool.gcc.transform.shared  := c
+sm.tool.gcc.transform.exe     := c
 
 ## sm.var.source
 ## sm.var.source.computed
@@ -154,8 +154,8 @@ $(info TODO: gcc: header: $(sm.var.source.computed))
 endef #sm.tool.gcc.transform-source-h
 
 ##
-##
-define sm.tool.gcc.transform-source-bin
+## transform .c or .cpp source
+define sm.tool.gcc.transform-source-c
 $(call sm-check-not-empty, \
     sm._this $(sm._this).name \
     sm.var.source \
@@ -166,20 +166,23 @@ $(call sm-check-not-empty, \
  )\
 $(eval #
   sm.var.flags :=
-  sm.var.flags += $($(sm._this).used.defines)
-  sm.var.flags += $($(sm._this).used.defines.$(sm.var.source.lang))
-  sm.var.flags += $($(sm._this).used.compile.flags)
-  sm.var.flags += $($(sm._this).used.compile.flags.$(sm.var.source.lang))
-  sm.var.flags += $($(sm._this).defines)
-  sm.var.flags += $($(sm._this).defines.$(sm.var.source.lang))
-  sm.var.flags += $($(sm._this).compile.flags)
-  sm.var.flags += $($(sm._this).compile.flags.$(sm.var.source.lang))
-
-  $$(call sm.fun.append-items-with-fix, sm.var.flags, \
+  ifdef sm.var.specific_flags
+    sm.var.flags := $(sm.var.specific_flags)
+  else
+    sm.var.flags += $($(sm._this).used.defines)
+    sm.var.flags += $($(sm._this).used.defines.$(sm.var.source.lang))
+    sm.var.flags += $($(sm._this).used.compile.flags)
+    sm.var.flags += $($(sm._this).used.compile.flags.$(sm.var.source.lang))
+    sm.var.flags += $($(sm._this).defines)
+    sm.var.flags += $($(sm._this).defines.$(sm.var.source.lang))
+    sm.var.flags += $($(sm._this).compile.flags)
+    sm.var.flags += $($(sm._this).compile.flags.$(sm.var.source.lang))
+    $$(call sm.fun.append-items-with-fix, sm.var.flags, \
          $($(sm._this).includes)\
          $($(sm._this).used.includes)\
          $($(sm.var.tool).includes)\
         , -I, , -%)
+  endif
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
@@ -211,7 +214,7 @@ $(eval #
   endif
   endif
  )
-endef #sm.tool.gcc.transform-source-bin
+endef #sm.tool.gcc.transform-source-c
 
 ##
 ##
@@ -253,14 +256,14 @@ $(eval #
 endef #sm.tool.gcc.transform-intermediates-h
 
 ##
-##
-define sm.tool.gcc.transform-intermediates-bin
+## .c or .cpp intermediates
+define sm.tool.gcc.transform-intermediates-c
 $(call sm-check-not-empty, sm._this \
   $(sm._this).name \
   $(sm._this).lang \
   $(sm._this).type \
   $(sm._this).intermediates \
- , gcc: unknown language)\
+ ,,gcc:)\
 $(eval #
   sm.var.intermediates := $($(sm._this).intermediates)
   sm.var.target :=
@@ -338,4 +341,4 @@ $(eval #
 	$(call sm.fun.wrap-rule-commands, gcc, ln -sf $(sm.top)/$(sm.var.target) $(sm.var.target.link))
   endif
  )
-endef #sm.tool.gcc.transform-intermediates-bin
+endef #sm.tool.gcc.transform-intermediates-c

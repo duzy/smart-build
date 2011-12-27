@@ -822,12 +822,12 @@ endef #sm-check-file
 
 ## Ensure not empty of var, eg. $(call sm-check-not-empty, sm.top)
 define sm-check-not-empty
-$(foreach _,$1,$(if $($_),,$(error $(or $(strip $2),'$_' is empty))))
+$(foreach _,$1,$(if $($_),,$(error $(or $(strip $2),$(strip $(strip $3) '$_' is empty)))))
 endef #sm-check-not-empty
 
 ## Ensure empty of var, eg. $(call sm-check-empty, sm.var.blah)
 define sm-check-empty
-$(foreach _,$1,$(if $($_),$(error $(or $(strip $2),'$_' is not empty))))
+$(foreach _,$1,$(if $($_),$(error $(or $(strip $2),$(strip $(strip $3) '$_' is not empty)))))
 endef #sm-check-empty
 
 ## eg. $(call sm-check-value, sm.top, foo/bar)

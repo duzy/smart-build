@@ -23,6 +23,7 @@ $(call sm-check-not-empty,	\
 $(sm._this)._configured := true
 $(sm._this).out := $(sm.out)/$($(sm._this).name)
 $(sm._this).out.tmp := $(sm.out.tmp)/$($(sm._this).name)
+$(sm._this).out.inter := $(sm.out.inter)/$($(sm._this).name)
 $(sm._this).user_defined_targets := $($(sm._this).targets)
 $(sm._this).targets :=
 
