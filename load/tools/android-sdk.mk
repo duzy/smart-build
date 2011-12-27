@@ -295,7 +295,15 @@ $(eval #
 	rm -f $(sm.var.target) && mv $(sm.var.target).aligned $(sm.var.target)\
 	\
 	|| ( rm -f $(sm.var.target).aligned $(sm.var.target) ; false )
+ )\
+$(sm.tool.android-sdk.define-adb-commands)\
+$(sm.tool.android-sdk.define-android-commands)
+endef #sm.tool.android-sdk.transform-intermediates-apk
 
+##
+##
+define sm.tool.android-sdk.define-adb-commands
+$(eval #
   sm.temp._cmdgoals := $(MAKECMDGOALS)
   sm.temp._adb := $(firstword $(MAKECMDGOALS))
   sm.temp._adb_args := $(filter-out adb,$(MAKECMDGOALS))
@@ -314,4 +322,45 @@ $(eval #
 	@adb $(addprefix -s ,$S) install -r $$<
   endif
  )
-endef #sm.tool.android-sdk.transform-intermediates-apk
+endef #sm.tool.android-sdk.define-adb-commands
+
+##
+##
+define sm.tool.android-sdk.define-android-commands
+$(eval #
+  sm.temp._cmdgoals := $(MAKECMDGOALS)
+  sm.temp._android := $(firstword $(MAKECMDGOALS))
+  sm.temp._android_args := $(filter-out android,$(MAKECMDGOALS))
+ )\
+$(eval #
+  sm.temp._android_cmd := $(firstword $(sm.temp._android_args))
+ )\
+$(eval #
+  sm.temp._android_cmd_args := $(filter-out $(sm.temp._android_cmd),$(sm.temp._android_args))
+ )\
+$(eval #
+  ifeq ($(sm.temp._android), android)
+    $(filter-out -%,$(sm.temp._android_args)): ; @true
+    android: android-$(sm.temp._android_cmd)
+    android-create: android-create-$(firstword $(sm.temp._android_cmd_args))
+    android-update: android-update-$(firstword $(sm.temp._android_cmd_args))
+    android-create-project:
+	$$(if $$(TARGET),,$$(error requires the TARGET))\
+	$$(if $$(PACKAGE),,$$(error requires the PACKAGE))\
+	$$(if $$(ACTIVITY),,$$(error requires the ACTIVITY))\
+	@android create project\
+	  --path $($(sm._this).dir)\
+	  --name $($(sm._this).name)\
+	  --target $(TARGET)\
+	  --package $(PACKAGE)\
+	  --activity $(ACTIVITY)
+    android-update-project:
+	$$(if $$(TARGET),,$$(error requires the TARGET))\
+	$$(if $$(PACKAGE),,$$(error requires the PACKAGE))\
+	$$(if $$(ACTIVITY),,$$(error requires the ACTIVITY))\
+	@android update project\
+	  --path $($(sm._this).dir)\
+	  --name $($(sm._this).name)
+  endif
+ )
+endef #sm.tool.android-sdk.define-android-commands
