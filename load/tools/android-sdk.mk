@@ -294,5 +294,23 @@ $(eval #
 	rm -f $(sm.var.target) && mv $(sm.var.target).aligned $(sm.var.target)\
 	\
 	|| ( rm -f $(sm.var.target).aligned $(sm.var.target) ; false )
+
+  sm.temp._cmdgoals := $(MAKECMDGOALS)
+  sm.temp._adb := $(firstword $(MAKECMDGOALS))
+  sm.temp._adb_args := $(filter-out adb,$(MAKECMDGOALS))
+ )\
+$(eval #
+  sm.temp._adb_cmd := $(firstword $(sm.temp._adb_args))
+ )\
+$(eval #
+  sm.temp._adb_cmd_args := $(filter-out $(sm.temp._adb_cmd),$(sm.temp._adb_args))
+ )\
+$(eval #
+  ifeq ($(sm.temp._adb), adb)
+    $(filter-out -%,$(sm.temp._adb_args)): ; @true
+    adb: adb-$(sm.temp._adb_cmd)
+    adb-install: $(sm.var.target)
+	@adb $(addprefix -s ,$S) install -r $$<
+  endif
  )
 endef #sm.tool.android-sdk.transform-intermediates-apk
