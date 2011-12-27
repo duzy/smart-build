@@ -39,7 +39,8 @@ sm.tool.android-sdk.flags.link.variant.release :=
 
 ifneq ($(shell which keytool),)
 android-genkey:
-	keytool -genkey -keystore sign.keystore -alias cert \
+	@[[ -f .keystore ]] || (echo "keystore already existed" && false)
+	keytool -genkey -keystore .keystore -alias cert \
 	  -keyalg RSA -keysize 2048 -validity 10000
 else
 ifneq ($(shell which openssl),)
@@ -282,10 +283,11 @@ $(eval #
     android-sign-apk: $(sm.var.target)
   endif
   $(sm.var.target) : $(sm.var.target.unsigned)
+	@echo "signing '$$@'..." &&\
 	cp $(sm.var.target.unsigned) $(sm.var.target) &&\
 	jarsigner \
-	    $(if $(sm.var.storepass),-storepass "$(sm.var.storepass)")\
-	    $(if $(sm.var.keypass),-keypass "$(sm.var.keypass)")\
+	    $(addprefix -storepass ,"$(sm.var.storepass)")\
+	    $(addprefix -keypass ,"$(sm.var.keypass)")\
 	    -keystore $(sm.var.keystore) $(sm.var.target) cert &&\
 	\
 	$(sm.tool.android-sdk.zipalign) 4 $(sm.var.target) $(sm.var.target).aligned &&\
