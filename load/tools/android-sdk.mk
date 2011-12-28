@@ -193,7 +193,7 @@ $(eval #see definitions.mk(add-assets-to-package) for this
   $($(sm._this).path.classes).list: $($(sm._this).dir)/AndroidManifest.xml
 	@[[ -d $($(sm._this).path.classes) ]] || mkdir -p $($(sm._this).path.classes)
 	@[[ -d $($(sm._this).path.res)     ]] || mkdir -p $($(sm._this).path.res)
-	$(sm.tool.android-sdk.aapt) package -m \
+	$(filter %,$(sm.tool.android-sdk.aapt) package -m \
 	    $(addprefix -J ,$($(sm._this).path.res))\
 	    $(addprefix -M ,$($(sm._this).dir)/AndroidManifest.xml)\
 	    $(addprefix -P ,$(TODO-resource_publics_output))\
@@ -207,7 +207,7 @@ $(eval #see definitions.mk(add-assets-to-package) for this
 	    $(addprefix --version-name ,$(TODO-platform_version)$(TODO-build_number))\
 	    $(addprefix --rename-manifest-package , $(TODO-manifest_package_name))\
 	    $(addprefix --rename-instrumentation-target-package , $(TODO-manifest_instrumentation_for))\
-	;
+	)
 	$(call sm.fun.wrap-rule-commands, android-sdk:, $(sm.tool.android-sdk.command.compile.java))
 	@find $($(sm._this).path.classes) -type f -name '*.class' > $$@
 
