@@ -122,6 +122,10 @@ $(foreach _, $(sm.tool.android-sdk.args.types), \
   $(call sm.tool.android-sdk.transform-source-$(sm.tool.android-sdk.transform.$_)))
 endef #sm.tool.android-sdk.transform-single-source
 
+define sm.tool.android-sdk.find-res
+$(shell cd $($(sm._this).dir) && find res -type f -regex '.*\.\(xml\|png\)' ; true)
+endef #sm.tool.android-sdk.find-res
+
 ##
 ##
 define sm.tool.android-sdk.transform-source-apk
@@ -186,11 +190,12 @@ $(eval #
 
   sm.var.dir.assets := $(wildcard $($(sm._this).dir)/assets)
   sm.var.dir.res := $(wildcard $($(sm._this).dir)/res)
-  sm.var.sources = `find $($(sm._this).path.res) -type f -name R.java`\
-     $$$$$$$$(filter-out $($(sm._this).dir)/AndroidManifest.xml,$$$$$$$$^)
+  sm.var.sources.res = $$(sm.tool.android-sdk.find-res:%=$($(sm._this).dir)/%)
+  sm.var.sources = `find $($(sm._this).path.res) -type f -name R.java`
+  sm.var.sources += $$$$$$$$(filter-out $($(sm._this).dir)/AndroidManifest.xml $$(sm.var.sources.res),$$$$$$$$^)
  )\
 $(eval #see definitions.mk(add-assets-to-package) for this
-  $($(sm._this).path.classes).list: $($(sm._this).dir)/AndroidManifest.xml
+  $($(sm._this).path.classes).list: $($(sm._this).dir)/AndroidManifest.xml $(sm.var.sources.res)
 	@[[ -d $($(sm._this).path.classes) ]] || mkdir -p $($(sm._this).path.classes)
 	@[[ -d $($(sm._this).path.res)     ]] || mkdir -p $($(sm._this).path.res)
 	$(filter %,$(sm.tool.android-sdk.aapt) package -m \
@@ -233,7 +238,7 @@ $(eval #
 	  zip -qd $(notdir $(sm.var.target)) dummy &&\
 	  rm -f dummy && cd - ) > /dev/null
 	@# add assets to the package
-	$(sm.tool.android-sdk.aapt) package -u \
+	$(filter %,$(sm.tool.android-sdk.aapt) package -u \
 	    $(addprefix -F ,$(sm.var.target))\
 	    $(addprefix -c ,$(TODO-product_aapt_config))\
 	    $(addprefix --preferred-configurations ,$(TODO-product_aapt_pref_config))\
@@ -248,7 +253,7 @@ $(eval #
 	    $(addprefix --version-name ,$(TODO-platform_version)$(TODO-build_number))\
 	    $(addprefix --rename-manifest-package , $(TODO-manifest_package_name))\
 	    $(addprefix --rename-instrumentation-target-package , $(TODO-manifest_instrumentation_for))\
-	;
+	)
 	@# add DEX to package
 	$(sm.tool.android-sdk.aapt) add -k $(sm.var.target) $(sm.var.target.dex)
 	@# add JNI shared libs to package
