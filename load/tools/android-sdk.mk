@@ -99,6 +99,7 @@ $(eval \
    sm.this.sources := $$(sm.this.sources:$(sm.this.dir)/%=%)
    sm.this.path.classes := $(sm.out)/$(sm.this.name)/classes
    sm.this.path.res := $(sm.out)/$(sm.this.name)/res
+   sm.this.path.assets := $(sm.out)/$(sm.this.name)/assets
    sm.this.compile.flags := -cp $(sm.tool.android-sdk.path)/platforms/$(sm.this.platform)/android.jar
    sm.this.compile.flags += -sourcepath $(sm.this.dir)/src
    sm.this.compile.flags += -d $$(sm.this.path.classes)
@@ -125,6 +126,10 @@ endef #sm.tool.android-sdk.transform-single-source
 define sm.tool.android-sdk.find-res
 $(shell cd $($(sm._this).dir) && find res -type f -regex '.*\.\(xml\|png\)' ; true)
 endef #sm.tool.android-sdk.find-res
+
+define sm.tool.android-sdk.find-assets
+$(shell cd $($(sm._this).dir) && find assets -type f ! -name '*~' ; true)
+endef #sm.tool.android-sdk.find-assets
 
 ##
 ##
@@ -191,11 +196,12 @@ $(eval #
   sm.var.dir.assets := $(wildcard $($(sm._this).dir)/assets)
   sm.var.dir.res := $(wildcard $($(sm._this).dir)/res)
   sm.var.sources.res = $$(sm.tool.android-sdk.find-res:%=$($(sm._this).dir)/%)
+  sm.var.sources.assets = $$(sm.tool.android-sdk.find-assets:%=$($(sm._this).dir)/%)
   sm.var.sources = `find $($(sm._this).path.res) -type f -name R.java`
-  sm.var.sources += $$$$$$$$(filter-out $($(sm._this).dir)/AndroidManifest.xml $$(sm.var.sources.res),$$$$$$$$^)
+  sm.var.sources += $$$$$$$$(filter-out $($(sm._this).dir)/AndroidManifest.xml $$(sm.var.sources.res) $$(sm.var.sources.assets),$$$$$$$$^)
  )\
 $(eval #see definitions.mk(add-assets-to-package) for this
-  $($(sm._this).path.classes).list: $($(sm._this).dir)/AndroidManifest.xml $(sm.var.sources.res)
+  $($(sm._this).path.classes).list: $($(sm._this).dir)/AndroidManifest.xml $(sm.var.sources.res) $(sm.var.sources.assets)
 	@[[ -d $($(sm._this).path.classes) ]] || mkdir -p $($(sm._this).path.classes)
 	@[[ -d $($(sm._this).path.res)     ]] || mkdir -p $($(sm._this).path.res)
 	$(filter %,$(sm.tool.android-sdk.aapt) package -m \
