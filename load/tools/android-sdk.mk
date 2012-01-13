@@ -39,7 +39,7 @@ sm.tool.android-sdk.flags.link.variant.release :=
 
 ifneq ($(shell which keytool),)
 android-genkey:
-	@[[ -f .keystore ]] || (echo "keystore already existed" && false)
+#	@[[ -f .keystore ]] && echo "keystore already existed" && false
 	keytool -genkey -keystore .keystore -alias cert \
 	  -keyalg RSA -keysize 2048 -validity 10000
 else
