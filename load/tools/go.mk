@@ -172,9 +172,9 @@ endef #sm.tool.go.transform-single-source
 define sm.tool.go.transform-cgo-source
 $(eval #
   sm.var.intermediate.cgo := $($(sm._this).out.inter)/_cgo
-  sm.var.intermediate.cgo_export.h := $($(sm._this).out.inter)/_cgo_export.h
-  sm.var.intermediate.cgo_import.c := $($(sm._this).out.inter)/_cgo/_cgo_import.c
-  sm.var.intermediate.cgo_import.o := $($(sm._this).out.inter)/_cgo/_cgo_import.$($(sm._this).o)
+  sm.var.intermediate.cgo_export.h := $$(sm.var.intermediate.cgo)/_cgo_export.h
+  sm.var.intermediate.cgo_import.c := $$(sm.var.intermediate.cgo)/_cgo_import.c
+  sm.var.intermediate.cgo_import.o := $$(sm.var.intermediate.cgo)/_cgo_import.$($(sm._this).o)
  )\
 $(eval #
   sm.var.has_cgo_rules := $(filter $(sm.var.intermediate.cgo_import.o),$($(sm._this).intermediates))
@@ -219,10 +219,13 @@ $(eval #
     $(sm.var.intermediate.cgo_export.h):
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	@[[ -d $(sm.var.intermediate.cgo) ]] || mkdir -p $(sm.var.intermediate.cgo)
-	cgo -objdir="$(sm.var.intermediate.cgo)" -- $$^ && [[ -f $$(@F) ]] && mv -f $$(@F) $$@
+	@echo "cgo: $$@"
+	cgo -objdir="$(sm.var.intermediate.cgo)" -- $$^
+	@[[ -f $$@ ]] || ( echo "cgo: $$@ not generated" && false )
     $(sm.var.intermediate.cgo_import.c) : $(sm.var.intermediate.cgo)/_cgo1.o
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	cgo -dynimport $(sm.var.intermediate.cgo)/_cgo1.o > $$@_ && mv -f $$@_ $$@
+	@[[ -f $$@ ]] || ( echo "cgo: $$@ not generated" && false )
     $(sm.var.intermediate.cgo)/_cgo1.o: $$(sm.var.gcc_intermediates:%.c=%.o)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	gcc -g -fPIC -O2 -o $$@ $$^ $(sm.var._cgo1_o.libs)
