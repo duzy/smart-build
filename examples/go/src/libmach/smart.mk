@@ -23,5 +23,8 @@ sm.this.sources := \
 	../cmd/8l/8.out.h\
 
 sm.this.includes += $(sm.this.dir)
+#sm.this.compile.flags-executable.c += -include elf.h
+
+$(sm.this.dir:$(sm.top)/%=%)/executable.c: $(sm.this.dir:$(sm.top)/%=%)/macho.h
 
 $(go-build-this)
