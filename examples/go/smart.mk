@@ -18,6 +18,7 @@ endef #go-init-module-clib
 
 ##
 define go-init-module-ccmd
+$(call sm-use, mach)\
 $(eval \
   sm.this.libs += mach bio 9 m
  )
@@ -55,6 +56,8 @@ $(eval \
 	([[ -d $$(@D) ]] || mkdir -vp $$(@D)) &&\
 	ln -s $$< $$@
    )
+
+  sm.this.sources := $(filter-out %.h, $(sm.this.sources))
  )
 endef #go-prepare-sources
 

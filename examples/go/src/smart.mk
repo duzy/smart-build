@@ -1,2 +1,2 @@
 #
-$(call sm-load-subdirs, cmd)
+$(call sm-load-subdirs, libmach cmd)
