@@ -1,0 +1,22 @@
+#
+$(call go-new-module, cc.a, clib)
+
+sm.this.headers := cc.h y.tab.h
+sm.this.sources.y := cc.y
+sm.this.sources := \
+	y.tab.c\
+	lex.c\
+	mac.c\
+	dcl.c\
+	acid.c\
+	godefs.c\
+	bits.c\
+	com.c\
+	scon.c\
+	funct.c\
+	sub.c\
+	com64.c\
+	dpchk.c\
+	omachcap.c\
+
+$(go-build-this)

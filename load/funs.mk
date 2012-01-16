@@ -191,6 +191,9 @@ $(call sm-check-not-empty, \
 $(eval \
   sm.var.source.suffix := $(suffix $(sm.var.source))
   sm.var.source.lang := $$(sm.var.lang$$(sm.var.source.suffix))
+  ifndef sm.var.source.lang
+    $$(error source "$(sm.var.source)" of "$$(sm.var.source.suffix)" is not supported)
+  endif
   sm.var.source.where := $(or $(filter $(sm.var.source.type),local external),local)
   sm.var.source.computed := $$(call sm.fun.compute-source-of-$$(sm.var.source.where))
   sm.var.intermediate := $$(sm.fun.compute-intermediates-of-$$(sm.var.source.where))
