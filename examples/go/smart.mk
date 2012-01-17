@@ -69,7 +69,7 @@ $(eval \
     $(go.temp._prefix)/$_ : $(go.root)/$(go.temp._prefix)/$_
 	@echo "go: link: $$@..." &&\
 	([[ -d $$(@D) ]] || mkdir -vp $$(@D)) &&\
-	ln -sf $$< $$@
+	ln -sf $$< $$@ || (echo "go: cannot link $$@" && false)
    )
 
   sm.this.sources := $(filter-out %.h, $(sm.this.sources))

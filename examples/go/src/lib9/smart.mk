@@ -99,4 +99,6 @@ sm.this.compile.flags-goos.c := \
 
 $(sm.this.dir:$(sm.top)/%=%)/nan.c: $(sm.this.dir:$(sm.top)/%=%)/fmt/fmtdef.h
 
+sm.this.export.libs += m
+
 $(go-build-this)

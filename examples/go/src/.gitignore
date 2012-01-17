@@ -1,4 +1,5 @@
 cmd/*/*.[hc]
+cmd/cc/*body
 libmach/*.[hc]
 libbio/*.[hc]
 lib9/*.[hc]
