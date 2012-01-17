@@ -18,8 +18,8 @@ endef #go-init-module-clib
 
 ##
 define go-init-module-ccmd
-$(call sm-use, mach)\
 $(eval \
+  sm.this.libdirs += -L$(sm.out.lib)
   sm.this.libs += mach bio 9 m
  )
 endef #go-init-module-ccmd
@@ -31,7 +31,11 @@ $(eval \
   ifndef go.args.module.$(strip $2)
     $$(error module type "$(strip $2)" is unknown)
   endif
-  sm.this.includes := $(go.root)/include  
+  sm.this.includes += $(go.root)/include  
+  sm.this.compile.flags += -Wall -Wno-sign-compare -Wno-missing-braces \
+	-Wno-parentheses -Wno-unknown-pragmas -Wno-switch -Wno-comment \
+	-Werror
+  sm.this.compile.flags += -fno-common
  )$(go-init-module-$(strip $2))
 endef #go-new-module
 
@@ -54,7 +58,7 @@ $(eval \
     $(go.temp._prefix)/$_ : $(go.root)/$(go.temp._prefix)/$_
 	@echo "go: link: $$@..." &&\
 	([[ -d $$(@D) ]] || mkdir -vp $$(@D)) &&\
-	ln -s $$< $$@
+	ln -sf $$< $$@
    )
 
   sm.this.sources := $(filter-out %.h, $(sm.this.sources))

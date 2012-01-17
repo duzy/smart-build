@@ -19,12 +19,20 @@ sm.this.sources := \
 	5obj.c\
 	6obj.c\
 	8obj.c\
-	macho.h\
+	macho.h	elf.h\
+	obj.h\
 	../cmd/8l/8.out.h\
+	../cmd/6l/6.out.h\
+	../cmd/5l/5.out.h\
 
 sm.this.includes += $(sm.this.dir)
 #sm.this.compile.flags-executable.c += -include elf.h
 
-$(sm.this.dir:$(sm.top)/%=%)/executable.c: $(sm.this.dir:$(sm.top)/%=%)/macho.h
+prefix := $(sm.this.dir:$(sm.top)/%=%)
+$(prefix)/executable.c: $(prefix)/macho.h $(prefix)/elf.h
+$(prefix)/8obj.c: $(prefix)/obj.h\
+    $(prefix)/../cmd/8l/8.out.h \
+    $(prefix)/../cmd/6l/6.out.h \
+    $(prefix)/../cmd/5l/5.out.h \
 
 $(go-build-this)
