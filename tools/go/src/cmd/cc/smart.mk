@@ -1,9 +1,8 @@
 #
 $(call go-new-module, cc.a, clib)
 
-sm.this.headers := cc.h y.tab.h
-#sm.this.sources.y := cc.y
-sm.this.sources.c := y.tab.c
+sm.this.headers := cc.h
+#sm.this.sources.c := y.tab.c
 sm.this.sources := \
 	lex.c\
 	mac.c\
@@ -18,7 +17,12 @@ sm.this.sources := \
 	com64.c\
 	dpchk.c\
 	omachcap.c\
+	\
+	cc.y
 
 sm.this.includes += $(go.root)/src/cmd/cc
+
+prefix := $(sm.this.dir:$(sm.top)/%=%)
+$(prefix)/y.tab.c: $(prefix)/cc.y
 
 $(go-build-this)
