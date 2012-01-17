@@ -4,6 +4,12 @@ go.root := $(GOROOT)
 
 go.args.module.clib := gcc:static
 go.args.module.ccmd := gcc:exe
+go.args.module.cmd := go:cmd
+go.args.module.pkg := go:pkg
+go.compile.flags.c := -Wall -Wno-sign-compare -Wno-missing-braces \
+	-Wno-parentheses -Wno-unknown-pragmas -Wno-switch -Wno-comment \
+	-Werror -fno-common
+go.compile.flags.go :=
 
 ifndef go.root
   $(error go: GOROOT is empty)
@@ -12,19 +18,35 @@ endif
 ##
 define go-init-module-clib
 $(eval \
-  #sm.this.export.libs += $(sm.out.lib)/lib$(sm.this.name).a
   sm.this.export.libdirs += $(sm.out.lib)
   sm.this.export.libs += $(sm.this.name)
+
+  sm.this.includes += $(go.root)/include
+  sm.this.compile.flags += $(go.compile.flags.c)
  )
 endef #go-init-module-clib
 
 ##
 define go-init-module-ccmd
 $(eval \
-  #sm.this.libdirs += -L$(sm.out.lib)
-  #sm.this.libs += mach bio 9 m
+  sm.this.includes += $(go.root)/include
+  sm.this.compile.flags += $(go.compile.flags.c)
  )
 endef #go-init-module-ccmd
+
+##
+define go-init-module-cmd
+$(eval \
+  sm.this.compile.flags += $(go.compile.flags.go)
+ )
+endef #go-init-module-cmd
+
+##
+define go-init-module-pkg
+$(eval \
+  sm.this.includes += $(sm.out.pkg)
+ )
+endef #go-init-module-pkg
 
 ##
 define go-use-basis-ccmd
@@ -41,11 +63,6 @@ $(eval \
     $$(error module type "$(strip $2)" is unknown)
   endif
   sm.this.gotype := $(strip $2)
-  sm.this.includes += $(go.root)/include
-  sm.this.compile.flags += -Wall -Wno-sign-compare -Wno-missing-braces \
-	-Wno-parentheses -Wno-unknown-pragmas -Wno-switch -Wno-comment \
-	-Werror
-  sm.this.compile.flags += -fno-common
  )$(go-init-module-$(strip $2))
 endef #go-new-module
 

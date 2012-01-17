@@ -26,6 +26,11 @@ sm.tool.go.suffix.intermediate.asm = .$($(sm._this).o)
 sm.tool.go.o.x86_64 := 6
 sm.tool.go.o.i386   := 8
 sm.tool.go.o.arm    := 5
+sm.tool.go.bin := $(sm.dir.tools)/go/out/gcc/release/bin
+sm.tool.go.bin.c = $(sm.tool.go.bin)/$($(sm._this).o)c
+sm.tool.go.bin.g = $(sm.tool.go.bin)/$($(sm._this).o)g
+sm.tool.go.bin.a = $(sm.tool.go.bin)/$($(sm._this).o)a
+sm.tool.go.bin.l = $(sm.tool.go.bin)/$($(sm._this).o)l
 
 ## Target link output file suffix.
 sm.tool.go.suffix.target.win32.package := .a
@@ -55,6 +60,13 @@ sm.tool.go.flags.compile.type.command :=
 sm.tool.go.flags.link.type.package :=
 sm.tool.go.flags.link.type.command :=
 
+ifndef GOARCH
+  GOARCH := amd64
+endif #GOARCH
+ifndef GOOS
+  GOOS := linux
+endif #GOOS
+
 sm.tool.go.root := $(GOROOT)
 ifndef sm.tool.go.root
   sm.tool.go.root := $(patsubst %/,%,$(dir $(shell dirname `which gomake`)))
@@ -66,6 +78,25 @@ ifndef sm.tool.go.root
   $(error smart: go: cannot determine the GOROOT)
 endif
 
+sm.tool.go.tools.prequisite = \
+    $(sm.tool.go.bin.c)\
+    $(sm.tool.go.bin.g)\
+    $(sm.tool.go.bin.a)\
+    $(sm.tool.go.bin.l)\
+
+##
+## Build Go tools
+define sm.tool.go.build-tools
+$(eval \
+  ifndef sm.tool.go.tools.prequisite.built
+  sm.tool.go.tools.prequisite.built := true
+  $(sm.tool.go.tools.prequisite): $(sm.dir.tools)/go
+	@echo "smart: Build go tool: $$@"
+	make V=release goal-$$(@F) && [[ -f $$@ ]]
+  endif
+  )
+endef #sm.tool.go.build-tools
+
 ## Language Specific Flags
 sm.tool.go.flags.compile.lang.c   := -FVw -I$(sm.tool.go.root)/pkg/linux_amd64
 sm.tool.go.flags.compile.lang.go  :=
@@ -75,21 +106,21 @@ sm.tool.go.flags.compile.gcc :=
 ##
 ## Compile Commands
 define sm.tool.go.command.compile.c
-$($(sm._this).o)c $(sm.var.flags) -o $(sm.var.intermediate) $(sm.var.source.computed)
+$(sm.tool.go.bin.c) $(sm.var.flags) -o $(sm.var.intermediate) $(sm.var.source.computed)
 endef #sm.tool.go.command.compile.c
 
 define sm.tool.go.command.compile.go
-$($(sm._this).o)g $(sm.var.flags) -o $(sm.var.intermediate) $$$$^
+$(sm.tool.go.bin.g) $(sm.var.flags) -o $(sm.var.intermediate) $$$$^
 endef #sm.tool.go.command.compile.go
 
 define sm.tool.go.command.compile.asm
-$($(sm._this).o)a $(sm.var.flags) -o $(sm.var.intermediate) $(sm.var.source.computed)
+$(sm.tool.go.bin.a) $(sm.var.flags) -o $(sm.var.intermediate) $(sm.var.source.computed)
 endef #sm.tool.go.command.compile.asm
 
 ##
 ##
 define sm.tool.go.command.link
-$($(sm._this).o)l $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+$(sm.tool.go.bin.l) $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
 endef #sm.tool.go.command.link
 
 ##
@@ -411,9 +442,10 @@ $(eval #
     sm.var.command := $(sm.tool.go.command.link)
   endif
  )\
+$(sm.tool.go.build-tools)\
 $(eval #
   $(sm._this).targets += $(sm.var.target)
-  $(sm.var.target) : $(sm.var.intermediates.preq)
+  $(sm.var.target) : $(sm.tool.go.tools.prequisite) $(sm.var.intermediates.preq)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, go, $(sm.var.command))
  )

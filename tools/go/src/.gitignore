@@ -1,5 +1,10 @@
 cmd/*/*.[hc]
 cmd/cc/*body
+cmd/cgo/*.go
+pkg/*/*.go
+pkg/*/*.[s]
+pkg/*/*/*.go
+pkg/*/*/*.[s]
 libmach/*.[hc]
 libbio/*.[hc]
 lib9/*.[hc]

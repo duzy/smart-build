@@ -64,6 +64,10 @@ $(sm._this).unterminated.strange  :=
 
 ## Then we compute the using list.
 $(call sm.fun.compute-using-list)
+ifdef $(sm._this).using_list
+  #$(info smart: "$($(sm._this).name)" used: "$($(sm._this).using_list)")
+  goal-$($(sm._this).name): $($(sm._this).using_list:%=goal-%)
+endif
 
 ## And toolset must be initialized.
 ifneq ($(strip $($(sm._this).type)),depends)

@@ -103,7 +103,10 @@ $(if $($(sm._this).using_list), $(eval \
     sm._that := sm.module.$(sm.var._use)
     include $(sm.dir.buildsys)/funs/use.mk
    )
- ))
+ ))\
+$(eval \
+  $(sm._this).using_list.computed := $(strip $($(sm._this).using_list.computed))
+ )
 endef #sm.fun.compute-using-list
 
 ##

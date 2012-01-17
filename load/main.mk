@@ -10,6 +10,7 @@ endif
 
 ## Smart Build directory, internal use only, must always contain a '/' tail.
 sm.dir.buildsys := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+sm.dir.tools := $(patsubst %/,%,$(dir $(sm.dir.buildsys)))/tools
 
 SHELL := /bin/bash
 
