@@ -1,2 +1,5 @@
 #
-$(call sm-load-subdirs, libmach cmd)
+$(call sm-load-subdirs, \
+    libmach libbio lib9 \
+    cmd\
+ )

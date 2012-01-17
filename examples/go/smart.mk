@@ -31,7 +31,7 @@ $(eval \
   ifndef go.args.module.$(strip $2)
     $$(error module type "$(strip $2)" is unknown)
   endif
-  sm.this.includes += $(go.root)/include  
+  sm.this.includes += $(go.root)/include
   sm.this.compile.flags += -Wall -Wno-sign-compare -Wno-missing-braces \
 	-Wno-parentheses -Wno-unknown-pragmas -Wno-switch -Wno-comment \
 	-Werror
