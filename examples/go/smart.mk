@@ -12,17 +12,26 @@ endif
 ##
 define go-init-module-clib
 $(eval \
-  sm.this.export.libs += $(sm.out.lib)/lib$(sm.this.name).a
+  #sm.this.export.libs += $(sm.out.lib)/lib$(sm.this.name).a
+  sm.this.export.libdirs += $(sm.out.lib)
+  sm.this.export.libs += $(sm.this.name)
  )
 endef #go-init-module-clib
 
 ##
 define go-init-module-ccmd
 $(eval \
-  sm.this.libdirs += -L$(sm.out.lib)
-  sm.this.libs += mach bio 9 m
+  #sm.this.libdirs += -L$(sm.out.lib)
+  #sm.this.libs += mach bio 9 m
  )
 endef #go-init-module-ccmd
+
+##
+define go-use-basis-ccmd
+$(call sm-use, mach)\
+$(call sm-use, bio)\
+$(call sm-use, 9)
+endef #go-use-basis-ccmd
 
 ##
 define go-new-module
@@ -31,6 +40,7 @@ $(eval \
   ifndef go.args.module.$(strip $2)
     $$(error module type "$(strip $2)" is unknown)
   endif
+  sm.this.gotype := $(strip $2)
   sm.this.includes += $(go.root)/include
   sm.this.compile.flags += -Wall -Wno-sign-compare -Wno-missing-braces \
 	-Wno-parentheses -Wno-unknown-pragmas -Wno-switch -Wno-comment \
@@ -39,9 +49,10 @@ $(eval \
  )$(go-init-module-$(strip $2))
 endef #go-new-module
 
-##
+## USE: mach bio 9 m
 define go-build-this
 $(call go-prepare-sources)\
+$(go-use-basis-$(sm.this.gotype))\
 $(call sm-build-this)
 endef #go-build-this
 
