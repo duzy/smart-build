@@ -88,14 +88,15 @@ sm.this.sources +=\
 
 endif
 
-GOVERSION=$(shell $(go.root)/src/version.bash)
+#GOVERSION := $(shell $(go.root)/src/version.bash)
+GOVERSION := smart.$(shell date +%Y-%m-%d)
 sm.this.defines += -DPLAN9PORT
 sm.this.includes += $(go.root)/src/lib9/fmt $(go.root)/src/lib9/utf
 sm.this.compile.flags-goos.c := \
   -DGOOS='"$(GOOS)"' \
   -DGOARCH='"$(GOARCH)"' \
   -DGOROOT='"$(GOROOT_FINAL)"' \
-  -DGOVERSION='"'"$$GOVERSION"'"'
+  -DGOVERSION='"'"$(GOVERSION)"'"'
 
 $(sm.this.dir:$(sm.top)/%=%)/nan.c: $(sm.this.dir:$(sm.top)/%=%)/fmt/fmtdef.h
 

@@ -84,12 +84,20 @@ $(eval \
       $$(error "$(go.temp._prefix)/$_" no found)
     endif
     $(go.temp._prefix)/$_ : $(go.root)/$(go.temp._prefix)/$_
-	@echo "go: link: $$@..." &&\
-	([[ -d $$(@D) ]] || mkdir -vp $$(@D)) &&\
-	ln -sf $$< $$@ || (echo "go: cannot link $$@" && false)
+	@[[ -d $$(@D) ]] || mkdir -vp $$(@D)
+	ln -sf $$< $$@ && [[ -f $$@ ]]
    )
 
-  sm.this.sources := $(filter-out %.h, $(sm.this.sources))
+  go.temp._yfiles := $(filter %.y, $(sm.this.sources))
+  sm.this.sources := $(filter-out %.h %.y %.c.boot, $(sm.this.sources))
+ )\
+$(eval \
+  ifdef go.temp._yfiles
+    $(go.temp._prefix)/y.tab.h: $(go.temp._yfiles)
+	LANG=C LANGUAGE="en_US.UTF8" bison -v -y -d $<
+    $(go.temp._prefix)/y.tab.c: $(go.temp._prefix)/y.tab.h
+	test -f $@ && touch $@
+  endif
  )
 endef #go-prepare-sources
 

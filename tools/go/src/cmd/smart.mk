@@ -1,7 +1,7 @@
 #
 $(call sm-load-subdirs, \
-    cc gc \
-    6c 6a 6l 6g\
+    cc gc\
+    6l 6a 6c 6g\
  )
 
 #    cgo \

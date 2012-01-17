@@ -2,8 +2,8 @@
 $(call go-new-module, 6g, ccmd)
 $(call sm-use, gc)
 
+sm.this.sources.c := ../6l/enam.c
 sm.this.sources := \
-	../6l/enam.c\
 	cgen.c\
 	../gc/cplx.c\
 	galign.c\
@@ -16,5 +16,7 @@ sm.this.sources := \
 	reg.c\
 
 sm.this.includes += $(go.root)/src/cmd/6g $(go.root)/src/cmd/gc
+
+$(prefix)/../6l/enam.c: $(dir $(prefix))6l/enam.c
 
 $(go-build-this)
