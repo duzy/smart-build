@@ -9,6 +9,6 @@ GOFILES=\
 	x509.go\
 
 sm.this.sources := $(GOFILES)
-sm.this.depends += goal-crypto goal-crypto/x509/pkix
+sm.this.depends += goal-crypto goal-encoding/pem goal-crypto/x509/pkix
 
 $(go-build-this)

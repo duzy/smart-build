@@ -5,6 +5,6 @@ GOFILES=\
 	pkix.go\
 
 sm.this.sources := $(GOFILES)
-sm.this.depends += goal-crypto
+sm.this.depends += goal-crypto goal-encoding/asn1
 
 $(go-build-this)

@@ -21,6 +21,6 @@ GOFILES_windows=\
 	rand_windows.go\
 
 sm.this.sources := $(GOFILES) $(GOFILES_$(GOOS))
-sm.this.depends += goal-crypto
+sm.this.depends += goal-crypto goal-math/big
 
 $(go-build-this)
