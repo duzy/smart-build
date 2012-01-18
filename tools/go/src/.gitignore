@@ -6,6 +6,7 @@ cmd/cgo/*.go
 pkg/*/*.go
 pkg/*/*.[shc]
 pkg/*/*/*.go
+pkg/*/*/*/*.go
 pkg/*/*/*.[shc]
 libmach/*.[hc]
 libbio/*.[hc]

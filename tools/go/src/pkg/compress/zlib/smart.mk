@@ -1,5 +1,5 @@
 #
-$(call go-new-module, compress/zlip, pkg)
+$(call go-new-module, compress/zlib, pkg)
 
 GOFILES=\
 	reader.go\
