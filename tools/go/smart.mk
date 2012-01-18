@@ -63,6 +63,7 @@ $(eval \
     $$(error module type "$(strip $2)" is unknown)
   endif
   sm.this.gotype := $(strip $2)
+  sm.this.prefix := $(sm.this.dir:$(sm.top)/%=%)
  )$(go-init-module-$(strip $2))
 endef #go-new-module
 
@@ -76,14 +77,11 @@ endef #go-build-this
 ##
 define go-prepare-sources
 $(eval \
-  go.temp._prefix := $(sm.this.dir:$(sm.top)/%=%)
- )\
-$(eval \
   $(foreach _,$(sm.this.sources),
-    ifeq ($(wildcard $(go.root)/$(go.temp._prefix)/$_),)
-      $$(error "$(go.temp._prefix)/$_" no found)
+    ifeq ($(wildcard $(go.root)/$(sm.this.prefix)/$_),)
+      $$(error "$(sm.this.prefix)/$_" no found)
     endif
-    $(go.temp._prefix)/$_ : $(go.root)/$(go.temp._prefix)/$_
+    $(sm.this.prefix)/$_ : $(go.root)/$(sm.this.prefix)/$_
 	@[[ -d $$(@D) ]] || mkdir -vp $$(@D)
 	ln -sf $$< $$@ && [[ -f $$@ ]]
    )
@@ -93,10 +91,12 @@ $(eval \
  )\
 $(eval \
   ifdef go.temp._yfiles
-    $(go.temp._prefix)/y.tab.h: $(go.temp._yfiles)
-	LANG=C LANGUAGE="en_US.UTF8" bison -v -y -d $<
-    $(go.temp._prefix)/y.tab.c: $(go.temp._prefix)/y.tab.h
-	test -f $@ && touch $@
+    #sm.this.sources += y.tab.c
+    #$$(info $(sm.this.prefix): $(go.temp._yfiles))
+    $(sm.this.prefix)/y.tab.h: $(go.temp._yfiles:%=$(sm.this.prefix)/%)
+	cd $$(@D) && LANG=C LANGUAGE="en_US.UTF8" bison -v -y -d $$(<F)
+    $(sm.this.prefix)/y.tab.c: $(sm.this.prefix)/y.tab.h
+	cd $$(@D) && test -f $$(@F) && touch $$(@F)
   endif
  )
 endef #go-prepare-sources

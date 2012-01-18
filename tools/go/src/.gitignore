@@ -1,5 +1,7 @@
-cmd/*/*.[hc]
+cmd/*/*.output
+cmd/*/*.[hcy]
 cmd/cc/*body
+cmd/gc/mkopnames
 cmd/cgo/*.go
 pkg/*/*.go
 pkg/*/*.[s]

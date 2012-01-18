@@ -2,7 +2,7 @@
 $(call go-new-module, cc.a, clib)
 
 sm.this.headers := cc.h
-#sm.this.sources.c := y.tab.c
+sm.this.sources.c := y.tab.c
 sm.this.sources := \
 	lex.c\
 	mac.c\
@@ -22,7 +22,6 @@ sm.this.sources := \
 
 sm.this.includes += $(go.root)/src/cmd/cc
 
-prefix := $(sm.this.dir:$(sm.top)/%=%)
-$(prefix)/y.tab.c: $(prefix)/cc.y
+$(sm.this.prefix)/lex.c: $(sm.this.prefix)/y.tab.h
 
 $(go-build-this)

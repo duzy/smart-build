@@ -30,22 +30,29 @@ sm.this.sources := \
 	unsafe.c\
 	walk.c\
 	\
+	go.h\
 	go.y\
 
 GOEXPERIMENT := 
 sm.this.defines += -DGOEXPERIMENT='"$(GOEXPERIMENT)"'
 sm.this.includes += $(go.root)/src/cmd/gc
 
-prefix := $(sm.this.dir:$(sm.top)/%=%)
-$(prefix)/builtin.c: $(go.root)/src/cmd/gc/builtin.c.boot ; ln -sf $< $@
-$(prefix)/y1.tab.c: $(prefix)/y.tab.c
+$(sm.this.prefix)/y1.tab.c: $(sm.this.prefix)/y.tab.c
 	cat $< | sed '/ int yystate;/d; s/int yychar;/int yychar, yystate;/; s/static const char \*const yytname/const char *yytname/; s/char const \*yymsgp/char *yymsgp/' > $@
-$(prefix)/subr.c: $(prefix)/yerr.h
-$(prefix)/yerr.h: $(go.root)/src/cmd/gc/bisonerrors $(go.root)/src/cmd/gc/go.errors \
-    $(prefix)/y.tab.h
+$(sm.this.prefix)/subr.c: $(sm.this.prefix)/yerr.h
+$(sm.this.prefix)/yerr.h: $(sm.this.prefix)/y.tab.h \
+    $(go.root)/src/cmd/gc/bisonerrors $(go.root)/src/cmd/gc/go.errors
 	cd $(@D) &&\
 	cp -f $(go.root)/src/cmd/gc/bisonerrors . &&\
 	cp -f $(go.root)/src/cmd/gc/go.errors . &&\
-	awk -f bisonerrors y.output go.errors > yerr.h
+	awk -f bisonerrors y.output go.errors > yerr.h &&\
+	( rm -f bisonerrors go.errors )	|| ( rm -f yerr.h && false )
+$(sm.this.prefix)/fmt.c: $(sm.this.prefix)/opnames.h
+$(sm.this.prefix)/opnames.h: $(sm.this.prefix)/mkopnames $(sm.this.prefix)/go.h
+	cd $(@D) && ./mkopnames go.h > opnames.h
+$(sm.this.prefix)/builtin.c: $(go.root)/src/cmd/gc/builtin.c.boot
+	ln -sf $< $@
+$(sm.this.prefix)/mkopnames: $(go.root)/src/cmd/gc/mkopnames
+	ln -sf $< $@
 
 $(go-build-this)
