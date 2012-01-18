@@ -25,6 +25,12 @@ sm.this.sources := \
 	../cmd/6l/6.out.h\
 	../cmd/5l/5.out.h\
 
+ifneq ($(GOHOSTOS),windows)
+sm.this.sources += $(shell uname | tr A-Z a-z).c
+else
+sm.this.sources += windows.c
+endif
+
 sm.this.includes += $(sm.this.dir)
 #sm.this.compile.flags-executable.c += -include elf.h
 
