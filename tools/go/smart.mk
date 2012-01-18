@@ -60,6 +60,7 @@ endef #go-init-module-cmd
 define go-init-module-pkg
 $(eval \
   sm.this.includes += $(sm.out.pkg)
+  sm.this.pack.flags +=
  )
 endef #go-init-module-pkg
 

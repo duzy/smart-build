@@ -1,7 +1,7 @@
 #
 $(call go-new-module, sync/atomic, pkg)
 
-sm.this.sources := \
+sm.this.sources := doc.go\
 	asm_$(GOARCH).s\
 
 ifeq ($(GOARCH),arm)
