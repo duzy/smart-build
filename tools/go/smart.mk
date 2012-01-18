@@ -91,8 +91,6 @@ $(eval \
  )\
 $(eval \
   ifdef go.temp._yfiles
-    #sm.this.sources += y.tab.c
-    #$$(info $(sm.this.prefix): $(go.temp._yfiles))
     $(sm.this.prefix)/y.tab.h: $(go.temp._yfiles:%=$(sm.this.prefix)/%)
 	cd $$(@D) && LANG=C LANGUAGE="en_US.UTF8" bison -v -y -d $$(<F)
     $(sm.this.prefix)/y.tab.c: $(sm.this.prefix)/y.tab.h

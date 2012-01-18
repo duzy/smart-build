@@ -78,24 +78,11 @@ ifndef sm.tool.go.root
   $(error smart: go: cannot determine the GOROOT)
 endif
 
-sm.tool.go.tools.prequisite = \
+sm.tool.go.prequisite.tools = \
     $(sm.tool.go.bin.c)\
     $(sm.tool.go.bin.g)\
     $(sm.tool.go.bin.a)\
     $(sm.tool.go.bin.l)\
-
-##
-## Build Go tools
-define sm.tool.go.build-tools
-$(eval \
-  ifndef sm.tool.go.tools.prequisite.built
-  sm.tool.go.tools.prequisite.built := true
-  $(sm.tool.go.tools.prequisite): $(sm.dir.tools)/go
-	@echo "smart: Build go tool: $$@"
-	make V=release goal-$$(@F) && [[ -f $$@ ]]
-  endif
-  )
-endef #sm.tool.go.build-tools
 
 ## Language Specific Flags
 sm.tool.go.flags.compile.lang.c   := -FVw -I$(sm.tool.go.root)/pkg/linux_amd64
@@ -110,7 +97,7 @@ $(sm.tool.go.bin.c) $(sm.var.flags) -o $(sm.var.intermediate) $(sm.var.source.co
 endef #sm.tool.go.command.compile.c
 
 define sm.tool.go.command.compile.go
-$(sm.tool.go.bin.g) $(sm.var.flags) -o $(sm.var.intermediate) $$$$^
+$(sm.tool.go.bin.g) $(sm.var.flags) -o $(sm.var.intermediate) $$$$(filter-out $(sm.tool.go.prequisite.tools),$$$$^)
 endef #sm.tool.go.command.compile.go
 
 define sm.tool.go.command.compile.asm
@@ -170,7 +157,7 @@ $(eval #
    sm.this.pack.flags += $(sm.tool.go.flags.pack.os.$(sm.os.name))
    sm.this.pack.flags += $(sm.tool.go.flags.pack.type.$(sm.this.type))
    sm.this.o := $(sm.tool.go.o.$(sm.config.machine))
-   ifeq ($(sm.this.type),package)
+   ifeq ($($(sm._this).type),package)
      sm.this.export.compile.flags := -I$(sm.out.pkg)
      sm.this.export.link.flags := -L$(sm.out.pkg)
    endif
@@ -341,6 +328,17 @@ $(eval #
   ifneq ($(sm.var.source.lang),go)
     $(sm._this).intermediates += $(sm.var.intermediate)
   endif
+
+  ifeq ($($(sm._this).type),package)
+    $(sm.var.intermediate): $(sm.tool.go.prequisite.tools)
+    ifndef sm.tool.go.prequisite.tools.built
+      sm.tool.go.prequisite.tools.built := $(notdir $(sm.tool.go.prequisite.tools))
+      $(sm.tool.go.prequisite.tools): $(sm.dir.tools)/go
+	$(MAKE) V=release $$(sm.tool.go.prequisite.tools.built:%=goal-%)\
+	&& [[ $(sm.tool.go.prequisite.tools:%=-f % &&) -z "" ]]
+    endif
+  endif
+
   $(sm.var.intermediate) : $(sm.var.source.computed)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, go: $(sm.var.source.lang), $(sm.var.command))
@@ -442,10 +440,9 @@ $(eval #
     sm.var.command := $(sm.tool.go.command.link)
   endif
  )\
-$(sm.tool.go.build-tools)\
 $(eval #
   $(sm._this).targets += $(sm.var.target)
-  $(sm.var.target) : $(sm.tool.go.tools.prequisite) $(sm.var.intermediates.preq)
+  $(sm.var.target): $(sm.var.intermediates.preq)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, go, $(sm.var.command))
  )
