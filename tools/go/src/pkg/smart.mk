@@ -1,31 +1,5 @@
 #
 $(call sm-load-subdirs,\
-	errors sync/atomic runtime sync\
-	syscall time\
-	io os\
-	math sort\
-	strings\
-	path path/filepath\
-	strconv io/ioutil\
-	unicode unicode/utf8 unicode/utf16 bytes\
-	archive/tar\
-	bufio compress/flate\
-	reflect encoding/binary\
-	encoding/ascii85\
-	fmt math/rand math/big encoding/asn1\
-	hash hash/crc32 hash/crc64 archive/zip\
-	encoding/base32\
-	encoding/base64\
-	encoding/csv\
-	encoding/git85\
-	encoding/gob\
-	encoding/hex\
-	encoding/json\
-	encoding/pem\
-	encoding/xml\
- )
-
-#\
 	archive/tar\
 	archive/zip\
 	bufio\
@@ -185,3 +159,36 @@ $(call sm-load-subdirs,\
 	unicode/utf16\
 	unicode/utf8\
 	websocket\
+ )
+
+#\
+	errors sync/atomic runtime sync\
+	syscall time\
+	io os\
+	math sort\
+	strings\
+	path path/filepath\
+	strconv io/ioutil\
+	unicode unicode/utf8 unicode/utf16 bytes\
+	archive/tar\
+	bufio compress/flate\
+	reflect encoding/binary\
+	encoding/ascii85\
+	fmt math/rand math/big encoding/asn1\
+	hash hash/crc32 hash/crc64 archive/zip\
+	encoding/base32\
+	encoding/base64\
+	encoding/csv\
+	encoding/git85\
+	encoding/gob\
+	encoding/hex\
+	encoding/json\
+	encoding/pem\
+	encoding/xml\
+	go/token go/scanner go/parser go/ast\
+	text/tabwriter go/printer\
+	debug/dwarf\
+	debug/elf\
+	debug/pe\
+	debug/macho\
+	flag\

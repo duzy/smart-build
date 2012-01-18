@@ -82,11 +82,11 @@ ifneq ($(call sm-true,$($(sm._this)._intermediates_only)),true)
   $(call sm.fun.make-rules-targets)
 endif #$(sm.var.temp._should_make_targets) == true
 
-$(sm._this).targets := $(strip $($(sm._this).targets))
 $(sm._this).depends := $(strip $($(sm._this).depends))
+$(sm._this).targets := $(strip $($(sm._this).targets))
 $(sm._this).documents := $(strip $($(sm._this).documents))
 
-goal-$($(sm._this).name): $($(sm._this).targets) $($(sm._this).depends)
+goal-$($(sm._this).name): $($(sm._this).depends) $($(sm._this).targets)
 doc-$($(sm._this).name): $($(sm._this).documents)
 
 ifneq ($(call sm-true,$($(sm._this)._intermediates_only)),true)

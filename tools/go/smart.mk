@@ -52,6 +52,8 @@ endef #go-init-module-ccmd
 ##
 define go-init-module-cmd
 $(eval \
+  sm.this.includes += $(sm.out.pkg)
+  sm.this.libdirs += $(sm.out.pkg)
   sm.this.compile.flags += $(go.compile.flags.go)
  )
 endef #go-init-module-cmd

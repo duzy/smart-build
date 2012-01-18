@@ -112,8 +112,6 @@ HFILES=\
 	\
 	type.h\
 
-GOFILES+=$(GOFILES_$(GOOS))
-
 sm.this.sources := $(GOFILES) $(OFILES) $(HFILES)
 
 # special, out of the way compiler flag that means "add runtime metadata to output"

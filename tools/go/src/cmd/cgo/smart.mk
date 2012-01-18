@@ -1,6 +1,5 @@
 #
 $(call go-new-module, cgo, cmd)
-#$(call sm-use, fmt)
 
 sm.this.sources := \
 	ast.go\
@@ -9,5 +8,17 @@ sm.this.sources := \
 	main.go\
 	out.go\
 	util.go\
+
+sm.this.depends += \
+  goal-crypto/md5\
+  goal-debug/dwarf\
+  goal-debug/elf\
+  goal-debug/pe\
+  goal-debug/macho\
+  goal-fmt\
+  goal-flag\
+  goal-go/ast\
+  goal-go/printer\
+  goal-os/exec\
 
 $(go-build-this)

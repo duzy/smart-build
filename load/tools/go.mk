@@ -107,7 +107,7 @@ endef #sm.tool.go.command.compile.asm
 ##
 ##
 define sm.tool.go.command.link
-$(sm.tool.go.bin.l) $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+$(sm.tool.go.bin.l) $(sm.var.flags) $(sm.var.pkgdirs) -o $(sm.var.target) $(sm.var.intermediates)
 endef #sm.tool.go.command.link
 
 ##
@@ -210,11 +210,9 @@ $(eval #
 $(eval #
   sm.var.has_cgo_rules := $(filter $(sm.var.intermediate.cgo_import.o),$($(sm._this).intermediates))
   ifndef sm.var.has_cgo_rules
-    sm.var._cgo1_o.libs :=
-    $$(call sm.fun.append-items-with-fix, sm.var._cgo1_o.libs, \
+    sm.var._cgo1_o.pkgdirs :=
+    $$(call sm.fun.append-items-with-fix, sm.var._cgo1_o.pkgdirs, \
         $($(sm._this).used.libdirs), -L, , -% -Wl%)
-    $$(call sm.fun.append-items-with-fix, sm.var._cgo1_o.libs, \
-        $($(sm._this).used.libs), -l, , -% -Wl% %.a %.so %.lib %.dll)
   endif
  )\
 $(eval #
@@ -259,7 +257,7 @@ $(eval #
 	@[[ -f $$@ ]] || ( echo "cgo: $$@ not generated" && false )
     $(sm.var.intermediate.cgo)/_cgo1.o: $$(sm.var.gcc_intermediates:%.c=%.o)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	gcc -g -fPIC -O2 -o $$@ $$^ $(sm.var._cgo1_o.libs)
+	gcc -g -fPIC -O2 -o $$@ $$^ $(sm.var._cgo1_o.pkgdirs)
   endif
  )
 endef #sm.tool.go.transform-cgo-source
@@ -412,20 +410,15 @@ $(eval #
     sm.var.flags += $($(sm._this).link.flags)
     sm.var.flags += $($(sm._this).link.flags.$($(sm._this).lang))
   endif
-  sm.var.loadlibs :=
+  sm.var.pkgdirs :=
  )\
-$(call sm.fun.append-items-with-fix, sm.var.loadlibs, \
+$(call sm.fun.append-items-with-fix, sm.var.pkgdirs, \
       $($(sm._this).libdirs) \
       $($(sm._this).used.libdirs)\
       $($(sm.var.tool).libdirs)\
      , -L, , -% -Wl%)\
-$(call sm.fun.append-items-with-fix, sm.var.loadlibs, \
-      $($(sm._this).libs) \
-      $($(sm._this).used.libs)\
-      $($(sm.var.tool).libs)\
-     , -l, , -% -Wl% %.a %.so %.lib %.dll)\
 $(call sm-remove-duplicates,sm.var.flags)\
-$(call sm-remove-duplicates,sm.var.loadlibs)\
+$(call sm-remove-duplicates,sm.var.pkgdirs)\
 $(eval #
   sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.flags, link, $($(sm._this).link.flags.infile))
   ifdef sm.temp._flagsfile
@@ -442,10 +435,10 @@ $(eval #
     sm.var.intermediates.preq = $(sm.var.intermediates)
   endif
 
-  sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.loadlibs, libs.link, $($(sm._this).libs.infile))
+  sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.pkgdirs, libs.link, $($(sm._this).libs.infile))
   ifdef sm.temp._flagsfile
     $(sm.var.intermediate) : $$(sm.temp._flagsfile)
-    sm.var.loadlibs := @$$(sm.temp._flagsfile)
+    sm.var.pkgdirs := @$$(sm.temp._flagsfile)
   endif
 
   ifeq ($($(sm._this).type),package)
