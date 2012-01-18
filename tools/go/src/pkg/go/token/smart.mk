@@ -7,5 +7,6 @@ GOFILES=\
 	token.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-encoding/gob
 
 $(go-build-this)

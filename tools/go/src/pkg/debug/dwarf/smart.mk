@@ -10,5 +10,6 @@ GOFILES=\
 	unit.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-encoding/binary
 
 $(go-build-this)

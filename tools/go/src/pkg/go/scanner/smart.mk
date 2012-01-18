@@ -6,5 +6,6 @@ GOFILES=\
 	scanner.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-path/filepath
 
 $(go-build-this)

@@ -12,5 +12,6 @@ GOFILES=\
 	rat.go\
 
 sm.this.sources := $(GOFILES) $(OFILES)
+sm.this.depends += goal-math/rand
 
 $(go-build-this)

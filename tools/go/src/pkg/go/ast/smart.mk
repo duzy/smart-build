@@ -14,6 +14,5 @@ sm.this.sources := $(GOFILES)
 sm.this.depends +=\
   goal-go/token\
   goal-go/scanner\
-  goal-go/parser\
 
 $(go-build-this)

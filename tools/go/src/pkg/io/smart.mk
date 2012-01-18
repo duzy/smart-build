@@ -7,5 +7,6 @@ GOFILES=\
 	pipe.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-sync
 
 $(go-build-this)

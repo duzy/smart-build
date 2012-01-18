@@ -8,4 +8,6 @@ sm.this.sources := \
 	rwmutex.go\
 	waitgroup.go\
 
+sm.this.depends += goal-runtime goal-sync/atomic
+
 $(go-build-this)

@@ -12,5 +12,6 @@ GOFILES=\
 	quote.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-bytes goal-strings
 
 $(go-build-this)

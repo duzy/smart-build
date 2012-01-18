@@ -6,4 +6,6 @@ sm.this.sources := \
 	struct.go\
 	writer.go\
 
+sm.this.depends += goal-compress/flate goal-hash/crc32
+
 $(call go-build-this)

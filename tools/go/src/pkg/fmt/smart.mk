@@ -8,5 +8,6 @@ GOFILES=\
 	scan.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-os
 
 $(go-build-this)

@@ -7,5 +7,6 @@ GOFILES=\
 	marshal.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-math/big
 
 $(go-build-this)

@@ -90,5 +90,6 @@ GOFILES_plan9=\
 	str.go\
 
 sm.this.sources := $(GOFILES) $(GOFILES_$(GOOS))
+sm.this.depends += goal-syscall goal-time
 
 $(go-build-this)

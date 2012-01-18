@@ -7,5 +7,6 @@ GOFILES=\
 	value.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-strconv
 
 $(go-build-this)

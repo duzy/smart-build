@@ -5,5 +5,6 @@ GOFILES=\
 	flag.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-sort
 
 $(go-build-this)

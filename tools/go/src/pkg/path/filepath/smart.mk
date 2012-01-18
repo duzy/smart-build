@@ -27,5 +27,6 @@ GOFILES_windows=\
 	path_windows.go
 
 sm.this.sources := $(GOFILES) $(GOFILES_$(GOOS))
+sm.this.depends += goal-path
 
 $(go-build-this)

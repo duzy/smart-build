@@ -5,5 +5,6 @@ GOFILES=\
 	utf16.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-unicode
 
 $(go-build-this)

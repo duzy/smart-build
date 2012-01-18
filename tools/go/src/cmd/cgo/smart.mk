@@ -19,6 +19,7 @@ sm.this.depends += \
   goal-flag\
   goal-go/ast\
   goal-go/printer\
+  goal-go/parser\
   goal-os/exec\
 
 $(go-build-this)

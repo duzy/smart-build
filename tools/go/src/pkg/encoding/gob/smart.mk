@@ -11,5 +11,6 @@ GOFILES=\
 	type.go\
 
 sm.this.sources := $(GOFILES)
+sm.this.depends += goal-bufio
 
 $(go-build-this)
