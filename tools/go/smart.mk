@@ -69,6 +69,9 @@ $(eval \
   endif
   sm.this.gotype := $(strip $2)
   sm.this.prefix := $(sm.this.dir:$(sm.top)/%=%)
+  sm.this.compile.flags.asm +=
+  sm.this.compile.flags.c +=
+  sm.this.compile.flags.go +=
  )$(go-init-module-$(strip $2))
 endef #go-new-module
 

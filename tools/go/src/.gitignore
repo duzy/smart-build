@@ -4,9 +4,9 @@ cmd/cc/*body
 cmd/gc/mkopnames
 cmd/cgo/*.go
 pkg/*/*.go
-pkg/*/*.[s]
+pkg/*/*.[shc]
 pkg/*/*/*.go
-pkg/*/*/*.[s]
+pkg/*/*/*.[shc]
 libmach/*.[hc]
 libbio/*.[hc]
 lib9/*.[hc]
