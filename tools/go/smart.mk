@@ -1,7 +1,12 @@
 #
 
-go.root := $(GOROOT)
+GOOS ?= linux
+GOARCH ?= amd64
+GOROOT_FINAL ?=
+#GOVERSION := $(shell $(go.root)/src/version.bash)
+GOVERSION := smart.$(shell date +%Y-%m-%d)
 
+go.root := $(GOROOT)
 go.args.module.clib := gcc:static
 go.args.module.ccmd := gcc:exe
 go.args.module.cmd := go:cmd

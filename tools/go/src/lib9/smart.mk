@@ -88,8 +88,6 @@ sm.this.sources +=\
 
 endif
 
-#GOVERSION := $(shell $(go.root)/src/version.bash)
-GOVERSION := smart.$(shell date +%Y-%m-%d)
 sm.this.defines += -DPLAN9PORT
 sm.this.includes += $(go.root)/src/lib9/fmt $(go.root)/src/lib9/utf
 sm.this.compile.flags-goos.c := \

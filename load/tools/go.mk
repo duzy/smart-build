@@ -27,10 +27,10 @@ sm.tool.go.o.x86_64 := 6
 sm.tool.go.o.i386   := 8
 sm.tool.go.o.arm    := 5
 sm.tool.go.bin := $(sm.dir.tools)/go/out/gcc/release/bin
-sm.tool.go.bin.c = $(sm.tool.go.bin)/$($(sm._this).o)c
-sm.tool.go.bin.g = $(sm.tool.go.bin)/$($(sm._this).o)g
-sm.tool.go.bin.a = $(sm.tool.go.bin)/$($(sm._this).o)a
-sm.tool.go.bin.l = $(sm.tool.go.bin)/$($(sm._this).o)l
+sm.tool.go.bin.c = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))c
+sm.tool.go.bin.g = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))g
+sm.tool.go.bin.a = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))a
+sm.tool.go.bin.l = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))l
 
 ## Target link output file suffix.
 sm.tool.go.suffix.target.win32.package := .a
@@ -78,12 +78,6 @@ ifndef sm.tool.go.root
   $(error smart: go: cannot determine the GOROOT)
 endif
 
-sm.tool.go.prequisite.tools = \
-    $(sm.tool.go.bin.c)\
-    $(sm.tool.go.bin.g)\
-    $(sm.tool.go.bin.a)\
-    $(sm.tool.go.bin.l)\
-
 ## Language Specific Flags
 sm.tool.go.flags.compile.lang.c   := -FVw -I$(sm.tool.go.root)/pkg/linux_amd64
 sm.tool.go.flags.compile.lang.go  :=
@@ -97,7 +91,7 @@ $(sm.tool.go.bin.c) $(sm.var.flags) -o $(sm.var.intermediate) $(sm.var.source.co
 endef #sm.tool.go.command.compile.c
 
 define sm.tool.go.command.compile.go
-$(sm.tool.go.bin.g) $(sm.var.flags) -o $(sm.var.intermediate) $$$$(filter-out $(sm.tool.go.prequisite.tools),$$$$^)
+$(sm.tool.go.bin.g) $(sm.var.flags) -o $(sm.var.intermediate) $$$$(filter-out $($(sm._this).prequisite.tools),$$$$^)
 endef #sm.tool.go.command.compile.go
 
 define sm.tool.go.command.compile.asm
@@ -161,6 +155,18 @@ $(eval #
      sm.this.export.compile.flags := -I$(sm.out.pkg)
      sm.this.export.link.flags := -L$(sm.out.pkg)
    endif
+ )\
+$(eval \
+  sm.this.prequisite.tools := \
+      $(sm.tool.go.bin.c)\
+      $(sm.tool.go.bin.g)\
+      $(sm.tool.go.bin.a)\
+      $(sm.tool.go.bin.l)\
+ )\
+$(eval \
+  ifneq ($(wildcard $(sm.this.prequisite.tools)),)
+    sm.this.prequisite.tools :=
+  endif
  )
 endef #sm.tool.go.config-module
 
@@ -329,14 +335,17 @@ $(eval #
     $(sm._this).intermediates += $(sm.var.intermediate)
   endif
 
+  ifdef $(sm._this).prequisite.tools
   ifeq ($($(sm._this).type),package)
-    $(sm.var.intermediate): $(sm.tool.go.prequisite.tools)
-    ifndef sm.tool.go.prequisite.tools.built
-      sm.tool.go.prequisite.tools.built := $(notdir $(sm.tool.go.prequisite.tools))
-      $(sm.tool.go.prequisite.tools): $(sm.dir.tools)/go
-	$(MAKE) V=release $$(sm.tool.go.prequisite.tools.built:%=goal-%)\
-	&& [[ $(sm.tool.go.prequisite.tools:%=-f % &&) -z "" ]]
+    $(sm.var.intermediate): $($(sm._this).prequisite.tools)
+    ifndef $(sm._this).prequisite.tools.built
+      $(sm._this).prequisite.tools.built := $(notdir $($(sm._this).prequisite.tools))
+      $($(sm._this).prequisite.tools): $(sm.dir.tools)/go
+	[[ $($(sm._this).prequisite.tools:%=-f % &&) -z "" ]] ||\
+	$(MAKE) V=release $$($(sm._this).prequisite.tools.built:%=goal-%)\
+	&& [[ $($(sm._this).prequisite.tools:%=-f % &&) -z "" ]]
     endif
+  endif
   endif
 
   $(sm.var.intermediate) : $(sm.var.source.computed)
