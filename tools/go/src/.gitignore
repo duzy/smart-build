@@ -1,4 +1,5 @@
 cmd/*/*.output
+cmd/*/*.go
 cmd/*/*.[hcy]
 cmd/cc/*body
 cmd/gc/mkopnames
