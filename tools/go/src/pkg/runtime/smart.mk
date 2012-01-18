@@ -112,8 +112,6 @@ HFILES=\
 	\
 	type.h\
 
-#	$(AUTOHFILES)\
-
 GOFILES+=$(GOFILES_$(GOOS))
 
 sm.this.sources := $(GOFILES) $(OFILES) $(HFILES)

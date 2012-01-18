@@ -1,5 +1,6 @@
 #
 $(call go-new-module, cgo, cmd)
+#$(call sm-use, fmt)
 
 sm.this.sources := \
 	ast.go\

@@ -6,6 +6,16 @@ GOROOT_FINAL ?=
 #GOVERSION := $(shell $(go.root)/src/version.bash)
 GOVERSION := smart.$(shell date +%Y-%m-%d)
 
+ifndef GOOS
+  $(error GOOS is empty)
+endif
+ifndef GOARCH
+  $(error GOARCH is empty)
+endif
+ifndef GOROOT
+  $(error GOROOT is empty)
+endif
+
 go.root := $(GOROOT)
 go.args.module.clib := gcc:static
 go.args.module.ccmd := gcc:exe

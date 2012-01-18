@@ -33,11 +33,13 @@ sm.tool.go.bin.c = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))c
 sm.tool.go.bin.g = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))g
 sm.tool.go.bin.a = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))a
 sm.tool.go.bin.l = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))l
+sm.tool.go.bin.gopack = $(go.root)/bin/gopack
 else
 sm.tool.go.bin.c = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))c
 sm.tool.go.bin.g = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))g
 sm.tool.go.bin.a = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))a
 sm.tool.go.bin.l = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))l
+sm.tool.go.bin.gopack = $(sm.tool.go.bin)/gopack
 endif
 
 ## Target link output file suffix.
@@ -111,7 +113,7 @@ endef #sm.tool.go.command.link
 ##
 ##
 define sm.tool.go.command.pack
-gopack grc $(sm.var.target) $(sm.var.intermediates)
+$(sm.tool.go.bin.gopack) grc $(sm.var.target) $(sm.var.intermediates)
 endef #sm.tool.go.command.pack
 
 ##
@@ -166,6 +168,7 @@ $(eval \
       $(sm.tool.go.bin.g)\
       $(sm.tool.go.bin.a)\
       $(sm.tool.go.bin.l)\
+      $(sm.tool.go.bin.gopack)\
  )\
 $(eval \
   ifneq ($(wildcard $(sm.this.prequisite.tools)),)
@@ -340,7 +343,6 @@ $(eval #
   endif
 
   ifdef $(sm._this).prequisite.tools
-  ifeq ($($(sm._this).type),package)
     $(sm.var.intermediate): $($(sm._this).prequisite.tools)
     ifndef sm.tool.go.prequisite.tools.built
       sm.tool.go.prequisite.tools.built := $(notdir $($(sm._this).prequisite.tools))
@@ -349,7 +351,6 @@ $(eval #
 	$(MAKE) V=release $$(sm.tool.go.prequisite.tools.built:%=goal-%)\
 	&& [[ $($(sm._this).prequisite.tools:%=-f % &&) -z "" ]]
     endif
-  endif
   endif
 
   $(sm.var.intermediate) : $(sm.var.source.computed)
