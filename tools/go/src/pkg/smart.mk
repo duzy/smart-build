@@ -14,6 +14,15 @@ $(call sm-load-subdirs,\
 	encoding/ascii85\
 	fmt math/rand math/big encoding/asn1\
 	hash hash/crc32 hash/crc64 archive/zip\
+	encoding/base32\
+	encoding/base64\
+	encoding/csv\
+	encoding/git85\
+	encoding/gob\
+	encoding/hex\
+	encoding/json\
+	encoding/pem\
+	encoding/xml\
  )
 
 #\
