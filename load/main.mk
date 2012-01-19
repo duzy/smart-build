@@ -69,6 +69,7 @@ endif
 .PHONY: all clean test $(sm.rules.phony.*)
 ifdef sm.goals
   all: $(sm.goals)
+  install: $(sm.goals:goal-%=install-%)
   clean: $(sm.goals:goal-%=clean-%)
   doc: $(sm.goals:goal-%=doc-%)
 
@@ -95,6 +96,7 @@ ifdef sm.goals
 
 else
   all:; $(info smart: no goals) @true
+  install:; $(info smart: no installed) @true
   clean:; $(info smart: nothing dirty) @true
   test:; $(info smart: no tests) @true
 endif

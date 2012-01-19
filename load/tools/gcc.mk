@@ -340,5 +340,32 @@ $(eval #
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, gcc, ln -sf $(sm.top)/$(sm.var.target) $(sm.var.target.link))
   endif
+ )\
+$(eval #
+  ifdef $(sm._this).install_dir
+    $$(sm.tool.gcc.install-target)
+  endif
  )
 endef #sm.tool.gcc.transform-intermediates-c
+
+sm.tool.gcc.install_prefix.exe := bin
+sm.tool.gcc.install_prefix.static := lib
+sm.tool.gcc.install_prefix.shared := bin
+define sm.tool.gcc.install_target
+$($(sm._this).install_dir)/$(strip \
+  $(or $(sm.tool.gcc.install_prefix.$($(sm._this).type)))\
+ )/$($(sm._this).name)$($(sm._this).suffix)
+endef #sm.tool.gcc.install_target
+
+##
+define sm.tool.gcc.install-target
+$(eval \
+  $(sm._this).installs += install-$($(sm._this).type)-$($(sm._this).name)
+  sm.temp._install_target := $(sm.tool.gcc.install_target)
+ )\
+$(eval \
+  install-$($(sm._this).type)-$($(sm._this).name): $(sm.temp._install_target)
+  $(sm.temp._install_target): $(sm.var.target)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D) && cp -f $$< $$@ && echo "smart: installed $$@"
+ )
+endef #sm.tool.gcc.install-target

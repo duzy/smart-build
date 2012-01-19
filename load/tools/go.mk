@@ -447,5 +447,31 @@ $(eval #
   $(sm.var.target): $(sm.var.intermediates.preq)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	$(call sm.fun.wrap-rule-commands, go, $(sm.var.command))
+ )\
+$(eval #
+  ifdef $(sm._this).install_dir
+    $$(sm.tool.go.install-target)
+  endif
  )
 endef #sm.tool.go.transform-intermediates
+
+sm.tool.go.install_prefix.command := bin
+sm.tool.go.install_prefix.package := pkg
+define sm.tool.go.install_target
+$($(sm._this).install_dir)/$(strip \
+  $(or $(sm.tool.go.install_prefix.$($(sm._this).type)))\
+ )/$($(sm._this).name)$($(sm._this).suffix)
+endef #sm.tool.go.install_target
+
+##
+define sm.tool.go.install-target
+$(eval \
+  $(sm._this).installs += install-$($(sm._this).type)-$($(sm._this).name)
+  sm.temp._install_target := $(sm.tool.go.install_target)
+ )\
+$(eval \
+  install-$($(sm._this).type)-$($(sm._this).name): $(sm.temp._install_target)
+  $(sm.temp._install_target): $(sm.var.target)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D) && cp -f $$< $$@ && echo "smart: installed $$@"
+ )
+endef #sm.tool.go.install-target

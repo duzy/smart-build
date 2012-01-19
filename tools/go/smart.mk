@@ -16,6 +16,7 @@ ifndef GOROOT
   $(error GOROOT is empty)
 endif
 
+GOROOT_FINAL := $(shell pwd)
 go.root := $(GOROOT)
 go.args.module.clib := gcc:static
 go.args.module.ccmd := gcc:exe
@@ -38,6 +39,8 @@ $(eval \
 
   sm.this.includes += $(go.root)/include
   sm.this.compile.flags += $(go.compile.flags.c)
+
+  sm.this.install_dir :=
  )
 endef #go-init-module-clib
 
@@ -80,6 +83,7 @@ $(eval \
   ifndef go.args.module.$(strip $2)
     $$(error module type "$(strip $2)" is unknown)
   endif
+  sm.this.install_dir := $(GOROOT_FINAL)
   sm.this.gotype := $(strip $2)
   sm.this.prefix := $(sm.this.dir:$(sm.top)/%=%)
   sm.this.compile.flags.asm +=
