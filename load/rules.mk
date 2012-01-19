@@ -65,7 +65,6 @@ $(sm._this).unterminated.strange  :=
 ## Then we compute the using list.
 $(call sm.fun.compute-using-list)
 ifdef $(sm._this).using_list
-  #$(info smart: "$($(sm._this).name)" used: "$($(sm._this).using_list)")
   goal-$($(sm._this).name): $($(sm._this).using_list:%=goal-%)
 endif
 
@@ -88,6 +87,7 @@ $(sm._this).documents := $(strip $($(sm._this).documents))
 
 goal-$($(sm._this).name): $($(sm._this).depends) $($(sm._this).targets)
 doc-$($(sm._this).name): $($(sm._this).documents)
+install-$($(sm._this).name): goal-$($(sm._this).name) $($(sm._this).installs)
 
 ifneq ($(call sm-true,$($(sm._this)._intermediates_only)),true)
   $(call sm.fun.make-rules-test)
