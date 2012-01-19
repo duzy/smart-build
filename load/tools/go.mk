@@ -35,7 +35,8 @@ sm.tool.go.suffix.intermediate.asm = .$($(sm._this).o)
 sm.tool.go.o.x86_64 := 6
 sm.tool.go.o.i386   := 8
 sm.tool.go.o.arm    := 5
-sm.tool.go.bin := $(sm.dir.tools)/go/out/gcc/release/bin
+#sm.tool.go.bin := $(sm.dir.tools)/go/out/gcc/release/bin
+sm.tool.go.bin := $(sm.dir.tools)/bin
 sm.tool.go.use_sys_go ?= 0
 ifeq ($(sm.tool.go.use_sys_go),1)
   sm.tool.go.bin.c = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))c
