@@ -9,6 +9,15 @@
 ## make sure that go.mk is included only once
 $(call sm-check-origin, sm.tool.go, undefined)
 
+GOOS ?= linux
+GOARCH ?= amd64
+
+sm.tool.go.root := $(strip $(or $(GOROOT),\
+  $(patsubst %/,%,$(dir $(shell dirname `which gomake`))),\
+  $(patsubst %/,%,$(dir $(shell dirname `which go`))),\
+  $(error smart: go: cannot determine the GOROOT)))
+
+## declare that Go toolset is ready
 sm.tool.go := true
 
 ## Languages supported by this toolset, the order is significant,
@@ -29,17 +38,17 @@ sm.tool.go.o.arm    := 5
 sm.tool.go.bin := $(sm.dir.tools)/go/out/gcc/release/bin
 sm.tool.go.use_sys_go ?= 0
 ifeq ($(sm.tool.go.use_sys_go),1)
-sm.tool.go.bin.c = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))c
-sm.tool.go.bin.g = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))g
-sm.tool.go.bin.a = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))a
-sm.tool.go.bin.l = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))l
-sm.tool.go.bin.gopack = $(go.root)/bin/gopack
+  sm.tool.go.bin.c = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))c
+  sm.tool.go.bin.g = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))g
+  sm.tool.go.bin.a = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))a
+  sm.tool.go.bin.l = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))l
+  sm.tool.go.bin.gopack = $(go.root)/bin/gopack
 else
-sm.tool.go.bin.c = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))c
-sm.tool.go.bin.g = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))g
-sm.tool.go.bin.a = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))a
-sm.tool.go.bin.l = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))l
-sm.tool.go.bin.gopack = $(sm.tool.go.bin)/gopack
+  sm.tool.go.bin.c = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))c
+  sm.tool.go.bin.g = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))g
+  sm.tool.go.bin.a = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))a
+  sm.tool.go.bin.l = $(sm.tool.go.bin)/$(or $($(sm._this).o),$(sm.this.o))l
+  sm.tool.go.bin.gopack = $(sm.tool.go.bin)/gopack
 endif
 
 ## Target link output file suffix.
@@ -69,20 +78,6 @@ sm.tool.go.flags.compile.type.package :=
 sm.tool.go.flags.compile.type.command :=
 sm.tool.go.flags.link.type.package :=
 sm.tool.go.flags.link.type.command :=
-
-GOOS ?= linux
-GOARCH ?= amd64
-
-sm.tool.go.root := $(GOROOT)
-ifndef sm.tool.go.root
-  sm.tool.go.root := $(patsubst %/,%,$(dir $(shell dirname `which gomake`)))
-endif
-ifndef sm.tool.go.root
-  sm.tool.go.root := $(patsubst %/,%,$(dir $(shell dirname `which go`)))
-endif
-ifndef sm.tool.go.root
-  $(error smart: go: cannot determine the GOROOT)
-endif
 
 ## Language Specific Flags
 sm.tool.go.flags.compile.lang.c   := -FVw -I$(sm.tool.go.root)/pkg/linux_amd64
