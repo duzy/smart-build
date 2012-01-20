@@ -15,4 +15,4 @@ SMARTMAIN=$SMARTROOT/load/main.mk
 export SMART
 export SMARTROOT
 
-exec make -f $SMARTMAIN $@
+exec make -r -f $SMARTMAIN $@

@@ -81,7 +81,8 @@ sm.tool.go.flags.link.type.package :=
 sm.tool.go.flags.link.type.command :=
 
 ## Language Specific Flags
-sm.tool.go.flags.compile.lang.c   := -FVw -I$(sm.tool.go.root)/pkg/linux_amd64
+#sm.tool.go.flags.compile.lang.c   := -FVw -I$(sm.tool.go.root)/pkg/linux_amd64
+sm.tool.go.flags.compile.lang.c   := -FVw
 sm.tool.go.flags.compile.lang.go  :=
 sm.tool.go.flags.compile.lang.asm := -DGOOS_$(GOOS) -DGOARCH_$(GOARCH)
 sm.tool.go.flags.compile.gcc :=
@@ -338,12 +339,12 @@ $(eval #
 
   ifdef $(sm._this).prequisite.tools
     $(sm.var.intermediate): $($(sm._this).prequisite.tools)
-    ifndef sm.tool.go.prequisite.tools.built
-      #$(MAKE) V=release $$(sm.tool.go.prequisite.tools.built:%=install-%) install-packages &&
+    ifdef sm.tool.go.prequisite.tools.built
+#	$(SMART) V=release install &&
       sm.tool.go.prequisite.tools.built := $(notdir $($(sm._this).prequisite.tools))
       $($(sm._this).prequisite.tools): $(sm.dir.tools)/go
-	[[ $($(sm._this).prequisite.tools:%=-f % &&) -z "" ]] ||\
-	$(MAKE) V=release install &&\
+	[[ $($(sm._this).prequisite.tools:%=-f % &&) -z "" ]] || cd $$< &&\
+	$(SMART) V=release $$(sm.tool.go.prequisite.tools.built:%=install-%) install-packages &&\
 	[[ $($(sm._this).prequisite.tools:%=-f % &&) -z "" ]]
     endif
   endif
@@ -458,7 +459,7 @@ $(eval #
 endef #sm.tool.go.transform-intermediates
 
 sm.tool.go.install_prefix.command := bin
-sm.tool.go.install_prefix.package := pkg
+sm.tool.go.install_prefix.package := pkg/$(GOOS)_$(GOARCH)
 define sm.tool.go.install_target
 $($(sm._this).install_dir)/$(strip \
   $(or $(sm.tool.go.install_prefix.$($(sm._this).type)))\
