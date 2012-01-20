@@ -451,3 +451,58 @@ $(if $(call equal,$($(sm._this).type),depends), $(eval \
   )\
  )
 endef #sm.fun.make-rules-clean
+
+
+######################################################################
+
+define sm.fun.new-toolset
+$(eval #
+  sm.temp._name := $(strip $1)
+  sm.temp._langs := $(strip $2)
+  ifndef sm.temp._name
+    $$(error new-toolset: no toolset name)
+  endif
+ )\
+$(eval #
+  ifeq ($(sm.tool.$(sm.temp._name)),true)
+    $$(error new-toolset: toolset "$(sm.temp._name)" already defined)
+  else
+    ifneq ($(origin sm.tool.$(sm.temp._name)),undefined)
+      $$(warning warning: "sm.tool.$(sm.temp._name)" already defined)
+    endif
+  endif
+  sm.tool.$(sm.temp._name) := true
+  sm.tool.$(sm.temp._name).langs :=
+  sm.temp._ls :=
+ )\
+$(foreach _, $(sm.temp._langs),\
+  $(if $(_:%:=),\
+       $(eval # suffix: ".c", ".cpp", ".cc", etc.
+         ifneq ($(_:.%=),)
+           $$(error new-toolset: not a suffix: "$_")
+         endif
+         ifndef sm.temp._ls
+           $$(error new-toolset: unknown lang of suffix: "$_")
+         endif
+         #$(sm.temp._ls) += $_
+         $(sm.temp._ls) := $$(strip $$($(sm.temp._ls)) $_)
+         sm.tool.$(sm.temp._name).lang.$_ := $(sm.temp._ls:sm.tool.$(sm.temp._name).suffix.%=%)
+        )\
+      ,$(if $(_:.%:=),\
+            $(eval # language name: "c:", "c++:", "asm:", etc.
+              sm.temp._ls := sm.tool.$(sm.temp._name).suffix.$(_:%:=%)
+              sm.tool.$(sm.temp._name).langs += $(_:%:=%)
+             )\
+           ,$(eval # intermediate suffix: ".o:", ".obj:", etc
+              ifndef sm.temp._ls
+                $$(error new-toolset: unknown lang of intermediate suffix: "$_")
+              endif
+              sm.tool.$(sm.temp._name).suffix.intermediate.$(sm.temp._ls:sm.tool.$(sm.temp._name).suffix.%=%) := $(_:%:=%)
+             )\
+        )\
+   )\
+ )\
+$(eval #
+  
+ )
+endef #sm.fun.init-toolset

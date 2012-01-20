@@ -66,7 +66,7 @@ endif
 # .PRECIOUS: foo bar
 # .DELETE_ON_ERROR: foo bar
 
-.PHONY: all clean test $(sm.rules.phony.*)
+.PHONY: all install clean test $(sm.rules.phony.*)
 ifdef sm.goals
   all: $(sm.goals)
   install: $(sm.goals:goal-%=install-%)
@@ -80,6 +80,7 @@ ifdef sm.goals
   $(call sm-check-not-empty, sm.out)
   $(call sm-check-not-empty, sm.out.bin)
   $(call sm-check-not-empty, sm.out.lib)
+  $(call sm-check-not-empty, sm.out.pkg)
   $(call sm-check-not-empty, sm.out.inc)
   $(call sm-check-not-empty, sm.out.tmp)
   $(call sm-check-not-empty, sm.out.inter)

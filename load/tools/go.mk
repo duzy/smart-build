@@ -35,7 +35,6 @@ sm.tool.go.suffix.intermediate.asm = .$($(sm._this).o)
 sm.tool.go.o.x86_64 := 6
 sm.tool.go.o.i386   := 8
 sm.tool.go.o.arm    := 5
-#sm.tool.go.bin := $(sm.dir.tools)/go/out/gcc/release/bin
 sm.tool.go.bin := $(sm.dir.tools)/go/bin
 sm.tool.go.use_sys_go ?= 0
 ifeq ($(sm.tool.go.use_sys_go),1)
@@ -81,7 +80,6 @@ sm.tool.go.flags.link.type.package :=
 sm.tool.go.flags.link.type.command :=
 
 ## Language Specific Flags
-#sm.tool.go.flags.compile.lang.c   := -FVw -I$(sm.tool.go.root)/pkg/linux_amd64
 sm.tool.go.flags.compile.lang.c   := -FVw
 sm.tool.go.flags.compile.lang.go  :=
 sm.tool.go.flags.compile.lang.asm := -DGOOS_$(GOOS) -DGOARCH_$(GOARCH)
