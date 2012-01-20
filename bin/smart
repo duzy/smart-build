@@ -1,0 +1,8 @@
+#!/bin/bash
+SMARTROOT=$(dirname $(dirname $0))
+SMARTMAIN=$SMARTROOT/load/main.mk
+[[ -f $SMARTMAIN ]] || {
+    echo "$SMARTMAIN not exists"
+    exit -1
+}
+exec make -f $SMARTMAIN $@

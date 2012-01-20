@@ -1,5 +1,6 @@
 #
 
+GOROOT ?= /store/open/go
 GOOS ?= linux
 GOARCH ?= amd64
 GOROOT_FINAL ?= $(shell pwd)
