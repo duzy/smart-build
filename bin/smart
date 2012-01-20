@@ -1,5 +1,6 @@
 #!/bin/bash
-SMARTROOT=$(dirname $(dirname $(readlink -f $0)))
+SMART=$(readlink -f $0)
+SMARTROOT=$(dirname $(dirname $SMART))
 [[ -d $SMARTROOT ]] || {
     echo "SMARTROOT is incorrect: \"$SMARTROOT\""
     exit -1
@@ -10,5 +11,8 @@ SMARTMAIN=$SMARTROOT/load/main.mk
     echo "$SMARTMAIN not exists"
     exit -1
 }
+
+export SMART
+export SMARTROOT
 
 exec make -f $SMARTMAIN $@

@@ -83,8 +83,12 @@ function test-readfile
     }
 }
 
-test-load-precondition-scripts . && {
-    rm -rf out && make -f main.mk && make -f main.mk doc
+which smart || {
+    echo "The \"smart\" command is not found in PATH"
+} && {
+    test-load-precondition-scripts .
+} && {
+    rm -rf out && smart && smart doc
 } && {
     test-load-check-scripts $TOP
 } || {

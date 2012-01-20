@@ -1,6 +1,25 @@
 #
 #	2011-11-04 Duzy Chan <code@duzy.info>
 #
+include main.mk
+
+define check-recursive
+$(eval \
+  ifneq ($(flavor $_),recursive)
+    $$(error "$_" is not recursive: $(flavor $_))
+  endif
+ )
+endef #check-recursive
+$(foreach _,\
+  test-check-defined\
+  test-check-flavor\
+  test-check-origin\
+  test-check-value-of\
+  test-check-value\
+  test-check-undefined\
+  test-check-value-pat\
+  ,$(check-recursive))
+
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 test.temp.this-dir := $(patsubst %/,%,$(dir $(THIS_MAKEFILE)))
 $(call test-check-defined,  test.case.smart-config-loaded)
@@ -9,6 +28,13 @@ $(call test-check-value-of, test.case.smart-config-loaded,1)
 ifneq ($(test.case.smart-config-loaded),1)
   $(error smart.config is not loaded)
 endif  # test.case.smart-config-loaded == 1
+
+$(call test-check-defined, SMART)
+$(call test-check-defined, SMARTROOT)
+$(call test-check-flavor, SMART, recursive)
+$(call test-check-flavor, SMARTROOT, recursive)
+$(call test-check-origin, SMART, environment)
+$(call test-check-origin, SMARTROOT, environment)
 
 $(call test-check-defined, sm-new-module)
 $(call test-check-flavor,  sm-new-module, recursive)
@@ -55,13 +81,13 @@ $(call test-check-value-of,test.case.subdirs-loaded,1)
 $(call test-check-value-of,test.case.subdir-loaded,1)
 $(call test-check-not-value,$(sm.this.dir),$(test.temp.this-dir))
 $(call test-check-defined,sm.this.dir) ## should not be empty
-$(call test-check-value-pat,$(sm.this.dir),%/test/subdir)
+$(call test-check-value-of,sm.this.dir,subdir)
 $(call test-check-defined, sm.module.subdir-foo.name)
 $(call test-check-defined, sm.module.subdir-foo.type)
 $(call test-check-defined, sm.module.subdir-foo.dir)
 $(call test-check-value-of,sm.module.subdir-foo.name,subdir-foo)
 $(call test-check-value-of,sm.module.subdir-foo.type,none)
-$(call test-check-value-of,sm.module.subdir-foo.dir,$(test.temp.this-dir)/subdir)
+$(call test-check-value-of,sm.module.subdir-foo.dir,subdir)
 
 $(call test-check-undefined,test.case.module-nothing-loaded)
 ########## case in

@@ -28,6 +28,14 @@ $(eval \
  )
 endef #test-check-flavor
 
+define test-check-origin
+$(eval #
+  ifneq ($(origin $(strip $1)),$(strip $2))
+    $$(error "$$$$(origin $(strip $1))" != "$(strip $2)")
+  endif
+ )
+endef #test-check-origin
+
 define test-check-value-of
 $(eval \
   ifeq ($(strip $1),)
@@ -108,5 +116,3 @@ endef #test-check-prop-empty
 define test-check-module-empty
 $(call test-foreach-module-prop, $1, test-check-prop-empty)
 endef #test-check-module-empty
-
-include ../load/main.mk
