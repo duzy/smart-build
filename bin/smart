@@ -1,8 +1,14 @@
 #!/bin/bash
-SMARTROOT=$(dirname $(dirname $0))
+SMARTROOT=$(dirname $(dirname $(readlink -f $0)))
+[[ -d $SMARTROOT ]] || {
+    echo "SMARTROOT is incorrect: \"$SMARTROOT\""
+    exit -1
+}
+
 SMARTMAIN=$SMARTROOT/load/main.mk
 [[ -f $SMARTMAIN ]] || {
     echo "$SMARTMAIN not exists"
     exit -1
 }
+
 exec make -f $SMARTMAIN $@
