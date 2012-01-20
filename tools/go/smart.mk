@@ -2,7 +2,7 @@
 
 GOOS ?= linux
 GOARCH ?= amd64
-GOROOT_FINAL ?=
+GOROOT_FINAL ?= $(shell pwd)
 #GOVERSION := $(shell $(go.root)/src/version.bash)
 GOVERSION := smart.$(shell date +%Y-%m-%d)
 
@@ -16,7 +16,6 @@ ifndef GOROOT
   $(error GOROOT is empty)
 endif
 
-GOROOT_FINAL := $(shell pwd)
 go.root := $(GOROOT)
 go.args.module.clib := gcc:static
 go.args.module.ccmd := gcc:exe
@@ -26,6 +25,7 @@ go.compile.flags.c := -Wall -Wno-sign-compare -Wno-missing-braces \
 	-Wno-parentheses -Wno-unknown-pragmas -Wno-switch -Wno-comment \
 	-Werror -fno-common
 go.compile.flags.go :=
+go.packages :=
 
 ifndef go.root
   $(error go: GOROOT is empty)
@@ -40,6 +40,7 @@ $(eval \
   sm.this.includes += $(go.root)/include
   sm.this.compile.flags += $(go.compile.flags.c)
 
+  ## don't install clibs
   sm.this.install_dir :=
  )
 endef #go-init-module-clib
@@ -66,6 +67,7 @@ define go-init-module-pkg
 $(eval \
   sm.this.includes += $(sm.out.pkg)
   sm.this.pack.flags +=
+  go.packages += $(sm.this.name)
  )
 endef #go-init-module-pkg
 
@@ -85,7 +87,6 @@ $(eval \
   endif
   sm.this.install_dir := $(GOROOT_FINAL)
   sm.this.gotype := $(strip $2)
-  sm.this.prefix := $(sm.this.dir:$(sm.top)/%=%)
   sm.this.compile.flags.asm +=
   sm.this.compile.flags.c +=
   sm.this.compile.flags.go +=
@@ -96,7 +97,14 @@ endef #go-new-module
 define go-build-this
 $(call go-prepare-sources)\
 $(go-use-basis-$(sm.this.gotype))\
-$(call sm-build-this)
+$(call sm-build-this)\
+$(eval #
+  ifeq ($(sm.this.type),package)
+    install-packages: _install-package-$(sm.this.name)
+    _install-package-$(sm.this.name): $(sm.this.depends:goal-%=_install-package-%)
+    _install-package-$(sm.this.name): install-package-$(sm.this.name)
+  endif
+ )
 endef #go-build-this
 
 ##
@@ -125,3 +133,6 @@ $(eval \
 endef #go-prepare-sources
 
 $(call sm-load-subdirs, src)
+
+install-packages:
+	@echo "installed-packages: $^"

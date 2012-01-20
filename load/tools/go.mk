@@ -36,7 +36,7 @@ sm.tool.go.o.x86_64 := 6
 sm.tool.go.o.i386   := 8
 sm.tool.go.o.arm    := 5
 #sm.tool.go.bin := $(sm.dir.tools)/go/out/gcc/release/bin
-sm.tool.go.bin := $(sm.dir.tools)/bin
+sm.tool.go.bin := $(sm.dir.tools)/go/bin
 sm.tool.go.use_sys_go ?= 0
 ifeq ($(sm.tool.go.use_sys_go),1)
   sm.tool.go.bin.c = $(go.root)/bin/$(or $($(sm._this).o),$(sm.this.o))c
@@ -339,11 +339,12 @@ $(eval #
   ifdef $(sm._this).prequisite.tools
     $(sm.var.intermediate): $($(sm._this).prequisite.tools)
     ifndef sm.tool.go.prequisite.tools.built
+      #$(MAKE) V=release $$(sm.tool.go.prequisite.tools.built:%=install-%) install-packages &&
       sm.tool.go.prequisite.tools.built := $(notdir $($(sm._this).prequisite.tools))
       $($(sm._this).prequisite.tools): $(sm.dir.tools)/go
 	[[ $($(sm._this).prequisite.tools:%=-f % &&) -z "" ]] ||\
-	$(MAKE) V=release $$(sm.tool.go.prequisite.tools.built:%=goal-%)\
-	&& [[ $($(sm._this).prequisite.tools:%=-f % &&) -z "" ]]
+	$(MAKE) V=release install &&\
+	[[ $($(sm._this).prequisite.tools:%=-f % &&) -z "" ]]
     endif
   endif
 

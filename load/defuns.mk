@@ -162,6 +162,7 @@ define sm-new-module-internal
    sm.this.makefile := $$(call sm-this-makefile)
    sm.this.dir := $$(call sm-module-dir)
    sm.this.dirs :=
+   sm.this.prefix := $$(sm.this.dir:$(sm.top)/%=%)
   )\
  $(eval \
    ifndef sm.tool.$(sm.temp._toolset)

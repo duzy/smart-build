@@ -6,4 +6,6 @@ sm.this.sources := \
 	reader.go\
 	writer.go\
 
+sm.this.depends += goal-time
+
 $(call go-build-this)
