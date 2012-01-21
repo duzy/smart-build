@@ -60,13 +60,6 @@ $(sm-build-this)
 $(call test-check-value-of,sm.module.foobar.name,foobar)
 $(call test-check-value-of,sm.module.foobar.type,none)
 
-# $(call test-check-defined, sm.this.dir)
-# $(call test-check-flavor,  sm-load-module, recursive)
-# ########## case in  -- load a single module
-# $(call sm-load-module, $(sm.this.dir)/module-of-type-none/smart.mk)
-# ########## case out
-# $(call test-check-value-of,test.case.module-of-type-none-mk-loaded,1)
-
 ##################################################
 
 $(call test-check-defined, sm.this.dir) ## defined by last loaded module
@@ -89,38 +82,47 @@ $(call test-check-value-of,sm.module.subdir-foo.name,subdir-foo)
 $(call test-check-value-of,sm.module.subdir-foo.type,none)
 $(call test-check-value-of,sm.module.subdir-foo.dir,subdir)
 
-# $(call test-check-undefined,test.case.module-nothing-loaded)
-# ########## case in
-# $(call sm-load-module, $(test.temp.this-dir)/module-nothing.mk)
-# ########## case out
-# $(call test-check-value-of,test.case.module-nothing-loaded,1)
-# $(call test-check-undefined, sm.this.dir) ## fake-module make nothing, sm-load-module unset this
-
 ##################################################
+define test-load-module
+$(if $(filter $1, $(modules.loaded)),,\
+ $(eval #
+   pre  := $(dir $1)pre.mk
+   post := $(dir $1)post.mk
+  )\
+ $(eval #
+   $(if $(wildcard $(pre)),  include $(pre))
+
+   $(call test-check-flavor, sm-load-module, recursive)
+   $$(call sm-load-module, $1)
+   modules.loaded += $1
+
+   $(if $(wildcard $(post)), include $(post))
+  )\
+ $(eval #
+   pre  :=
+   post :=
+  ))
+endef #test-load-module
+
 define check-module
-$(call test-check-flavor, sm-load-module, recursive)\
-$(eval module.pre := $(wildcard $(module:%/smart.mk=%.pre)))\
+$(eval #
+  module.pre := $(wildcard $(module:%/smart.mk=%.pre))
+  PRE :=
+  LOCAL :=
+ )\
 $(eval #
   ifdef module.pre
-    PRE :=
     LOCAL := $(patsubst %/,%,$(dir $(module.pre)))
     include $(module.pre)
-    #$$(info test: preload "$$(PRE)" for "$(module)")
     ifdef PRE
-      $$(call sm-load-module, $$(PRE))
-      modules.loaded += $$(PRE)
+      $$(call test-load-module, $$(PRE))
     endif
   endif
  )\
-$(if $(filter $(module), $(modules.loaded))\
-    ,,$(call sm-load-module, $(module))\
-      $(eval modules.loaded += $(module)))
+$(call test-load-module, $(module))
 endef #check-module
 
 modules.loaded :=
-modules := \
-  $(wildcard $(test.temp.this-dir)/features/*/smart.mk) \
-  $(wildcard $(test.temp.this-dir)/toolsets/*/smart.mk) \
-  $(wildcard $(test.temp.this-dir)/toolsets/*/*/smart.mk) \
-  $(wildcard $(test.temp.this-dir)/toolsets/*/*/*/smart.mk)
+modules := $(shell find . -type f -name 'smart.mk' -and ! -regex "./subdir.*")
+modules := $(filter-out smart.mk, $(modules:./%=%))
 $(foreach module, $(modules), $(check-module))

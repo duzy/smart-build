@@ -108,7 +108,7 @@ endef #test-foreach-module-prop
 define test-check-prop-empty
 $(eval \
   ifdef $(PROP)
-    $$(error test: "$(PROP)" is not empty)
+    $$(error test: "$(PROP)" is not empty: "$($(PROP))")
   endif
  )
 endef #test-check-prop-empty

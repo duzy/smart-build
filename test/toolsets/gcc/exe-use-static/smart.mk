@@ -14,17 +14,17 @@ $(call test-check-value-of,sm.this.makefile,$(THIS_MAKEFILE))
 $(call test-check-value-of,sm.this.toolset,gcc)
 $(call test-check-value-of,sm.this.toolset.args,exe)
 
-$(call test-check-value-of,sm.module.module-of-type-static.name,module-of-type-static)
-$(call test-check-value-of,sm.module.module-of-type-static.export.libs,module-of-type-static)
-$(call test-check-value-of,sm.module.module-of-type-static.export.libdirs,$(sm.out.lib))
+$(call test-check-value-of,sm.module.gcc-static.name,gcc-static)
+$(call test-check-value-of,sm.module.gcc-static.export.libs,gcc-static)
+$(call test-check-value-of,sm.module.gcc-static.export.libdirs,$(sm.out.lib))
 ########## case in
-$(call sm-use, module-of-type-static)
+$(call sm-use, gcc-static)
 ########## case out
-$(call test-check-value-of,sm.this.using_list,module-of-type-static)
+$(call test-check-value-of,sm.this.using_list,gcc-static)
 
 sm.this.defines += -DTEST_STR=\"foo\" -DTEST_NUM=5
 sm.this.sources := main.c
 
 $(call test-check-undefined,sm.module.module-of-type-exe-use-static.used.libs)
 $(sm-build-this)
-$(call test-check-value,$(strip $(sm.module.module-of-type-exe-use-static.used.libs)),module-of-type-static)
+$(call test-check-value,$(strip $(sm.module.module-of-type-exe-use-static.used.libs)),gcc-static)

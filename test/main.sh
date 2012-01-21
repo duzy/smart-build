@@ -90,7 +90,7 @@ which smart || {
 } && {
     test-load-precondition-scripts .
 } && {
-    rm -rf out
+    #rm -rf out
     (smart && smart doc) || {
         echo ${BASH_SOURCE}:${LINENO}: "failed building"
     }

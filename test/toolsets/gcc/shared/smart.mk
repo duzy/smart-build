@@ -1,15 +1,15 @@
 #
 #
 ####
-test.case.module-of-type-shared-mk-loaded := 1
+test.case.gcc-shared-mk-loaded := 1
 ####
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 THIS_DIR := $(patsubst %/,%,$(dir $(THIS_MAKEFILE)))
 $(call test-check-undefined, sm.this.dir)
 $(call test-check-module-empty, sm.this)
-$(call test-check-module-empty, sm.module.module-of-type-shared)
+$(call test-check-module-empty, sm.module.gcc-shared)
 ########## case in -- make a new module
-$(call sm-new-module, module-of-type-shared, gcc: shared)
+$(call sm-new-module, gcc-shared, gcc: shared)
 ########## case out
 $(call test-check-value-of,sm.this.dir,$(THIS_DIR))
 $(call test-check-value-of,sm.this.makefile,$(THIS_MAKEFILE))
@@ -28,9 +28,7 @@ sm.this.libs += -lgcc
 sofilename := $(sm.out.bin)/$(sm.this.name)$(sm.this.suffix)
 sm.this.export.libs := $(sofilename)
 
-$(call test-check-undefined,sm.module.module-of-type-shared.name)
+$(call test-check-undefined,sm.module.gcc-shared.name)
 ########## case in -- build module
 $(sm-build-this)
 ########## case out
-$(call test-check-value-of,sm.module.module-of-type-shared.name,module-of-type-shared)
-$(call test-check-value-of,sm.module.module-of-type-shared.export.libs,$(sofilename))

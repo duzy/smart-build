@@ -1,6 +1,6 @@
 # -*- bash -*-
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/android-ndk/debug/intermediates/native-activity/toolsets/android-ndk/na.c.o
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/android-ndk/debug/intermediates/native-activity/toolsets/android-ndk/na.c.o.d
+test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/android-ndk/debug/intermediates/native-activity/toolsets/android-ndk/shared-library/na.c.o
+test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/android-ndk/debug/intermediates/native-activity/toolsets/android-ndk/shared-library/na.c.o.d
 test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/android-ndk/debug/bin/native-activity.so
 test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/android-ndk/debug/lib/libandroid_native_app_glue.a
 

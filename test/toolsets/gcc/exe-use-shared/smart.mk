@@ -15,16 +15,16 @@ $(call test-check-value-of,sm.this.makefile,$(THIS_MAKEFILE))
 $(call test-check-value-of,sm.this.toolset,gcc)
 $(call test-check-value-of,sm.this.toolset.args,exe)
 
-$(call test-check-value-of,sm.module.module-of-type-shared.name,module-of-type-shared)
-$(call test-check-value-pat-of,sm.module.module-of-type-shared.export.libs,%/bin/module-of-type-shared.so)
+$(call test-check-value-of,sm.module.gcc-shared.name,gcc-shared)
+$(call test-check-value-pat-of,sm.module.gcc-shared.export.libs,%/bin/gcc-shared.so)
 ########## case in
-$(call sm-use, module-of-type-shared)
+$(call sm-use, gcc-shared)
 ########## case out
-$(call test-check-value-of,sm.this.using_list,module-of-type-shared)
+$(call test-check-value-of,sm.this.using_list,gcc-shared)
 
 sm.this.defines += -DTEST_STR=\"foo\" -DTEST_NUM=10
 sm.this.sources := ../main.c
 
 $(call test-check-undefined,sm.module.exe-use-shared.used.libs)
 $(sm-build-this)
-$(call test-check-value-pat,$(strip $(sm.module.exe-use-shared.used.libs)),%/bin/module-of-type-shared.so)
+$(call test-check-value-pat,$(strip $(sm.module.exe-use-shared.used.libs)),%/bin/gcc-shared.so)
