@@ -1,1 +1,0 @@
-PRE := $(LOCAL)/module-of-type-static.mk

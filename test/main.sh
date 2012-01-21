@@ -45,8 +45,10 @@ function test-load-scripts-recursively
     local T=$1
     local D=$2
     local S
-    for S in $D/*.mk ; do
-        S=$D/`basename $S .mk`-$T.sh
+    for S in $D/smart.mk ; do
+        #S=$D/`basename $S .mk`-$T.sh
+        S=`dirname $S`/$T.sh
+        #echo ${BASH_SOURCE}:${LINENO}: $S
         [[ -f $S ]] && {
             test-log ${BASH_SOURCE}:${LINENO} info "check \"`basename $S -$T.sh`\".."
             . $S
@@ -88,9 +90,14 @@ which smart || {
 } && {
     test-load-precondition-scripts .
 } && {
-    rm -rf out && smart && smart doc
-} && {
-    test-load-check-scripts $TOP
+    rm -rf out
+    (smart && smart doc) || {
+        echo ${BASH_SOURCE}:${LINENO}: "failed building"
+    }
 } || {
+    echo ${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]} "FAILED"
+}
+
+test-load-check-scripts $TOP || {
     echo ${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]} "FAILED"
 }

@@ -6,24 +6,26 @@
 ##  sm.tool.gcc
 ##
 
-## make sure that gcc.mk is included only once
-$(call sm-check-origin, sm.tool.gcc, undefined)
+## a toolset can only be included only once
+$(call sm.fun.new-toolset, gcc,\
+    c++: .o: .cpp .c++ .cc .CC .C\
+    go:  .o: .go\
+    c:   .o: .c\
+    asm: .o: .s .S\
+ )
 
-sm.tool.gcc := true
-
-## Languages supported by this toolset, the order is significant,
-## the order defines the priority of linker
-sm.tool.gcc.langs := c++ go c asm
-sm.tool.gcc.suffix.c := .c
-sm.tool.gcc.suffix.c++ := .cpp .c++ .cc .CC .C
-sm.tool.gcc.suffix.go := .go
-sm.tool.gcc.suffix.asm := .s .S
-
-## Compilation output files(objects) suffixes.
-sm.tool.gcc.suffix.intermediate.c := .o
-sm.tool.gcc.suffix.intermediate.c++ := .o
-sm.tool.gcc.suffix.intermediate.go := .o
-sm.tool.gcc.suffix.intermediate.asm := .o
+# $(info sm.tool.gcc.suffix.c: $(sm.tool.gcc.suffix.c))
+# $(info sm.tool.gcc.suffix.c++: $(sm.tool.gcc.suffix.c++))
+# $(info sm.tool.gcc.suffix.go: $(sm.tool.gcc.suffix.go))
+# $(info sm.tool.gcc.suffix.asm: $(sm.tool.gcc.suffix.asm))
+# $(info sm.tool.gcc.lang..c: $(sm.tool.gcc.lang..c))
+# $(info sm.tool.gcc.lang..cpp: $(sm.tool.gcc.lang..cpp))
+# $(info sm.tool.gcc.lang..go: $(sm.tool.gcc.lang..go))
+# $(info sm.tool.gcc.lang..S: $(sm.tool.gcc.lang..S))
+# $(info sm.tool.gcc.suffix.intermediate.c: $(sm.tool.gcc.suffix.intermediate.c))
+# $(info sm.tool.gcc.suffix.intermediate.c++: $(sm.tool.gcc.suffix.intermediate.c++))
+# $(info sm.tool.gcc.suffix.intermediate.go: $(sm.tool.gcc.suffix.intermediate.go))
+# $(info sm.tool.gcc.suffix.intermediate.asm: $(sm.tool.gcc.suffix.intermediate.asm))
 
 ## Target link output file suffix.
 sm.tool.gcc.suffix.target.win32.static := .a
@@ -57,32 +59,51 @@ sm.tool.gcc.flags.link.type.exe :=
 ##
 ## Compile Commands
 define sm.tool.gcc.command.compile.c
-gcc $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+gcc $(sm.var.flags) -o $@ -c $(sm.var.source)
 endef #sm.tool.gcc.command.compile.c
 
 define sm.tool.gcc.command.compile.c.d
-gcc -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+gcc -MM -MT $(@:%.d=%) $(sm.var.flags) $(sm.var.source) > $@
 endef #sm.tool.gcc.command.compile.c.d
 
 define sm.tool.gcc.command.compile.c++
-g++ $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+g++ $(sm.var.flags) -o $@ -c $(sm.var.source)
 endef #sm.tool.gcc.command.compile.c++
 
 define sm.tool.gcc.command.compile.c++.d
-g++ -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+g++ -MM -MT $(@:%.d=%) $(sm.var.flags) $(sm.var.source) > $@
 endef #sm.tool.gcc.command.compile.c++.d
 
 define sm.tool.gcc.command.compile.go
-gccgo $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+gccgo $(sm.var.flags) -o $@ -c $(sm.var.source)
 endef #sm.tool.gcc.command.compile.go
 
 define sm.tool.gcc.command.compile.go.d
-gccgo -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+gccgo -MM -MT $(@:%.d=%) $(sm.var.flags) $(sm.var.source) > $@
 endef #sm.tool.gcc.command.compile.go.d
 
 define sm.tool.gcc.command.compile.asm
-gcc $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+gcc $(sm.var.flags) -o $@ -c $(sm.var.source)
 endef #sm.tool.gcc.command.compile.asm
+
+define sm.tool.gcc.compile
+$(eval #
+  ifndef sm.tool.gcc.lang.$(suffix $*)
+    $$(error smart: "smart: gcc2: unknown source: $(suffix $*)")
+  endif
+  ifndef sm.tool.gcc.command.compile.$(sm.tool.gcc.lang.$(suffix $*))
+    $$(error smart: "sm.tool.gcc.command.compilesm.tool.gcc.command.compile.$(sm.tool.gcc.lang.$(suffix $*))" undefined)
+  endif
+ )$(sm.tool.gcc.command.compile.$(sm.tool.gcc.lang.$(suffix $*)))
+endef #sm.tool.gcc.compile
+
+define sm.tool.gcc.compile.d
+$(eval #
+  ifndef sm.tool.gcc.lang.$(suffix $*)
+    $$(error smart: "smart: gcc2: unknown source: $(suffix $*)")
+  endif
+ )$(sm.tool.gcc.command.compile.$(sm.tool.gcc.lang.$(suffix $*)).d)
+endef #sm.tool.gcc.compile.d
 
 ##
 ##
@@ -118,7 +139,7 @@ define sm.tool.gcc.config-module
 $(call sm-check-not-empty, \
     sm.os.name \
     sm.config.variant \
- ,,gcc:)\
+ ,,gcc2:)\
 $(eval \
    sm.this.gen_deps := true
    sm.this.type := $(firstword $(sm.this.toolset.args))
@@ -129,6 +150,20 @@ $(eval \
    sm.this.link.flags := $(sm.tool.gcc.flags.link.variant.$(sm.config.variant))
    sm.this.link.flags += $(sm.tool.gcc.flags.link.os.$(sm.os.name))
    sm.this.link.flags += $$(sm.tool.gcc.flags.link.type.$$(sm.this.type))
+ )\
+$(eval #
+  $(sm.out.inter)/$(sm.this.name)/%.o:
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$$(sm.tool.gcc.compile)
+
+  $(sm.out.inter)/$(sm.this.name)/%.o.d:
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$$(sm.tool.gcc.compile.d)
+
+  $(sm.out)/include/%.h:
+	@( echo smart: header: $$@ ) &&\
+	 ([[ -d $$(dir $$@) ]] || mkdir -p $$(dir $$@)) &&\
+	 (cp -u $$< $$@)
  )
 endef #sm.tool.gcc.config-module
 
@@ -138,10 +173,8 @@ sm.tool.gcc.transform.shared  := c
 sm.tool.gcc.transform.exe     := c
 
 ## sm.var.source
-## sm.var.source.computed
 ## sm.var.source.lang
 ## sm.var.source.suffix
-## sm.var.intermediate (source -> intermediate)
 define sm.tool.gcc.transform-single-source
 $(foreach _, $(sm.tool.gcc.args.types), \
   $(call sm.tool.gcc.transform-source-$(sm.tool.gcc.transform.$_)))
@@ -150,7 +183,11 @@ endef #sm.tool.gcc.transform-single-source
 ##
 ##
 define sm.tool.gcc.transform-source-h
-$(info TODO: gcc: header: $(sm.var.source.computed))
+$(eval #
+  ifeq ($(sm.var.source.suffix),.h)
+    $$(info TODO: header: $(sm.var.source))
+  endif
+ )
 endef #sm.tool.gcc.transform-source-h
 
 ##
@@ -159,10 +196,8 @@ define sm.tool.gcc.transform-source-c
 $(call sm-check-not-empty, \
     sm._this $(sm._this).name \
     sm.var.source \
-    sm.var.source.computed \
     sm.var.source.lang \
     sm.var.source.suffix \
-    sm.var.intermediate \
  )\
 $(eval #
   sm.var.flags :=
@@ -196,22 +231,20 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
-  sm.var.command := $$(sm.tool.gcc.command.compile.$(sm.var.source.lang))
-  sm.var.command.d := $$(sm.tool.gcc.command.compile.$(sm.var.source.lang).d)
+  sm.var.intermediate := $($(sm._this).out.inter)/$(sm.var.source).o
  )\
 $(eval #
   $(sm._this).intermediates += $(sm.var.intermediate)
-  $(sm.var.intermediate) : $(sm.var.source.computed)
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.wrap-rule-commands, gcc: $(sm.var.source.lang), $(sm.var.command))
 
-  ifdef sm.var.command.d
+  $(sm.var.intermediate): sm.var.source := $(sm.this.prefix)/$(sm.var.source)
+  $(sm.var.intermediate): sm.var.flags := $(sm.var.flags)
+  $(sm.var.intermediate): $(sm.this.prefix)/$(sm.var.source)
+
   ifeq ($(call sm-true,$($(sm._this).gen_deps)),true)
     -include $(sm.var.intermediate).d
-    $(sm.var.intermediate).d : $(sm.var.source.computed)
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.wrap-rule-commands, gcc: $(sm.var.source.lang), $(sm.var.command.d))
-  endif
+    $(sm.var.intermediate).d: sm.var.source := $(sm.this.prefix)/$(sm.var.source)
+    $(sm.var.intermediate).d: sm.var.flags := $(sm.var.flags)
+    $(sm.var.intermediate).d: $(sm.this.prefix)/$(sm.var.source)
   endif
  )
 endef #sm.tool.gcc.transform-source-c
@@ -226,31 +259,23 @@ endef #sm.tool.gcc.transform-intermediates
 ##
 ##
 define sm.tool.gcc.transform-intermediates-h
-$(eval #
-  sm.temp._headervars := $(filter $(sm._this).headers%,$(.VARIABLES))
-  sm.temp._pubheaders :=
- )\
-$(foreach _, $(sm.temp._headervars),\
+$(foreach _, $(filter $(sm._this).headers%,$(.VARIABLES)),\
   $(eval #
-    sm.temp._pubprefix := $(_:$(sm._this).headers%=%)
-    sm.temp._pubprefix := $$(sm.temp._pubprefix:.%=%)
-    ifdef sm.temp._pubprefix
-      sm.temp._pubprefix := $$(sm.temp._pubprefix)/
+    sm.temp._prefix := $(_:$(sm._this).headers%=%)
+    sm.temp._prefix := $$(sm.temp._prefix:.%=%)
+    ifdef sm.temp._prefix
+      sm.temp._prefix := $$(sm.temp._prefix)/
     endif
    )\
-  $(foreach _h, $($_),\
-    $(eval sm.var.source := $(_h))\
-    $(eval #
-      sm.temp._pubheader := $(sm.out)/include/$(sm.temp._pubprefix)$(_h)
-      sm.temp._pubheaders += $$(sm.temp._pubheader)
-      $$(sm.temp._pubheader) : $(call sm.fun.compute-source-of-local)
-	@( echo smart: header: $$@ ) &&\
-	 ([ -d $$(dir $$@) ] || mkdir -p $$(dir $$@)) && (cp -u $$< $$@)
-     )\
-   )\
+  $(foreach h, $($_), $(eval #
+    sm.temp._pubheader := $(sm.out)/include/$(sm.temp._prefix)$h
+    sm.var.source := $h
+    $$(sm.temp._pubheader): $$(call sm.fun.compute-source-of-local)
+    headers-$($(sm._this).name): $$(sm.temp._pubheader)
+   ))\
  )\
 $(eval #
-  headers-$($(sm._this).name) : $(sm.temp._pubheaders)
+  .PHONY: headers-$($(sm._this).name)
   $(sm._this).targets += headers-$($(sm._this).name)
  )
 endef #sm.tool.gcc.transform-intermediates-h
@@ -263,7 +288,7 @@ $(call sm-check-not-empty, sm._this \
   $(sm._this).lang \
   $(sm._this).type \
   $(sm._this).intermediates \
- ,,gcc:)\
+ ,,gcc2:)\
 $(eval #
   sm.var.intermediates := $($(sm._this).intermediates)
   sm.var.target :=
@@ -332,13 +357,13 @@ $(eval #
   $(sm._this).targets += $(sm.var.target)
   $(sm.var.target) : $(sm.var.intermediates.preq)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.wrap-rule-commands, gcc, $(sm.var.command))
+	$(call sm.fun.wrap-rule-commands, gcc2, $(sm.var.command))
 
   ifdef sm.var.target.link
     $(sm._this).targets += $(sm.var.target.link)
     $(sm.var.target.link) : $(sm.var.target)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.wrap-rule-commands, gcc, ln -sf $(sm.top)/$(sm.var.target) $(sm.var.target.link))
+	$(call sm.fun.wrap-rule-commands, gcc2, ln -sf $(sm.top)/$(sm.var.target) $(sm.var.target.link))
   endif
  )\
 $(eval #

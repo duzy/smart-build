@@ -1,0 +1,1 @@
+-- { @SMART_TEST_FOO@ } == { @SMART_TEST_BAR@ } --

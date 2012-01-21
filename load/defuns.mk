@@ -665,7 +665,8 @@ $(eval \
   endif
 
   ifneq ($(strip $(sm.this.dirs)),)
-    sm.temp._submods := $(foreach _,$(sm.this.dirs),$(wildcard $(sm.this.dir)/$_/smart.mk))
+    #sm.temp._submods := $(foreach _,$(sm.this.dirs),$(wildcard $(sm.this.dir)/$_/smart.mk))
+    sm.temp._submods := $(foreach _,$(sm.this.dirs),$(sm.this.dir)/$_/smart.mk)
   else
     sm.temp._submods := $(wildcard $(sm.this.dir)/*/smart.mk)
   endif

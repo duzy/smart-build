@@ -3,7 +3,6 @@
 ####
 test.case.subdirs-loaded := 1
 ####
-
 $(call test-check-flavor,sm-this-dir,recursive)
 $(call test-check-undefined,sm.this.dir)
 

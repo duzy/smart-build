@@ -60,12 +60,12 @@ $(sm-build-this)
 $(call test-check-value-of,sm.module.foobar.name,foobar)
 $(call test-check-value-of,sm.module.foobar.type,none)
 
-$(call test-check-defined, sm.this.dir)
-$(call test-check-flavor,  sm-load-module, recursive)
-########## case in  -- load a single module
-$(call sm-load-module, $(sm.this.dir)/module-of-type-none.mk)
-########## case out
-$(call test-check-value-of,test.case.module-of-type-none-mk-loaded,1)
+# $(call test-check-defined, sm.this.dir)
+# $(call test-check-flavor,  sm-load-module, recursive)
+# ########## case in  -- load a single module
+# $(call sm-load-module, $(sm.this.dir)/module-of-type-none/smart.mk)
+# ########## case out
+# $(call test-check-value-of,test.case.module-of-type-none-mk-loaded,1)
 
 ##################################################
 
@@ -89,23 +89,23 @@ $(call test-check-value-of,sm.module.subdir-foo.name,subdir-foo)
 $(call test-check-value-of,sm.module.subdir-foo.type,none)
 $(call test-check-value-of,sm.module.subdir-foo.dir,subdir)
 
-$(call test-check-undefined,test.case.module-nothing-loaded)
-########## case in
-$(call sm-load-module, $(test.temp.this-dir)/module-nothing.mk)
-########## case out
-$(call test-check-value-of,test.case.module-nothing-loaded,1)
-$(call test-check-undefined, sm.this.dir) ## fake-module make nothing, sm-load-module unset this
+# $(call test-check-undefined,test.case.module-nothing-loaded)
+# ########## case in
+# $(call sm-load-module, $(test.temp.this-dir)/module-nothing.mk)
+# ########## case out
+# $(call test-check-value-of,test.case.module-nothing-loaded,1)
+# $(call test-check-undefined, sm.this.dir) ## fake-module make nothing, sm-load-module unset this
 
 ##################################################
 define check-module
 $(call test-check-flavor, sm-load-module, recursive)\
-$(eval module.pre := $(wildcard $(module:%.mk=%.pre)))\
+$(eval module.pre := $(wildcard $(module:%/smart.mk=%.pre)))\
 $(eval #
   ifdef module.pre
     PRE :=
-    LOCAL := $(patsubst %/,%,$(dir $(module)))
+    LOCAL := $(patsubst %/,%,$(dir $(module.pre)))
     include $(module.pre)
-    $$(info test: preload "$$(PRE)" for "$(module)")
+    #$$(info test: preload "$$(PRE)" for "$(module)")
     ifdef PRE
       $$(call sm-load-module, $$(PRE))
       modules.loaded += $$(PRE)
@@ -119,8 +119,8 @@ endef #check-module
 
 modules.loaded :=
 modules := \
-  $(wildcard $(test.temp.this-dir)/features/*.mk) \
-  $(wildcard $(test.temp.this-dir)/toolsets/*.mk) \
-  $(wildcard $(test.temp.this-dir)/toolsets/*/*.mk) \
-  $(wildcard $(test.temp.this-dir)/toolsets/*/*/*.mk)
+  $(wildcard $(test.temp.this-dir)/features/*/smart.mk) \
+  $(wildcard $(test.temp.this-dir)/toolsets/*/smart.mk) \
+  $(wildcard $(test.temp.this-dir)/toolsets/*/*/smart.mk) \
+  $(wildcard $(test.temp.this-dir)/toolsets/*/*/*/smart.mk)
 $(foreach module, $(modules), $(check-module))
