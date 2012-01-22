@@ -85,13 +85,16 @@ function test-readfile
     }
 }
 
+rm -vf out/modules.order
+
 which smart || {
     echo "The \"smart\" command is not found in PATH"
 } && {
     test-load-precondition-scripts .
 } && {
     #rm -rf out
-    (smart && smart doc) || {
+    #(smart && smart doc) || {
+    smart || {
         echo ${BASH_SOURCE}:${LINENO}: "failed building"
     }
 } || {

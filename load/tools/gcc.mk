@@ -154,11 +154,13 @@ $(eval \
 $(eval #
   $(sm.out.inter)/$(sm.this.name)/%.o:
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$$(sm.tool.gcc.compile)
+	$$(or $$(sm.tool.gcc.compile),echo "error:0: No command for \"$$@\"" && false)
 
   $(sm.out.inter)/$(sm.this.name)/%.o.d:
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$$(sm.tool.gcc.compile.d)
+	@[[ -f $$(sm.var.source) ]] &&\
+	$$(or $$(sm.tool.gcc.compile.d),echo "smart:0:info: no command for \"$$@\"")\
+	|| (echo "$(sm.this.makefile):0: \"$$(sm.var.source)\" absent" && rm -f $$@ && false)
 
   $(sm.out)/include/%.h:
 	@( echo smart: header: $$@ ) &&\
@@ -223,7 +225,6 @@ $(eval #
 
   sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.flags, compile.$(sm.var.source.lang), $($(sm._this).compile.flags.infile))
   ifdef sm.temp._flagsfile
-    $(sm.var.intermediate) $(sm.var.intermediate).d : $$(sm.temp._flagsfile)
     sm.var.flags := @$$(sm.temp._flagsfile)
   endif
 
@@ -231,20 +232,23 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
+  sm.var.prefix := $($(sm._this).prefix:%/=%)
   sm.var.intermediate := $($(sm._this).out.inter)/$(sm.var.source).o
  )\
 $(eval #
   $(sm._this).intermediates += $(sm.var.intermediate)
 
-  $(sm.var.intermediate): sm.var.source := $(sm.this.prefix)/$(sm.var.source)
+  ## Draw the dependency on the source to make it complain if the source
+  ## is absent:
   $(sm.var.intermediate): sm.var.flags := $(sm.var.flags)
-  $(sm.var.intermediate): $(sm.this.prefix)/$(sm.var.source)
+  $(sm.var.intermediate): sm.var.source := $(sm.var.prefix)/$(sm.var.source)
+  $(sm.var.intermediate): $(sm.temp._flagsfile) $(sm.var.prefix)/$(sm.var.source)
 
   ifeq ($(call sm-true,$($(sm._this).gen_deps)),true)
     -include $(sm.var.intermediate).d
-    $(sm.var.intermediate).d: sm.var.source := $(sm.this.prefix)/$(sm.var.source)
     $(sm.var.intermediate).d: sm.var.flags := $(sm.var.flags)
-    $(sm.var.intermediate).d: $(sm.this.prefix)/$(sm.var.source)
+    $(sm.var.intermediate).d: sm.var.source := $(sm.var.prefix)/$(sm.var.source)
+    $(sm.var.intermediate).d: $(sm.temp._flagsfile) $(sm.var.prefix)/$(sm.var.source)
   endif
  )
 endef #sm.tool.gcc.transform-source-c
