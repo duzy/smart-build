@@ -234,6 +234,9 @@ $(eval #
 
   sm.var.prefix := $($(sm._this).prefix:%/=%)
   sm.var.intermediate := $($(sm._this).out.inter)/$(sm.var.source).o
+  ifndef sm.var.prefix
+    $$(error no module prefix: "$($(sm._this).prefix)")
+  endif
  )\
 $(eval #
   $(sm._this).intermediates += $(sm.var.intermediate)

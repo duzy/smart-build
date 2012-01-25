@@ -31,11 +31,11 @@ $(sm._this).targets :=
 sm.var.tool := sm.tool.$($(sm._this).toolset)
 sm.var.langs := $($(sm.var.tool).langs)
 
-sm.var.temp._ := $($(sm._this).dir:$(sm.top)%=%)
-sm.var.temp._ := $(sm.var.temp._:%.=%)
-sm.var.temp._ := $(sm.var.temp._:/%=%)
-sm.var.temp._ := ${if $(sm.var.temp._),$(sm.var.temp._)/}
-$(sm._this).prefix := $(sm.var.temp._)
+# sm.var.temp._ := $($(sm._this).dir:$(sm.top)%=%)
+# sm.var.temp._ := $(sm.var.temp._:%.=%)
+# sm.var.temp._ := $(sm.var.temp._:/%=%)
+# sm.var.temp._ := $(if $(sm.var.temp._),$(sm.var.temp._)/)
+# $(sm._this).prefix := $(sm.var.temp._)
 
 #sm.var.action := $(sm.var.action.$($(sm._this).type))
 #$(call sm-check-not-empty, sm.var.action)

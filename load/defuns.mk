@@ -163,6 +163,12 @@ define sm-new-module-internal
    sm.this.dir := $$(call sm-module-dir)
    sm.this.dirs :=
    sm.this.prefix := $$(sm.this.dir:$(sm.top)/%=%)
+   ifndef sm.this.dir
+     $$(error empty module dir)
+   endif
+   ifndef sm.this.prefix
+     $$(error no prefix for module "$(sm.temp._name)")
+   endif
   )\
  $(eval \
    ifndef sm.tool.$(sm.temp._toolset)
