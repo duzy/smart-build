@@ -1,4 +1,4 @@
 # -*- bash -*-
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/intermediates/module-of-type-static/_/foo.c.o
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/intermediates/module-of-type-static/_/foo.c.o.d
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/out/gcc/debug/lib/libmodule-of-type-static.a
+test-check-file ${BASH_SOURCE}:${LINENO} out/gcc/debug/intermediates/gcc-static/_/foo.c.o
+test-check-file ${BASH_SOURCE}:${LINENO} out/gcc/debug/intermediates/gcc-static/_/foo.c.o.d
+test-check-file ${BASH_SOURCE}:${LINENO} out/gcc/debug/lib/libgcc-static.a
