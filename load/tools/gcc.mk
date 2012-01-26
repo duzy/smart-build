@@ -390,6 +390,7 @@ $(eval \
   sm.temp._install_target := $(sm.tool.gcc.install_target)
  )\
 $(eval \
+  .PHONY: install-$($(sm._this).type)-$($(sm._this).name)
   install-$($(sm._this).type)-$($(sm._this).name): $(sm.temp._install_target)
   $(sm.temp._install_target): $(sm.var.target)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D) && cp -f $$< $$@ && echo "smart: installed $$@"

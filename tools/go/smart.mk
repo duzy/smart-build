@@ -101,6 +101,7 @@ $(go-use-basis-$(sm.this.gotype))\
 $(call sm-build-this)\
 $(eval #
   ifeq ($(sm.this.type),package)
+    .PHONY: install-packages _install-package-$(sm.this.name)
     install-packages: _install-package-$(sm.this.name)
     _install-package-$(sm.this.name): $(sm.this.depends:goal-%=_install-package-%)
     _install-package-$(sm.this.name): install-package-$(sm.this.name)

@@ -684,7 +684,15 @@ $(eval \
   ## from in a subdir
   sm.this.dirs :=
  )\
-$(foreach _, $(sm.temp._submods), $(call sm-load-module, $_))
+$(eval #
+  $(foreach _, $(sm.temp._submods),
+    ifeq ($(wildcard $_),)
+      $$(warning missing "$_")
+    else
+      $$(call sm-load-module, $_)
+    endif
+   )
+ )
 endef #sm-load-subdirs
 
 ## Command for making out dir

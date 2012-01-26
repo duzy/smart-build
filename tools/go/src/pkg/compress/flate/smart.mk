@@ -8,7 +8,6 @@ GOFILES=\
 	inflate.go\
 	reverse_bits.go\
 	token.go\
-	util.go\
 
 sm.this.sources := $(GOFILES)
 

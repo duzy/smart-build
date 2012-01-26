@@ -470,7 +470,8 @@ $(eval \
   $(sm._this).installs += install-$($(sm._this).type)-$($(sm._this).name)
   sm.temp._install_target := $(sm.tool.go.install_target)
  )\
-$(eval \
+$(eval #
+  .PHONY: install-$($(sm._this).type)-$($(sm._this).name)
   install-$($(sm._this).type)-$($(sm._this).name): $(sm.temp._install_target)
   $(sm.temp._install_target): $(sm.var.target)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D) && cp -f $$< $$@ && echo "smart: installed $$@"
