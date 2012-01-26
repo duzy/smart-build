@@ -1,0 +1,19 @@
+#!/bin/bash
+D=`dirname $BASH_SOURCE`
+[[ x$D == x ]] && {
+    echo "$BASH_SOURCE:$LINENO: empty base directory"
+    exit -1
+}
+[[ -d $D ]] || {
+    echo "$BASH_SOURCE:$LINENO: no base: \"$D\""
+    exit -1
+}
+
+. $D/test.sh || {
+    echo "$BASH_SOURCE:$LINENO: \"$D/test.sh\" not found"
+    exit -1
+}
+
+(. pre.sh)
+smart
+(. post.sh)
