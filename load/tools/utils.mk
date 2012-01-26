@@ -39,5 +39,6 @@ define sm.tool.utils.transform-intermediates
 $(eval \
   $(sm._this).targets := copy-$($(sm._this).name)
   copy-$($(sm._this).name): $($(sm._this).targets.copied)
+  .PHONY: copy-$($(sm._this).name)
  )
 endef #sm.tool.utils.transform-intermediates
