@@ -17,7 +17,7 @@ $(call test-check-value-of,sm.this.suffix,.so)
 $(call test-check-value-of,sm.this.toolset,gcc)
 $(call test-check-value-of,sm.this.toolset.args,shared)
 
-sm.this.sources := foo.c foo.go bar.c
+sm.this.sources := ../foo.c ../foo.go ../bar.c
 sm.this.compile.flags.c += -DC -fPIC
 sm.this.compile.flags-bar.c += -DBAR
 sm.this.compile.flags.go += -DG -fPIC

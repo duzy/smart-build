@@ -3,120 +3,110 @@
 #	
 
 ##
-##  sm.tool.clang
+##  sm.tool.clang0
 ##
 
-## make sure that clang.mk is included only once
-$(call sm-check-origin, sm.tool.clang, undefined)
+## make sure that gcc.mk is included only once
+$(call sm-check-origin, sm.tool.clang0, undefined)
 
-$(call sm.fun.new-toolset, clang,\
-    c++: .o: .cpp .c++ .cc .CC .C\
-    c:   .o: .c\
-    asm: .o: .s .S\
-    ll:  .o: .ll\
- )
+sm.tool.clang0 := true
+
+## Languages supported by this toolset, the order is significant,
+## the order defines the priority of linker
+sm.tool.clang0.langs := c++ c asm ll
+sm.tool.clang0.suffix.c := .c
+sm.tool.clang0.suffix.c++ := .cpp .c++ .cc .CC .C
+sm.tool.clang0.suffix.asm := .s .S
+sm.tool.clang0.suffix.ll := .ll
+
+## Compilation output files(objects) suffixes.
+sm.tool.clang0.suffix.intermediate.c := .o
+sm.tool.clang0.suffix.intermediate.c++ := .o
+sm.tool.clang0.suffix.intermediate.asm := .o
+sm.tool.clang0.suffix.intermediate.ll := .o
 
 ## Target link output file suffix.
-sm.tool.clang.suffix.target.win32.static := .a
-sm.tool.clang.suffix.target.win32.shared := .so
-sm.tool.clang.suffix.target.win32.exe := .exe
-sm.tool.clang.suffix.target.win32.t := .test.exe
-sm.tool.clang.suffix.target.linux.static := .a
-sm.tool.clang.suffix.target.linux.shared := .so
-sm.tool.clang.suffix.target.linux.exe :=
-sm.tool.clang.suffix.target.linux.t := .test
+sm.tool.clang0.suffix.target.win32.static := .a
+sm.tool.clang0.suffix.target.win32.shared := .so
+sm.tool.clang0.suffix.target.win32.exe := .exe
+sm.tool.clang0.suffix.target.win32.t := .test.exe
+sm.tool.clang0.suffix.target.linux.static := .a
+sm.tool.clang0.suffix.target.linux.shared := .so
+sm.tool.clang0.suffix.target.linux.exe :=
+sm.tool.clang0.suffix.target.linux.t := .test
 
-sm.tool.clang.flags.compile.variant.debug := -g -ggdb
-sm.tool.clang.flags.compile.variant.release := -O3
-sm.tool.clang.flags.link.variant.debug := -g -ggdb
-sm.tool.clang.flags.link.variant.release := -O3 -Wl,-flto
+sm.tool.clang0.flags.compile.variant.debug := -g -ggdb
+sm.tool.clang0.flags.compile.variant.release := -O3
+sm.tool.clang0.flags.link.variant.debug := -g -ggdb
+sm.tool.clang0.flags.link.variant.release := -O3 -Wl,-flto
 
-sm.tool.clang.flags.compile.os.linux :=
-sm.tool.clang.flags.compile.os.win32 := -mwindows
-sm.tool.clang.flags.link.os.linux :=
-sm.tool.clang.flags.link.os.win32 := -mwindows \
+sm.tool.clang0.flags.compile.os.linux :=
+sm.tool.clang0.flags.compile.os.win32 := -mwindows
+sm.tool.clang0.flags.link.os.linux :=
+sm.tool.clang0.flags.link.os.win32 := -mwindows \
   -Wl,--enable-runtime-pseudo-reloc \
   -Wl,--enable-auto-import \
 
-sm.tool.clang.flags.compile.type.shared :=
-sm.tool.clang.flags.compile.type.static :=
-sm.tool.clang.flags.compile.type.exe :=
-sm.tool.clang.flags.link.type.shared := -Wl,--no-undefined
-sm.tool.clang.flags.link.type.static :=
-sm.tool.clang.flags.link.type.exe :=
+sm.tool.clang0.flags.compile.type.shared :=
+sm.tool.clang0.flags.compile.type.static :=
+sm.tool.clang0.flags.compile.type.exe :=
+sm.tool.clang0.flags.link.type.shared := -Wl,--no-undefined
+sm.tool.clang0.flags.link.type.static :=
+sm.tool.clang0.flags.link.type.exe :=
 
 ##
 ## Compile Commands
-define sm.tool.clang.command.compile.c
-clang $(sm.var.flags) -o $@ -c $(sm.var.source)
-endef #sm.tool.clang.command.compile.c
+define sm.tool.clang0.command.compile.c
+clang $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+endef #sm.tool.clang0.command.compile.c
 
-define sm.tool.clang.command.compile.c.d
-clang -MM -MT $@ $(sm.var.flags) $(sm.var.source) > $@
-endef #sm.tool.clang.command.compile.c.d
+define sm.tool.clang0.command.compile.c.d
+clang -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+endef #sm.tool.clang0.command.compile.c.d
 
-define sm.tool.clang.command.compile.c++
-clang++ $(sm.var.flags) -o $@ -c $(sm.var.source)
-endef #sm.tool.clang.command.compile.c++
+define sm.tool.clang0.command.compile.c++
+clang++ $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+endef #sm.tool.clang0.command.compile.c++
 
-define sm.tool.clang.command.compile.c++.d
-clang++ -MM -MT $@ $(sm.var.flags) $(sm.var.source) > $@
-endef #sm.tool.clang.command.compile.c++.d
+define sm.tool.clang0.command.compile.c++.d
+clang++ -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+endef #sm.tool.clang0.command.compile.c++.d
 
-define sm.tool.clang.command.compile.asm
-clang $(sm.var.flags) -o $@ -c $(sm.var.source)
-endef #sm.tool.clang.command.compile.asm
+define sm.tool.clang0.command.compile.asm
+clang $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+endef #sm.tool.clang0.command.compile.asm
 
-define sm.tool.clang.command.compile.ll
-llvmc $(sm.var.flags) -o $@ -c $(sm.var.source)
-endef #sm.tool.clang.command.compile.ll
-
-define sm.tool.clang.compile
-$(eval #
-  ifndef sm.tool.clang.lang.$(suffix $*)
-    $$(error smart: "smart: gcc2: unknown source: $(suffix $*)")
-  endif
-  ifndef sm.tool.clang.command.compile.$(sm.tool.clang.lang.$(suffix $*))
-    $$(error smart: "sm.tool.clang.command.compile.$(sm.tool.clang.lang.$(suffix $*))" undefined)
-  endif
- )$(sm.tool.clang.command.compile.$(sm.tool.clang.lang.$(suffix $*)))
-endef #sm.tool.clang.compile
-
-define sm.tool.clang.compile.d
-$(eval #
-  ifndef sm.tool.clang.lang.$(suffix $*)
-    $$(error smart: "smart: gcc2: unknown source: $(suffix $*)")
-  endif
- )$(sm.tool.clang.command.compile.$(sm.tool.clang.lang.$(suffix $*)).d)
-endef #sm.tool.clang.compile.d
+define sm.tool.clang0.command.compile.ll
+llvmc $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+endef #sm.tool.clang0.command.compile.ll
 
 ##
 ##
-define sm.tool.clang.command.link.c
+define sm.tool.clang0.command.link.c
 clang $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
-endef #sm.tool.clang.command.link.c
+endef #sm.tool.clang0.command.link.c
 
-define sm.tool.clang.command.link.c++
+define sm.tool.clang0.command.link.c++
 clang++ $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
-endef #sm.tool.clang.command.link.c++
+endef #sm.tool.clang0.command.link.c++
 
-define sm.tool.clang.command.link.asm
+define sm.tool.clang0.command.link.asm
 clang $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
-endef #sm.tool.clang.command.link.asm
+endef #sm.tool.clang0.command.link.asm
 
 ##
 ##
-define sm.tool.clang.command.archive
+define sm.tool.clang0.command.archive
 ar crs $(sm.var.target) $(sm.var.intermediates)
-endef #sm.tool.clang.command.archive
+endef #sm.tool.clang0.command.archive
 
-define sm.tool.clang.args.types
+define sm.tool.clang0.args.types
 $(filter-out -%, $($(sm._this).toolset.args))
-endef #sm.tool.clang.args.types
+endef #sm.tool.clang0.args.types
 
 ##
 ##
-define sm.tool.clang.config-module
+define sm.tool.clang0.config-module
 $(call sm-check-not-empty, \
     sm.os.name \
     sm.config.variant \
@@ -124,56 +114,40 @@ $(call sm-check-not-empty, \
 $(eval \
    sm.this.gen_deps := true
    sm.this.type := $(firstword $(sm.this.toolset.args))
-   sm.this.suffix := $$(sm.tool.clang.suffix.target.$(sm.os.name).$$(sm.this.type))
-   sm.this.compile.flags := $(sm.tool.clang.flags.compile.variant.$(sm.config.variant))
-   sm.this.compile.flags += $(sm.tool.clang.flags.compile.os.$(sm.os.name))
-   sm.this.compile.flags += $$(sm.tool.clang.flags.compile.type.$$(sm.this.type))
-   sm.this.link.flags := $(sm.tool.clang.flags.link.variant.$(sm.config.variant))
-   sm.this.link.flags += $(sm.tool.clang.flags.link.os.$(sm.os.name))
-   sm.this.link.flags += $$(sm.tool.clang.flags.link.type.$$(sm.this.type))
- )\
-$(eval #
-  $(sm.out.inter)/$(sm.this.name)/%.o:
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$$(or $$(sm.tool.clang.compile),echo "error:0: No command for \"$$@\"" && false)
-
-  $(sm.out.inter)/$(sm.this.name)/%.o.d:
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	@[[ -f $$(sm.var.source) ]] &&\
-	$$(or $$(sm.tool.clang.compile.d),echo "smart:0:info: no command for \"$$@\"")\
-	|| (echo "$(sm.this.makefile):0: \"$$(sm.var.source)\" absent" && rm -f $$@ && false)
-
-  $(sm.out)/include/%.h:
-	@( echo smart: header: $$@ ) &&\
-	 ([[ -d $$(dir $$@) ]] || mkdir -p $$(dir $$@)) &&\
-	 (cp -u $$< $$@)
+   sm.this.suffix := $$(sm.tool.clang0.suffix.target.$(sm.os.name).$$(sm.this.type))
+   sm.this.compile.flags := $(sm.tool.clang0.flags.compile.variant.$(sm.config.variant))
+   sm.this.compile.flags += $(sm.tool.clang0.flags.compile.os.$(sm.os.name))
+   sm.this.compile.flags += $$(sm.tool.clang0.flags.compile.type.$$(sm.this.type))
+   sm.this.link.flags := $(sm.tool.clang0.flags.link.variant.$(sm.config.variant))
+   sm.this.link.flags += $(sm.tool.clang0.flags.link.os.$(sm.os.name))
+   sm.this.link.flags += $$(sm.tool.clang0.flags.link.type.$$(sm.this.type))
  )
-endef #sm.tool.clang.config-module
+endef #sm.tool.clang0.config-module
 
-sm.tool.clang.transform.headers := h
-sm.tool.clang.transform.static  := bin
-sm.tool.clang.transform.shared  := bin
-sm.tool.clang.transform.exe     := bin
+sm.tool.clang0.transform.headers := h
+sm.tool.clang0.transform.static  := bin
+sm.tool.clang0.transform.shared  := bin
+sm.tool.clang0.transform.exe     := bin
 
 ## sm.var.source
 ## sm.var.source.computed
 ## sm.var.source.lang
 ## sm.var.source.suffix
 ## sm.var.intermediate (source -> intermediate)
-define sm.tool.clang.transform-single-source
-$(foreach _, $(sm.tool.clang.args.types), \
-  $(call sm.tool.clang.transform-source-$(sm.tool.clang.transform.$_)))
-endef #sm.tool.clang.transform-single-source
+define sm.tool.clang0.transform-single-source
+$(foreach _, $(sm.tool.clang0.args.types), \
+  $(call sm.tool.clang0.transform-source-$(sm.tool.clang0.transform.$_)))
+endef #sm.tool.clang0.transform-single-source
 
 ##
 ##
-define sm.tool.clang.transform-source-h
-$(info TODO: gcc: header: $(sm.var.source))
-endef #sm.tool.clang.transform-source-h
+define sm.tool.clang0.transform-source-h
+$(info TODO: gcc: header: $(sm.var.source.computed))
+endef #sm.tool.clang0.transform-source-h
 
 ##
 ##
-define sm.tool.clang.transform-source-bin
+define sm.tool.clang0.transform-source-bin
 $(call sm-check-not-empty, \
     sm._this $(sm._this).name \
     sm.var.source \
@@ -203,6 +177,7 @@ $(eval #
 
   sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.flags, compile.$(sm.var.source.lang), $($(sm._this).compile.flags.infile))
   ifdef sm.temp._flagsfile
+    $(sm.var.intermediate) $(sm.var.intermediate).d : $$(sm.temp._flagsfile)
     sm.var.flags := @$$(sm.temp._flagsfile)
   endif
 
@@ -210,34 +185,36 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
-  sm.var.intermediate := $(subst ..,_,$($(sm._this).out.inter)/$(sm.var.source).o)
+  sm.var.command := $$(sm.tool.clang0.command.compile.$(sm.var.source.lang))
+  sm.var.command.d := $$(sm.tool.clang0.command.compile.$(sm.var.source.lang).d)
  )\
 $(eval #
   $(sm._this).intermediates += $(sm.var.intermediate)
+  $(sm.var.intermediate) : $(sm.var.source.computed)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.wrap-rule-commands, gcc: $(sm.var.source.lang), $(sm.var.command))
 
-  $(sm.var.intermediate): sm.var.flags := $(sm.var.flags)
-  $(sm.var.intermediate): sm.var.source := $(sm.var.source.computed)
-  $(sm.var.intermediate): $(sm.temp._flagsfile) $(sm.var.source.computed)
-
+  ifdef sm.var.command.d
   ifeq ($(call sm-true,$($(sm._this).gen_deps)),true)
     -include $(sm.var.intermediate).d
-    $(sm.var.intermediate).d: sm.var.flags := $(sm.var.flags)
-    $(sm.var.intermediate).d: sm.var.source := $(sm.var.source.computed)
-    $(sm.var.intermediate).d: $(sm.temp._flagsfile) $(sm.var.source.computed)
+    $(sm.var.intermediate).d : $(sm.var.source.computed)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$(call sm.fun.wrap-rule-commands, gcc: $(sm.var.source.lang), $(sm.var.command.d))
+  endif
   endif
  )
-endef #sm.tool.clang.transform-source-bin
+endef #sm.tool.clang0.transform-source-bin
 
 ##
 ##
-define sm.tool.clang.transform-intermediates
-$(foreach _, $(sm.tool.clang.args.types), \
-  $(call sm.tool.clang.transform-intermediates-$(sm.tool.clang.transform.$_)))
-endef #sm.tool.clang.transform-intermediates
+define sm.tool.clang0.transform-intermediates
+$(foreach _, $(sm.tool.clang0.args.types), \
+  $(call sm.tool.clang0.transform-intermediates-$(sm.tool.clang0.transform.$_)))
+endef #sm.tool.clang0.transform-intermediates
 
 ##
 ##
-define sm.tool.clang.transform-intermediates-h
+define sm.tool.clang0.transform-intermediates-h
 $(eval #
   sm.temp._headervars := $(filter $(sm._this).headers%,$(.VARIABLES))
   sm.temp._pubheaders :=
@@ -265,11 +242,11 @@ $(eval #
   headers-$($(sm._this).name) : $(sm.temp._pubheaders)
   $(sm._this).targets += headers-$($(sm._this).name)
  )
-endef #sm.tool.clang.transform-intermediates-h
+endef #sm.tool.clang0.transform-intermediates-h
 
 ##
 ##
-define sm.tool.clang.transform-intermediates-bin
+define sm.tool.clang0.transform-intermediates-bin
 $(call sm-check-not-empty, sm._this \
   $(sm._this).name \
   $(sm._this).lang \
@@ -335,9 +312,9 @@ $(eval #
   endif
 
   ifeq ($($(sm._this).type),static)
-    sm.var.command := $(sm.tool.clang.command.archive)
+    sm.var.command := $(sm.tool.clang0.command.archive)
   else
-    sm.var.command := $(sm.tool.clang.command.link.$($(sm._this).lang))
+    sm.var.command := $(sm.tool.clang0.command.link.$($(sm._this).lang))
   endif
  )\
 $(eval #
@@ -353,4 +330,4 @@ $(eval #
 	$(call sm.fun.wrap-rule-commands, gcc, ln -sf $(sm.top)/$(sm.var.target) $(sm.var.target.link))
   endif
  )
-endef #sm.tool.clang.transform-intermediates-bin
+endef #sm.tool.clang0.transform-intermediates-bin

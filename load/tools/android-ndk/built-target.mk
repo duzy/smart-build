@@ -1,6 +1,7 @@
 #
 #
 ifeq ($(filter shared,$($(sm._this).toolset.args)),shared)
+  .PHONY: ndk-libs
   ndk-libs: ndk-libs-$($(sm._this).name)
 
   define android-ndk-prepare-libs

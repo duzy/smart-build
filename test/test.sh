@@ -1,3 +1,4 @@
+#!/bin/bash
 function test-log
 {
     true #echo "$1:$2: $3"
@@ -80,6 +81,13 @@ function test-case
                         [[ -f pre.sh ]] && {
                             . pre.sh
                         }
+                        # [[ -f $*.pre ]] && {
+                        #     PRE=
+                        #     . $*.pre
+                        #     [[ "x$PREx" != "xx" ]] && {
+                        #         echo "${BASH_SOURCE}:${LINENO}: TODO: $PRE"
+                        #     }
+                        # }
                         rm -rf out ; smart
                         [[ -f post.sh ]] && {
                             . post.sh

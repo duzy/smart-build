@@ -1,1 +1,1 @@
-PRE := $(LOCAL)/shared/smart.mk
+PRE=$TOP/shared/smart.mk

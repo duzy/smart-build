@@ -14,6 +14,6 @@ D=`dirname $BASH_SOURCE`
     exit -1
 }
 
-(. pre.sh)
-smart
-(. post.sh)
+[[ -f pre.sh  ]] && (. pre.sh)
+smart $@
+[[ -f post.sh ]] && (. post.sh)

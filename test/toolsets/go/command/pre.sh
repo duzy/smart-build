@@ -1,2 +1,2 @@
 # -*- bash -*-
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/toolsets/go/main.go
+test-check-file ${BASH_SOURCE}:${LINENO} $TOP/toolsets/go/../main.go

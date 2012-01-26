@@ -202,27 +202,20 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
-  sm.var.prefix := $($(sm._this).prefix:%/=%)
-  sm.var.intermediate := $($(sm._this).out.inter)/$(sm.var.source).o
-  ifdef sm.var.prefix
-    sm.var.prefix := $$(sm.var.prefix)/
-  else
-    #$$(warning info: no module prefix ("$($(sm._this).name)"))
-    sm.var.prefix := $($(sm._this).dir:%/=%)/
-  endif
+  sm.var.intermediate := $(subst ..,_,$($(sm._this).out.inter)/$(sm.var.source).o)
  )\
 $(eval #
   $(sm._this).intermediates += $(sm.var.intermediate)
 
   $(sm.var.intermediate): sm.var.flags := $(sm.var.flags)
-  $(sm.var.intermediate): sm.var.source := $(sm.var.prefix)$(sm.var.source)
-  $(sm.var.intermediate): $(sm.temp._flagsfile) $(sm.var.prefix)$(sm.var.source)
+  $(sm.var.intermediate): sm.var.source := $(sm.var.source.computed)
+  $(sm.var.intermediate): $(sm.temp._flagsfile) $(sm.var.source.computed)
 
   ifeq ($(call sm-true,$($(sm._this).gen_deps)),true)
     -include $(sm.var.intermediate).d
     $(sm.var.intermediate).d: sm.var.flags := $(sm.var.flags)
-    $(sm.var.intermediate).d: sm.var.source := $(sm.var.prefix)$(sm.var.source)
-    $(sm.var.intermediate).d: $(sm.temp._flagsfile) $(sm.var.prefix)$(sm.var.source)
+    $(sm.var.intermediate).d: sm.var.source := $(sm.var.source.computed)
+    $(sm.var.intermediate).d: $(sm.temp._flagsfile) $(sm.var.source.computed)
   endif
  )
 endef #sm.tool.android-ndk.transform-source-bin

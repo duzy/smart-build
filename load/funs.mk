@@ -421,7 +421,7 @@ $(if $(call equal,$($(sm._this).type),depends), $(eval \
     $($(sm._this).clean-steps)
 	@echo "smart: \"$$(@:clean-%=%)\" is clean"
 
-  sm.rules.phony.* += \
+  .PHONY: \
     clean-$($(sm._this).name) \
     clean-$($(sm._this).name)-flags \
     clean-$($(sm._this).name)-targets \
@@ -487,6 +487,8 @@ $(foreach _, $(sm.temp._langs),\
          #$(sm.temp._ls) += $_
          $(sm.temp._ls) := $$(strip $$($(sm.temp._ls)) $_)
          sm.tool.$(sm.temp._name).lang.$_ := $(sm.temp._ls:sm.tool.$(sm.temp._name).suffix.%=%)
+
+         %.$(_:.%=%):: ; @echo "smart: 0: missing \"$$@\"" && false
         )\
       ,$(if $(_:.%:=),\
             $(eval # language name: "c:", "c++:", "asm:", etc.

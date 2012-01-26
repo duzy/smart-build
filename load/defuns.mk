@@ -334,7 +334,11 @@ define sm-use
  $(no-info smart: use "$(sm.temp._name)" for "$(sm.this.name)"..)\
  $(eval \
    ifneq ($($(sm._that).name),$(sm.temp._name))
-     $$(error smart: module "$(sm.temp._name)" is misconfigured as "$($(sm._that).name)")
+     ifdef $(sm._that).name
+       $$(error smart: module "$(sm.temp._name)" is misconfigured: "$($(sm._that).name)")
+     else
+       $$(error smart: module "$(sm.temp._name)" is missing)
+     endif
    endif
 
    ifeq ($(filter $(sm.temp._name),$($(sm._this).using_list)),$(sm.temp._name))

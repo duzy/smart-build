@@ -66,7 +66,9 @@ endif
 # .PRECIOUS: foo bar
 # .DELETE_ON_ERROR: foo bar
 
-.PHONY: all install clean test $(sm.rules.phony.*)
+%:: ; @echo "smart: 0: what about \"$@\"???" && false
+
+.PHONY: all install clean test
 ifdef sm.goals
   all: $(sm.goals)
   install: $(sm.goals:goal-%=install-%)

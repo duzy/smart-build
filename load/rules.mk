@@ -31,12 +31,6 @@ $(sm._this).targets :=
 sm.var.tool := sm.tool.$($(sm._this).toolset)
 sm.var.langs := $($(sm.var.tool).langs)
 
-# sm.var.temp._ := $($(sm._this).dir:$(sm.top)%=%)
-# sm.var.temp._ := $(sm.var.temp._:%.=%)
-# sm.var.temp._ := $(sm.var.temp._:/%=%)
-# sm.var.temp._ := $(if $(sm.var.temp._),$(sm.var.temp._)/)
-# $(sm._this).prefix := $(sm.var.temp._)
-
 #sm.var.action := $(sm.var.action.$($(sm._this).type))
 #$(call sm-check-not-empty, sm.var.action)
 
@@ -84,6 +78,11 @@ endif #$(sm.var.temp._should_make_targets) == true
 $(sm._this).depends := $(strip $($(sm._this).depends))
 $(sm._this).targets := $(strip $($(sm._this).targets))
 $(sm._this).documents := $(strip $($(sm._this).documents))
+
+.PHONY: \
+  goal-$($(sm._this).name)\
+  doc-$($(sm._this).name)\
+  install-$($(sm._this).name)\
 
 goal-$($(sm._this).name): $($(sm._this).depends) $($(sm._this).targets)
 doc-$($(sm._this).name): $($(sm._this).documents)

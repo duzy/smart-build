@@ -59,7 +59,7 @@ sm.tool.gcc.flags.link.type.exe :=
 ##
 ## Compile Commands
 define sm.tool.gcc.command.compile.c
-gcc $(sm.var.flags) -o $@ -c $(sm.var.source)
+gcc -o $@ $(sm.var.flags) -c $(sm.var.source)
 endef #sm.tool.gcc.command.compile.c
 
 define sm.tool.gcc.command.compile.c.d
@@ -67,7 +67,7 @@ gcc -MM -MT $(@:%.d=%) $(sm.var.flags) $(sm.var.source) > $@
 endef #sm.tool.gcc.command.compile.c.d
 
 define sm.tool.gcc.command.compile.c++
-g++ $(sm.var.flags) -o $@ -c $(sm.var.source)
+g++ -o $@ $(sm.var.flags) -c $(sm.var.source)
 endef #sm.tool.gcc.command.compile.c++
 
 define sm.tool.gcc.command.compile.c++.d
@@ -75,7 +75,7 @@ g++ -MM -MT $(@:%.d=%) $(sm.var.flags) $(sm.var.source) > $@
 endef #sm.tool.gcc.command.compile.c++.d
 
 define sm.tool.gcc.command.compile.go
-gccgo $(sm.var.flags) -o $@ -c $(sm.var.source)
+gccgo -o $@ $(sm.var.flags) -c $(sm.var.source)
 endef #sm.tool.gcc.command.compile.go
 
 define sm.tool.gcc.command.compile.go.d
@@ -83,7 +83,7 @@ gccgo -MM -MT $(@:%.d=%) $(sm.var.flags) $(sm.var.source) > $@
 endef #sm.tool.gcc.command.compile.go.d
 
 define sm.tool.gcc.command.compile.asm
-gcc $(sm.var.flags) -o $@ -c $(sm.var.source)
+gcc -o $@ $(sm.var.flags) -c $(sm.var.source)
 endef #sm.tool.gcc.command.compile.asm
 
 define sm.tool.gcc.compile
@@ -108,19 +108,19 @@ endef #sm.tool.gcc.compile.d
 ##
 ##
 define sm.tool.gcc.command.link.c
-gcc $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+gcc -o $(sm.var.target) $(sm.var.flags) $(sm.var.intermediates) $(sm.var.loadlibs)
 endef #sm.tool.gcc.command.link.c
 
 define sm.tool.gcc.command.link.c++
-g++ $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+g++ -o $(sm.var.target) $(sm.var.flags) $(sm.var.intermediates) $(sm.var.loadlibs)
 endef #sm.tool.gcc.command.link.c++
 
 define sm.tool.gcc.command.link.go
-gccgo $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+gccgo -o $(sm.var.target) $(sm.var.flags) $(sm.var.intermediates) $(sm.var.loadlibs)
 endef #sm.tool.gcc.command.link.go
 
 define sm.tool.gcc.command.link.asm
-gcc $(sm.var.flags) -o $(sm.var.target) $(sm.var.intermediates) $(sm.var.loadlibs)
+gcc -o $(sm.var.target) $(sm.var.flags) $(sm.var.intermediates) $(sm.var.loadlibs)
 endef #sm.tool.gcc.command.link.asm
 
 ##
@@ -154,13 +154,13 @@ $(eval \
 $(eval #
   $(sm.out.inter)/$(sm.this.name)/%.o:
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	@[[ -f $$(sm.var.source) ]] || (echo "$(sm.this.makefile):0: \"$$(sm.var.source)\" absent" && rm -f $$@ && false)
 	$$(or $$(sm.tool.gcc.compile),echo "error:0: No command for \"$$@\"" && false)
 
   $(sm.out.inter)/$(sm.this.name)/%.o.d:
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	@[[ -f $$(sm.var.source) ]] &&\
-	$$(or $$(sm.tool.gcc.compile.d),echo "smart:0:info: no command for \"$$@\"")\
-	|| (echo "$(sm.this.makefile):0: \"$$(sm.var.source)\" absent" && rm -f $$@ && false)
+	@[[ -f $$(sm.var.source) ]] || (echo "$(sm.this.makefile):0: \"$$(sm.var.source)\" absent" && rm -f $$@ && false)
+	$$(or $$(sm.tool.gcc.compile.d),echo "smart:0:info: no command for \"$$@\"")
 
   $(sm.out)/include/%.h:
 	@( echo smart: header: $$@ ) &&\
@@ -232,13 +232,7 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
-  sm.var.prefix := $($(sm._this).prefix:%/=%)
-  sm.var.intermediate := $($(sm._this).out.inter)/$(sm.var.source).o
-  ifdef sm.var.prefix
-    sm.var.prefix := $$(sm.var.prefix)/
-  else
-    $$(error no module prefix ("$($(sm._this).name)"))
-  endif
+  sm.var.intermediate := $(subst ..,_,$($(sm._this).out.inter)/$(sm.var.source).o)
  )\
 $(eval #
   $(sm._this).intermediates += $(sm.var.intermediate)
@@ -246,14 +240,14 @@ $(eval #
   ## Draw the dependency on the source to make it complain if the source
   ## is absent:
   $(sm.var.intermediate): sm.var.flags := $(sm.var.flags)
-  $(sm.var.intermediate): sm.var.source := $(sm.var.prefix)$(sm.var.source)
-  $(sm.var.intermediate): $(sm.temp._flagsfile) $(sm.var.prefix)$(sm.var.source)
+  $(sm.var.intermediate): sm.var.source := $(sm.var.source.computed)
+  $(sm.var.intermediate): $(sm.temp._flagsfile) $(sm.var.source.computed)
 
   ifeq ($(call sm-true,$($(sm._this).gen_deps)),true)
     -include $(sm.var.intermediate).d
     $(sm.var.intermediate).d: sm.var.flags := $(sm.var.flags)
-    $(sm.var.intermediate).d: sm.var.source := $(sm.var.prefix)$(sm.var.source)
-    $(sm.var.intermediate).d: $(sm.temp._flagsfile) $(sm.var.prefix)$(sm.var.source)
+    $(sm.var.intermediate).d: sm.var.source := $(sm.var.source.computed)
+    $(sm.var.intermediate).d: $(sm.temp._flagsfile) $(sm.var.source.computed)
   endif
  )
 endef #sm.tool.gcc.transform-source-c
