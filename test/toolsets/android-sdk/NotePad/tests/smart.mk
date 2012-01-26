@@ -8,6 +8,8 @@ $(call sm-new-module, android-sdk-notepadtests, android-sdk: apk PLATFORM=androi
 $(call test-check-value-of,sm.this.sources,src/com/example/android/notepad/NotePadTest.java)
 
 $(warning info: sources: $(sm.this.sources))
-sm.this.sources += $(wildcard ../NotePad/src/com/example/android/notepad/*.java)
+sm.this.sources += $(wildcard ../src/com/example/android/notepad/*.java)
+sm.this.sources += ../out/android-sdk/debug/android-sdk-notepad/res/com/example/android/notepad/R.java
+$(warning info: sources: $(sm.this.sources))
 
 $(sm-build-this)
