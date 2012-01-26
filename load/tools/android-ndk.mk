@@ -8,6 +8,12 @@
 
 $(call sm-check-origin, sm.tool.android-ndk, undefined)
 
+$(call sm.fun.new-toolset, android-ndk,\
+    c++: .o: .cpp .c++ .cc .CC .C\
+    c:   .o: .c\
+    asm: .o: .s .S\
+ )
+
 android.tool.dir := $(call sm-this-dir)
 
 #ANDROID_NDK_PATH := $(wildcard ~/open/android-ndk-r6)
@@ -24,13 +30,6 @@ sm.tool.android-ndk.args :=
 #include $(android.tool.dir)/android-ndk/imports.mk
 ################################################## Android NDK setup finished
 
-sm.tool.android-ndk.langs := c++ c asm
-sm.tool.android-ndk.suffix.c := .c
-sm.tool.android-ndk.suffix.c++ := .cpp .c++ .cc .CC .C
-sm.tool.android-ndk.suffix.asm := .s .S
-sm.tool.android-ndk.suffix.intermediate.c := .o
-sm.tool.android-ndk.suffix.intermediate.c++ := .o
-sm.tool.android-ndk.suffix.intermediate.asm := .o
 sm.tool.android-ndk.suffix.target.win32.static = $(error untested for win32)
 sm.tool.android-ndk.suffix.target.win32.shared = $(error untested for win32)
 sm.tool.android-ndk.suffix.target.win32.exe = $(error untested for win32)
@@ -48,112 +47,53 @@ sm.tool.android-ndk.flags.link.variant.release := -O3
 ######################################################################
 
 ##
-##
-define sm.tool.android-ndk.link
-$(eval \
-  # these vars is used in android-ndk-r6b, android-ndk-r7, see build-binary.mk
-  PRIVATE_LD := $(TARGET_LD)
-  PRIVATE_LDFLAGS := $(TARGET_LDFLAGS) $(LOCAL_LDFLAGS)
-  PRIVATE_LDLIBS  := $(LOCAL_LDLIBS) $(TARGET_LDLIBS)
-  PRIVATE_LIBGCC := $(TARGET_LIBGCC)
-  PRIVATE_CXX := $(TARGET_CXX)
-  PRIVATE_CC := $(TARGET_CC)
-  PRIVATE_SYSROOT := $(SYSROOT)
-  PRIVATE_NAME := $(notdir $(sm.var.target))
-
-  PRIVATE_OBJECTS := $(sm.var.intermediates)
-  PRIVATE_WHOLE_STATIC_LIBRARIES :=
-  PRIVATE_STATIC_LIBRARIES :=
-  PRIVATE_SHARED_LIBRARIES :=
-  PRIVATE_LDFLAGS := $(sm.var.flags)
-  PRIVATE_LDLIBS := $(sm.var.loadlibs)
-  @ := $(sm.var.target)
-  ^ := $(sm.var.intermediates)
-  < := $(firstword $(sm.var.intermediates))
-
-  sm.temp._class := executable
-  ifneq ($(filter -shared,$(sm.var.flags)),)
-    sm.temp._class := shared-library
-    PRIVATE_LDFLAGS += -Wl,-no-undefined
-  endif # is shared library
-
-  ifndef cmd-build-$$(sm.temp._class)
-    $$(error android-ndk: "cmd-build-$$(sm.temp._class)" is undefined)
-  endif
- )$(cmd-build-$(sm.temp._class))
-endef #sm.tool.android-ndk.link
-
-#$(info $(value cmd-build-static-library))
-define sm.tool.android-ndk.archive
-$(eval \
-  # PRIVATE_AR is used in android-ndk-r6b, android-ndk-r7, see build-binary.mk
-  PRIVATE_AR := $(TARGET_AR) $(TARGET_ARFLAGS)
-  PRIVATE_OBJECTS := $(sm.var.intermediates)
-  @ := $(sm.var.target)
-  ^ := $(sm.var.intermediates)
-  < := $(firstword $(sm.var.intermediates))
-
-  ifndef cmd-build-static-library
-    $$(error android-ndk: "cmd-build-static-library" is undefined)
-  endif
- )$(cmd-build-static-library)
-endef #sm.tool.android-ndk.archive
-
-######################################################################
-
-##
 ## Compile Commands
 define sm.tool.android-ndk.command.compile.c
-$(TOOLCHAIN_PREFIX)gcc $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+$(TOOLCHAIN_PREFIX)gcc $(sm.var.flags) -o $@ -c $(sm.var.source)
 endef #sm.tool.android-ndk.command.compile.c
 
 define sm.tool.android-ndk.command.compile.c.d
-$(TOOLCHAIN_PREFIX)gcc -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+$(TOOLCHAIN_PREFIX)gcc -MM -MT $@ $(sm.var.flags) $(sm.var.source) > $@
 endef #sm.tool.android-ndk.command.compile.c.d
 
 define sm.tool.android-ndk.command.compile.c++
-$(TOOLCHAIN_PREFIX)g++ $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+$(TOOLCHAIN_PREFIX)g++ $(sm.var.flags) -o $@ -c $(sm.var.source)
 endef #sm.tool.android-ndk.command.compile.c++
 
 define sm.tool.android-ndk.command.compile.c++.d
-$(TOOLCHAIN_PREFIX)g++ -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+$(TOOLCHAIN_PREFIX)g++ -MM -MT $@ $(sm.var.flags) $(sm.var.source) > $@
 endef #sm.tool.android-ndk.command.compile.c++.d
 
 define sm.tool.android-ndk.command.compile.go
-$(TOOLCHAIN_PREFIX)gccgo $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+$(TOOLCHAIN_PREFIX)gccgo $(sm.var.flags) -o $@ -c $(sm.var.source)
 endef #sm.tool.android-ndk.command.compile.go
 
 define sm.tool.android-ndk.command.compile.go.d
-$(TOOLCHAIN_PREFIX)gccgo -MM -MT $(sm.var.intermediate) $(sm.var.flags) $(sm.var.source.computed) > $(sm.var.intermediate).d
+$(TOOLCHAIN_PREFIX)gccgo -MM -MT $@ $(sm.var.flags) $(sm.var.source) > $@
 endef #sm.tool.android-ndk.command.compile.go.d
 
 define sm.tool.android-ndk.command.compile.asm
-$(TOOLCHAIN_PREFIX)gcc $(sm.var.flags) -o $(sm.var.intermediate) -c $(sm.var.source.computed)
+$(TOOLCHAIN_PREFIX)gcc $(sm.var.flags) -o $@ -c $(sm.var.source)
 endef #sm.tool.android-ndk.command.compile.asm
 
-##
-##
-define sm.tool.android-ndk.command.link.c
-$(sm.tool.android-ndk.link)
-endef #sm.tool.android-ndk.command.link.c
+define sm.tool.android-ndk.compile
+$(eval #
+  ifndef sm.tool.android-ndk.lang.$(suffix $*)
+    $$(error smart: "smart: gcc2: unknown source: $(suffix $*)")
+  endif
+  ifndef sm.tool.android-ndk.command.compile.$(sm.tool.android-ndk.lang.$(suffix $*))
+    $$(error smart: "sm.tool.android-ndk.command.compile.$(sm.tool.gcc.lang.$(suffix $*))" undefined)
+  endif
+ )$(sm.tool.android-ndk.command.compile.$(sm.tool.android-ndk.lang.$(suffix $*)))
+endef #sm.tool.android-ndk.compile
 
-define sm.tool.android-ndk.command.link.c++
-$(sm.tool.android-ndk.link)
-endef #sm.tool.android-ndk.command.link.c++
-
-define sm.tool.android-ndk.command.link.go
-$(sm.tool.android-ndk.link)
-endef #sm.tool.android-ndk.command.link.go
-
-define sm.tool.android-ndk.command.link.asm
-$(sm.tool.android-ndk.link)
-endef #sm.tool.android-ndk.command.link.asm
-
-##
-##
-define sm.tool.android-ndk.command.archive
-$(sm.tool.android-ndk.archive)
-endef #sm.tool.android-ndk.command.archive
+define sm.tool.android-ndk.compile.d
+$(eval #
+  ifndef sm.tool.android-ndk.lang.$(suffix $*)
+    $$(error smart: "smart: gcc2: unknown source: $(suffix $*)")
+  endif
+ )$(sm.tool.android-ndk.command.compile.$(sm.tool.android-ndk.lang.$(suffix $*)).d)
+endef #sm.tool.android-ndk.compile.d
 
 ######################################################################
 
@@ -180,8 +120,25 @@ $(eval \
    sm.this.link.flags += $(TARGET_LD_FLAGS)
    sm.this.libdirs :=
    sm.this.libs :=
- )
+ )$(call sm.tool.android-ndk.compile-pattern-rules,$(sm.this.name))
 endef #sm.tool.android-ndk.config-module
+
+define sm.tool.android-ndk.compile-pattern-rules
+$(eval #
+  sm.temp._name := $(strip $1)
+ )\
+$(eval #
+  $(sm.out.inter)/$(sm.temp._name)/%.o:
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	$$(or $$(sm.tool.android-ndk.compile),echo "error:0: No command for \"$$@\"" && false)
+
+  $(sm.out.inter)/$(sm.temp._name)/%.o.d:
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	@[[ -f $$(sm.var.source) ]] || (echo "smart:0: no source \"$$(sm.var.source)\"" && false)
+	$$(or $$(sm.tool.android-ndk.compile.d),echo "smart:0:info: no command for \"$$@\"")\
+	|| (echo "$(sm.this.makefile):0: \"$$(sm.var.source)\" absent" && rm -f $$@ && false)
+ )
+endef #sm.tool.android-ndk.compile-pattern-rules
 
 define sm.tool.android-ndk.args.types
 $(filter-out ABI=% PLATFORM=%, $($(sm._this).toolset.args))
@@ -214,10 +171,8 @@ define sm.tool.android-ndk.transform-source-bin
 $(call sm-check-not-empty, \
     sm._this $(sm._this).name \
     sm.var.source \
-    sm.var.source.computed \
     sm.var.source.lang \
     sm.var.source.suffix \
-    sm.var.intermediate \
  , android-ndk: strange parameters for "$(sm.var.source)" of "$($(sm._this).name)")\
 $(eval #
   sm.var.flags :=
@@ -240,7 +195,6 @@ $(eval #
 
   sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.flags, compile.$(sm.var.source.lang), $($(sm._this).compile.flags.infile))
   ifdef sm.temp._flagsfile
-    $(sm.var.intermediate) $(sm.var.intermediate).d : $$(sm.temp._flagsfile)
     sm.var.flags := @$$(sm.temp._flagsfile)
   endif
 
@@ -248,22 +202,27 @@ $(eval #
 
   $$(call sm-remove-duplicates,sm.var.flags)
 
-  sm.var.command := $$(sm.tool.android-ndk.command.compile.$(sm.var.source.lang))
-  sm.var.command.d := $$(sm.tool.android-ndk.command.compile.$(sm.var.source.lang).d)
+  sm.var.prefix := $($(sm._this).prefix:%/=%)
+  sm.var.intermediate := $($(sm._this).out.inter)/$(sm.var.source).o
+  ifdef sm.var.prefix
+    sm.var.prefix := $$(sm.var.prefix)/
+  else
+    #$$(warning info: no module prefix ("$($(sm._this).name)"))
+    sm.var.prefix := $($(sm._this).dir:%/=%)/
+  endif
  )\
 $(eval #
   $(sm._this).intermediates += $(sm.var.intermediate)
-  $(sm.var.intermediate) : $(sm.var.source.computed)
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.wrap-rule-commands, android-ndk: $(sm.var.source.lang), $(sm.var.command))
 
-  ifdef sm.var.command.d
+  $(sm.var.intermediate): sm.var.flags := $(sm.var.flags)
+  $(sm.var.intermediate): sm.var.source := $(sm.var.prefix)$(sm.var.source)
+  $(sm.var.intermediate): $(sm.temp._flagsfile) $(sm.var.prefix)$(sm.var.source)
+
   ifeq ($(call sm-true,$($(sm._this).gen_deps)),true)
     -include $(sm.var.intermediate).d
-    $(sm.var.intermediate).d : $(sm.var.source.computed)
-	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.wrap-rule-commands, android-ndk: $(sm.var.source.lang), $(sm.var.command.d))
-  endif
+    $(sm.var.intermediate).d: sm.var.flags := $(sm.var.flags)
+    $(sm.var.intermediate).d: sm.var.source := $(sm.var.prefix)$(sm.var.source)
+    $(sm.var.intermediate).d: $(sm.temp._flagsfile) $(sm.var.prefix)$(sm.var.source)
   endif
  )
 endef #sm.tool.android-ndk.transform-source-bin
@@ -294,20 +253,25 @@ $(eval #
   sm.var.intermediates := $($(sm._this).intermediates)
   sm.var.target :=
   sm.var.flags :=
+  sm.temp._class :=
   ifeq ($($(sm._this).type),static)
+    sm.temp._class := static-library
     sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.lib))/lib$($(sm._this).name)$($(sm._this).suffix)
     sm.var.flags += $($(sm._this).used.archive.flags)
     sm.var.flags += $($(sm._this).used.archive.flags.$($(sm._this).lang))
     sm.var.flags += $($(sm._this).archive.flags)
     sm.var.flags += $($(sm._this).archive.flags.$($(sm._this).lang))
   else
+    sm.temp._class := executable
     sm.var.target := $(patsubst $(sm.top)/%,%,$(sm.out.bin))/$($(sm._this).name)$($(sm._this).suffix)
     sm.var.flags += $($(sm._this).used.link.flags)
     sm.var.flags += $($(sm._this).used.link.flags.$($(sm._this).lang))
     sm.var.flags += $($(sm._this).link.flags)
     sm.var.flags += $($(sm._this).link.flags.$($(sm._this).lang))
     ifeq ($($(sm._this).type),shared)
+      sm.temp._class := shared-library
       sm.var.flags := -shared $$(filter-out -shared,$$(sm.var.flags))
+      sm.var.flags += -Wl,-no-undefined
     endif
   endif
   sm.var.loadlibs :=
@@ -345,17 +309,33 @@ $(eval #
     $(sm.var.intermediate) : $$(sm.temp._flagsfile)
     sm.var.loadlibs := @$$(sm.temp._flagsfile)
   endif
-
-  ifeq ($($(sm._this).type),static)
-    sm.var.command := $(sm.tool.android-ndk.command.archive)
-  else
-    sm.var.command := $(sm.tool.android-ndk.command.link.$($(sm._this).lang))
-  endif
  )\
 $(eval #
-  $(sm._this).targets += $$(sm.var.target)
-  $(sm.var.target) : $(sm.var.intermediates.preq)
+  ifndef cmd-build-$$(sm.temp._class)
+    $$(error android-ndk: "cmd-build-$$(sm.temp._class)" is undefined)
+  endif
+  $(sm._this).targets += $(sm.var.target)
+  ifeq ($$(sm.temp._class),static-library)
+    $(sm.var.target): PRIVATE_AR := $(TARGET_AR) $(TARGET_ARFLAGS)
+    $(sm.var.target): PRIVATE_OBJECTS := $(sm.var.intermediates)
+  else
+    $(sm.var.target): PRIVATE_LD := $(TARGET_LD)
+    $(sm.var.target): PRIVATE_LDFLAGS := $(TARGET_LDFLAGS) $(LOCAL_LDFLAGS)
+    $(sm.var.target): PRIVATE_LDLIBS  := $(LOCAL_LDLIBS) $(TARGET_LDLIBS)
+    $(sm.var.target): PRIVATE_LIBGCC := $(TARGET_LIBGCC)
+    $(sm.var.target): PRIVATE_CXX := $(TARGET_CXX)
+    $(sm.var.target): PRIVATE_CC := $(TARGET_CC)
+    $(sm.var.target): PRIVATE_SYSROOT := $(SYSROOT)
+    $(sm.var.target): PRIVATE_NAME := $(notdir $(sm.var.target))
+    $(sm.var.target): PRIVATE_OBJECTS := $(sm.var.intermediates)
+    $(sm.var.target): PRIVATE_WHOLE_STATIC_LIBRARIES :=
+    $(sm.var.target): PRIVATE_STATIC_LIBRARIES :=
+    $(sm.var.target): PRIVATE_SHARED_LIBRARIES :=
+    $(sm.var.target): PRIVATE_LDFLAGS := $(sm.var.flags)
+    $(sm.var.target): PRIVATE_LDLIBS := $(sm.var.loadlibs)
+  endif
+  $(sm.var.target): $(sm.var.intermediates.preq)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
-	$(call sm.fun.wrap-rule-commands, gcc, $(sm.var.command))
+	$$(cmd-build-$(sm.temp._class))
  )
 endef #sm.tool.android-ndk.transform-intermediates-bin

@@ -70,6 +70,7 @@ $(eval \
   $(sm._this).type := $(sm.temp._t_$($(sm.temp._ndk_m).MODULE_CLASS))
   $(sm._this).name := $($(sm.temp._ndk_m).MODULE)
   $(sm._this).suffix := $(suffix $($(sm.temp._ndk_m).MODULE_FILENAME))
+  $(sm._this).prefix := #$($(sm.temp._ndk_m).PATH:$(sm.top)/%=%)
   $(sm._this).dir := $($(sm.temp._ndk_m).PATH)
   $(sm._this).dirs :=
   $(sm._this).makefile := $($(sm.temp._ndk_m).MAKEFILE)
@@ -88,6 +89,7 @@ $(eval \
   $(sm._this).sources := $($(sm.temp._ndk_m).SRC_FILES)
   $(sm._this).verbose :=
 
+  $$(call sm.tool.android-ndk.compile-pattern-rules, $$($(sm._this).name))
   include $(sm.dir.buildsys)/rules.mk
 
   sm.this.depends += goal-$($(sm.temp._ndk_m).MODULE)

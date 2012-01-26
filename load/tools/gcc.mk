@@ -92,7 +92,7 @@ $(eval #
     $$(error smart: "smart: gcc2: unknown source: $(suffix $*)")
   endif
   ifndef sm.tool.gcc.command.compile.$(sm.tool.gcc.lang.$(suffix $*))
-    $$(error smart: "sm.tool.gcc.command.compilesm.tool.gcc.command.compile.$(sm.tool.gcc.lang.$(suffix $*))" undefined)
+    $$(error smart: "sm.tool.gcc.command.compile.$(sm.tool.gcc.lang.$(suffix $*))" undefined)
   endif
  )$(sm.tool.gcc.command.compile.$(sm.tool.gcc.lang.$(suffix $*)))
 endef #sm.tool.gcc.compile
@@ -234,8 +234,10 @@ $(eval #
 
   sm.var.prefix := $($(sm._this).prefix:%/=%)
   sm.var.intermediate := $($(sm._this).out.inter)/$(sm.var.source).o
-  ifndef sm.var.prefix
-    $$(error no module prefix: "$($(sm._this).prefix)")
+  ifdef sm.var.prefix
+    sm.var.prefix := $$(sm.var.prefix)/
+  else
+    $$(error no module prefix ("$($(sm._this).name)"))
   endif
  )\
 $(eval #
@@ -244,14 +246,14 @@ $(eval #
   ## Draw the dependency on the source to make it complain if the source
   ## is absent:
   $(sm.var.intermediate): sm.var.flags := $(sm.var.flags)
-  $(sm.var.intermediate): sm.var.source := $(sm.var.prefix)/$(sm.var.source)
-  $(sm.var.intermediate): $(sm.temp._flagsfile) $(sm.var.prefix)/$(sm.var.source)
+  $(sm.var.intermediate): sm.var.source := $(sm.var.prefix)$(sm.var.source)
+  $(sm.var.intermediate): $(sm.temp._flagsfile) $(sm.var.prefix)$(sm.var.source)
 
   ifeq ($(call sm-true,$($(sm._this).gen_deps)),true)
     -include $(sm.var.intermediate).d
     $(sm.var.intermediate).d: sm.var.flags := $(sm.var.flags)
-    $(sm.var.intermediate).d: sm.var.source := $(sm.var.prefix)/$(sm.var.source)
-    $(sm.var.intermediate).d: $(sm.temp._flagsfile) $(sm.var.prefix)/$(sm.var.source)
+    $(sm.var.intermediate).d: sm.var.source := $(sm.var.prefix)$(sm.var.source)
+    $(sm.var.intermediate).d: $(sm.temp._flagsfile) $(sm.var.prefix)$(sm.var.source)
   endif
  )
 endef #sm.tool.gcc.transform-source-c
