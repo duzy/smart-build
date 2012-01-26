@@ -231,8 +231,6 @@ $(eval #
   sm.var.flags += $(strip $($(sm._this).compile.flags-$(sm.var.source)))
 
   $$(call sm-remove-duplicates,sm.var.flags)
-
-  sm.var.intermediate := $(subst ..,_,$($(sm._this).out.inter)/$(sm.var.source).o)
  )\
 $(eval #
   $(sm._this).intermediates += $(sm.var.intermediate)

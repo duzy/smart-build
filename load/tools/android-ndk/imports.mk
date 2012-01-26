@@ -86,9 +86,9 @@ $(eval \
   $(sm._this).export.link.flags :=
   $(sm._this).export.libs := $($(sm.temp._ndk_m).MODULE) $($(sm.temp._ndk_m).EXPORT_LDLIBS)
   $(sm._this).export.libdirs := $(sm.out.lib)
-  $(sm._this).sources := $($(sm.temp._ndk_m).SRC_FILES)
+  $(sm._this).sources.android := $($(sm.temp._ndk_m).SRC_FILES)
   $(sm._this).verbose :=
-
+$$(info sources: $($(sm.temp._ndk_m).PATH): $($(sm.temp._ndk_m).SRC_FILES))
   $$(call sm.tool.android-ndk.compile-pattern-rules, $$($(sm._this).name))
   include $(sm.dir.buildsys)/rules.mk
 

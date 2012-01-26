@@ -17,7 +17,7 @@ $(call test-check-value-of,sm.this.suffix,.a)
 $(call test-check-value-of,sm.this.toolset,gcc)
 $(call test-check-value-of,sm.this.toolset.args,static)
 
-sm.this.sources := foo.c foo.go bar.c
+sm.this.sources := ../foo.c ../foo.go ../bar.c
 
 sm.this.export.libdirs := $(sm.out.lib)
 sm.this.export.libs := $(sm.this.name)

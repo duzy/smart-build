@@ -199,12 +199,20 @@ $(eval \
   endif
   sm.var.source.where := $(or $(filter $(sm.var.source.type),local external),local)
   sm.var.source.computed := $$(call sm.fun.compute-source-of-$$(sm.var.source.where))
-  sm.var.intermediate := $$(sm.fun.compute-intermediates-of-$$(sm.var.source.where))
+  #sm.var.intermediate := $$(sm.fun.compute-intermediates-of-$$(sm.var.source.where))
+  sm.var.intermediate :=
 
   ## Use a foreach on $(sm.var.tool).langs to keep the orders
   $(sm._this).langs := $$(foreach _, $($(sm.var.tool).langs),$$(filter $$_,$$(sm.var.source.lang) $($(sm._this).langs))) $($(sm._this).langs)
   $$(call sm-remove-duplicates, $(sm._this).langs)
   $(sm._this).lang := $$(firstword $$($(sm._this).langs))
+ )\
+$(eval #
+  ifeq ($(sm.var.source.type),local)
+    sm.var.intermediate := $(subst //,/,$(subst ..,_,$($(sm._this).out.inter)/$(sm.var.source.computed).o))
+  else
+    sm.var.intermediate := $(subst //,/,$(subst ..,_,$($(sm._this).out.inter)/__$(sm.var.source.type)/$(sm.var.source).o))
+  endif
  )\
 $(call sm-check-not-empty, \
     sm.var.intermediate \

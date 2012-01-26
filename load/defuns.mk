@@ -335,9 +335,9 @@ define sm-use
  $(eval \
    ifneq ($($(sm._that).name),$(sm.temp._name))
      ifdef $(sm._that).name
-       $$(error smart: module "$(sm.temp._name)" is misconfigured: "$($(sm._that).name)")
+       $$(error module "$(sm.temp._name)" is misconfigured: "$($(sm._that).name)")
      else
-       $$(error smart: module "$(sm.temp._name)" is missing)
+       $$(error module "$(sm.temp._name)" is missing)
      endif
    endif
 
