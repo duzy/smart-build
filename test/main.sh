@@ -7,8 +7,19 @@ OUT_LIB=out/gcc/debug/lib
 OUT_TEMP=out/gcc/debug/temp
 OUT_INTERS=out/gcc/debug/intermediates
 
-EXE=.exe
+
 EXE=
+case `uname` in
+    Linux)
+        EXE=
+        ;;
+    Win32)
+        EXE=.exe
+        ;;
+    *)
+        echo "Unsupported platform!" && exit -1
+        ;;
+esac
 
 function test-log
 {
@@ -77,6 +88,38 @@ function test-load-check-scripts
     test-load-scripts-recursively post $D
 }
 
+function test-case
+{
+    local D=$1
+    local S
+    for S in $D/*; do
+        case $S in
+            */smart.mk)
+                echo "test:========================================"
+                OLD_TOP=$TOP
+                ( # launch in subshell
+                    TOP=$* && cd $* && {
+                        echo "test: Entering directory \`$*'"
+                        [[ -f pre.sh ]] && {
+                            . pre.sh
+                        }
+                        rm -rf out ; smart
+                        [[ -f post.sh ]] && {
+                            . post.sh
+                        }
+                        echo "test: Leaving directory \`$*'"
+                    }
+                )
+                TOP=$OLD_TOP
+                ;;
+            *)
+                #echo "\"$*\", $S"
+                [[ -d $S ]] && test-case $S
+                ;;
+        esac
+    done
+}
+
 function test-readfile
 {
     local F=$1
@@ -90,17 +133,13 @@ rm -vf out/modules.order
 which smart || {
     echo "The \"smart\" command is not found in PATH"
 } && {
-    test-load-precondition-scripts .
+    true #test-load-precondition-scripts $TOP
 } && {
     #rm -rf out
     #(smart && smart doc) || {
-    smart || {
-        echo ${BASH_SOURCE}:${LINENO}: "failed building"
-    }
+    #smart && test-load-check-scripts $TOP
+    test-case $TOP
 } || {
     echo ${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]} "FAILED"
 }
 
-test-load-check-scripts $TOP || {
-    echo ${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]} "FAILED"
-}

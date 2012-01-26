@@ -1,2 +1,2 @@
 # -*- bash -*-
-test-check-file ${BASH_SOURCE}:${LINENO} $TOP/toolsets/clang/main.cpp
+test-check-file ${BASH_SOURCE}:${LINENO} ../main.cpp
