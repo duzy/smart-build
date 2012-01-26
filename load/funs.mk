@@ -209,10 +209,16 @@ $(eval \
  )\
 $(eval #
   ifeq ($(sm.var.source.type),local)
-    sm.var.intermediate := $(subst //,/,$(subst ..,_,$($(sm._this).out.inter)/$(sm.var.source.computed).o))
+    sm.var.intermediate := $($(sm._this).out.inter)/$(sm.var.source.computed).o
   else
-    sm.var.intermediate := $(subst //,/,$(subst ..,_,$($(sm._this).out.inter)/__$(sm.var.source.type)/$(sm.var.source).o))
+    sm.var.intermediate := $(sm.var.source:$(sm.top)/%=%).o
+    #sm.var.intermediate := $$(sm.var.intermediate:$(dir $(sm.top))%=%)
+    #sm.var.intermediate := $$(sm.var.intermediate:$(dir $(dir $(sm.top)))%=%)
+    sm.var.intermediate := $($(sm._this).out.inter)/__$(sm.var.source.type)/$$(sm.var.intermediate)
   endif
+ )\
+$(eval #
+  sm.var.intermediate := $(subst //,/,$(subst ..,_,$(sm.var.intermediate)))
  )\
 $(call sm-check-not-empty, \
     sm.var.intermediate \
