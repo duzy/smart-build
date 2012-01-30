@@ -2,6 +2,6 @@
 $(call go-new-module, goyacc, cmd)
 
 sm.this.sources := \
-	goyacc.go\
+	yacc.go\
 
 $(go-build-this)

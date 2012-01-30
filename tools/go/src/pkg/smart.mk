@@ -14,37 +14,23 @@ $(call sm-load-subdirs,\
 	container/ring\
 	crypto\
 	crypto/aes\
-	crypto/blowfish\
-	crypto/bcrypt\
-	crypto/cast5\
 	crypto/cipher\
 	crypto/des\
 	crypto/dsa\
 	crypto/ecdsa\
 	crypto/elliptic\
 	crypto/hmac\
-	crypto/md4\
 	crypto/md5\
-	crypto/ocsp\
-	crypto/openpgp\
-	crypto/openpgp/armor\
-	crypto/openpgp/elgamal\
-	crypto/openpgp/errors\
-	crypto/openpgp/packet\
-	crypto/openpgp/s2k\
 	crypto/rand\
 	crypto/rc4\
-	crypto/ripemd160\
 	crypto/rsa\
 	crypto/sha1\
 	crypto/sha256\
 	crypto/sha512\
 	crypto/subtle\
 	crypto/tls\
-	crypto/twofish\
 	crypto/x509\
 	crypto/x509/pkix\
-	crypto/xtea\
 	debug/dwarf\
 	debug/macho\
 	debug/elf\
@@ -56,7 +42,6 @@ $(call sm-load-subdirs,\
 	encoding/base64\
 	encoding/binary\
 	encoding/csv\
-	encoding/git85\
 	encoding/gob\
 	encoding/hex\
 	encoding/json\
@@ -158,5 +143,4 @@ $(call sm-load-subdirs,\
 	unicode\
 	unicode/utf16\
 	unicode/utf8\
-	websocket\
  )

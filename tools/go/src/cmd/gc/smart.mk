@@ -20,6 +20,7 @@ sm.this.sources := \
 	mparith2.c\
 	mparith3.c\
 	obj.c\
+	order.c\
 	range.c\
 	reflect.c\
 	select.c\

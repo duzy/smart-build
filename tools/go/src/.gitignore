@@ -1,3 +1,4 @@
+buildinfo.sh
 cmd/*/*.output
 cmd/*/*.go
 cmd/*/*.[hcy]

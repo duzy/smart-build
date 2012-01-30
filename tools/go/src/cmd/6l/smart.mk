@@ -31,4 +31,8 @@ $(sm.this.prefix)/enam.c: $(sm.this.prefix)/6.out.h
 	cp -f $(go.root)/src/cmd/6l/mkenam . &&\
 	sh mkenam && [[ -f enam.c ]] && rm -f mkenam
 
+$(sm.this.prefix)/%.h: $(go.root)/src/cmd/6l/%.h
+	@test -f $< && test -d $(@D) && mkdir -p $(@D)
+	ln -sf $< $@
+
 $(go-build-this)

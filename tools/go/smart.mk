@@ -1,6 +1,9 @@
 #
 
-GOROOT ?= /store/open/go
+GOROOT ?= $(strip $(or \
+  $(wildcard /store/open/go),\
+  $(wildcard ~/open/go),\
+  ))
 GOOS ?= linux
 GOARCH ?= amd64
 GOROOT_FINAL ?= $(shell pwd)
