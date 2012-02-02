@@ -95,7 +95,7 @@ $(eval \
    sm.this.out.classes := $(sm.out)/$(sm.this.name)/classes
    sm.this.out.res := $(sm.out)/$(sm.this.name)/res
    sm.this.out.apk := $(sm.out)/$(sm.this.name)
-   sm.this.out.jar := $(sm.out)/$(sm.this.name)/lib
+   sm.this.out.jar := $(sm.out)/$(sm.this.name)
    sm.this.compile.flags := -cp $(sm.tool.android-sdk.path)/platforms/$(sm.this.platform)/android.jar
    sm.this.compile.flags += -sourcepath $(sm.this.dir)/src
    sm.this.compile.flags += -d $$(sm.this.out.classes)
@@ -137,7 +137,7 @@ $(eval #
 	@# create empty package
 	( cd $$(@D) && touch dummy && jar cf $$(@F) dummy && zip -qd $$(@F) dummy &&\
 	  rm -f dummy && cd - ) > /dev/null
-	@# add assets to the package
+	@# add assets and resources to the package
 	$(sm.tool.android-sdk.aapt) package -u \
 	    $(addprefix -F ,$$@)\
 	    $(addprefix -c ,$(TODO-product_aapt_config))\
@@ -156,10 +156,38 @@ $(eval #
 	@# add DEX to package
 	$(sm.tool.android-sdk.aapt) add -k $$@ $$<
 	@# add JNI shared libs to package
+	@# TODO: JNI libraries
 	test -f $$@
-  $(sm.this.out.jar)/library.jar: $(sm.this.out.classes).dex
-	@echo TODO: $$@
-  $(sm.this.out.classes).dex: $(sm.this.out.classes).list
+#  $(sm.this.out.jar)/library.jar: $(sm.this.out.classes).dex
+#	@echo TODO: $$@
+  $(sm.this.out.jar)/library.jar: sm.var.manifest :=
+  $(sm.this.out.jar)/library.jar: $(sm.this.out.classes).list | $(sm.tool.android-sdk.aapt)
+	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
+	@# create empty package
+	( cd $$(@D) && touch dummy && jar cf $$(@F) dummy && zip -qd $$(@F) dummy &&\
+	  rm -f dummy && cd - ) > /dev/null
+	@# add assets and resources to the package
+	$(sm.tool.android-sdk.aapt) package -u \
+	    $(addprefix -F ,$$@)\
+	    $(addprefix -c ,$(TODO-product_aapt_config))\
+	    $(addprefix --preferred-configurations ,$(TODO-product_aapt_pref_config))\
+	    $(addprefix -M ,$(sm.this.dir)/AndroidManifest.xml)\
+	    $(addprefix -S ,$(wildcard $(sm.this.dir)/res))\
+	    $(addprefix -A ,$(wildcard $(sm.this.dir)/assets))\
+	    $(addprefix -I ,$(sm.tool.android-sdk.android_jar))\
+	    $(addprefix --min-sdk-version ,$(TODO-default_app_target_sdk))\
+	    $(addprefix --target-sdk-version ,$(TODO-default_app_target_sdk))\
+	    $(addprefix --product ,$(TODO-aapt_characteristics))\
+	    $(addprefix --version-code ,$(TODO-platform_sdk_version))\
+	    $(addprefix --version-name ,$(TODO-platform_version)$(TODO-build_number))\
+	    $(addprefix --rename-manifest-package , $(TODO-manifest_package_name))\
+	    $(addprefix --rename-instrumentation-target-package , $(TODO-manifest_instrumentation_for))
+	@# add classes into the package(static package)
+	jar $$(if $$(strip $$(sm.var.manifest)),-ufm,-uf) $$@ $$(sm.var.manifest) -C $(sm.this.out.classes) .
+	@# add JNI shared libs to package
+	@# TODO: JNI libraries
+	test -f $$@
+  $(sm.this.out.classes).dex: $(sm.this.out.classes).list | $(sm.tool.android-sdk.dx)
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	cd $(sm.this.out.classes) > /dev/null &&\
 	$(sm.tool.android-sdk.dx) \
@@ -172,7 +200,7 @@ $(eval #
 	@rm -rf $(sm.this.out.classes) && mkdir -p $(sm.this.out.classes)
 	$$(sm.tool.android-sdk.command.compile.sources)
 	@find $(sm.this.out.classes) -type f -name '*.class' > $$@
-  $(sm.this.out.res).list: $(sm.this.dir)/AndroidManifest.xml 
+  $(sm.this.out.res).list: $(sm.this.dir)/AndroidManifest.xml | $(sm.tool.android-sdk.aapt)
 	@[[ -d $(sm.this.out.res) ]] || mkdir -p $(sm.this.out.res)
 	$(filter %,$(sm.tool.android-sdk.aapt) package -m \
 	    $(addprefix -J ,$(sm.this.out.res))\
