@@ -95,6 +95,7 @@ $(eval \
    sm.this.out.classes := $(sm.out)/$(sm.this.name)/classes
    sm.this.out.res := $(sm.out)/$(sm.this.name)/res
    sm.this.out.apk := $(sm.out)/$(sm.this.name)
+   sm.this.out.jar := $(sm.out)/$(sm.this.name)/lib
    sm.this.compile.flags := -cp $(sm.tool.android-sdk.path)/platforms/$(sm.this.platform)/android.jar
    sm.this.compile.flags += -sourcepath $(sm.this.dir)/src
    sm.this.compile.flags += -d $$(sm.this.out.classes)
@@ -156,6 +157,8 @@ $(eval #
 	$(sm.tool.android-sdk.aapt) add -k $$@ $$<
 	@# add JNI shared libs to package
 	test -f $$@
+  $(sm.this.out.jar)/library.jar: $(sm.this.out.classes).dex
+	@echo TODO: $$@
   $(sm.this.out.classes).dex: $(sm.this.out.classes).list
 	@[[ -d $$(@D) ]] || mkdir -p $$(@D)
 	cd $(sm.this.out.classes) > /dev/null &&\
@@ -178,7 +181,7 @@ $(eval #
 	    $(addprefix -S ,$(wildcard $(sm.this.dir)/res))\
 	    $(addprefix -A ,$(wildcard $(sm.this.dir)/assets))\
 	    $(addprefix -I ,$(sm.tool.android-sdk.android_jar))\
-	    $(addprefix -G ,$(TODO-proguard_options_file))\
+	    $(addprefix -G ,$(wildcard $(sm.this.dir)/proguard.cfg))\
 	    $(addprefix --min-sdk-version ,$(TODO-default_app_target_sdk))\
 	    $(addprefix --target-sdk-version ,$(TODO-default_app_target_sdk))\
 	    $(addprefix --version-code ,$(TODO-platform_sdk_version))\
@@ -194,6 +197,7 @@ $(filter-out -% PLATFORM=%, $($(sm._this).toolset.args))
 endef #sm.tool.android-sdk.args.types
 
 sm.tool.android-sdk.transform.apk := apk
+sm.tool.android-sdk.transform.jar := jar
 
 ## sm.var.source
 ## sm.var.source.computed
@@ -201,7 +205,13 @@ sm.tool.android-sdk.transform.apk := apk
 ## sm.var.source.suffix
 ## sm.var.intermediate (source -> intermediate)
 define sm.tool.android-sdk.transform-single-source
-$(foreach _, $(sm.tool.android-sdk.args.types), \
+$(foreach _, $(sm.tool.android-sdk.args.types),\
+  $(eval #
+    ifndef sm.tool.android-sdk.transform.$_
+      $$(info $($(sm._this).makefile):1: unsupported module type "$_")
+      $$(error unsupported module type "$_" defined by $($(sm._this).name))
+    endif
+   )\
   $(call sm.tool.android-sdk.transform-source-$(sm.tool.android-sdk.transform.$_)))
 endef #sm.tool.android-sdk.transform-single-source
 
@@ -245,6 +255,12 @@ endef #sm.tool.android-sdk.transform-source-apk
 
 ##
 ##
+define sm.tool.android-sdk.transform-source-jar
+$(sm.tool.android-sdk.transform-source-apk)
+endef #sm.tool.android-sdk.transform-source-jar
+
+##
+##
 define sm.tool.android-sdk.transform-intermediates
 $(foreach _, $(sm.tool.android-sdk.args.types), \
      $(call sm.tool.android-sdk.transform-intermediates-$(sm.tool.android-sdk.transform.$_)))
@@ -262,7 +278,6 @@ $(call sm-check-not-empty, sm._this \
   $(sm._this).name \
   $(sm._this).lang \
   $(sm._this).type \
-  $(sm._this).intermediates \
  , android-sdk: unknown language)\
 $(eval #
   ifdef sm.this.keystore.found
@@ -276,6 +291,19 @@ $(eval #
 $(sm.tool.android-sdk.define-adb-commands)\
 $(sm.tool.android-sdk.define-android-commands)
 endef #sm.tool.android-sdk.transform-intermediates-apk
+
+##
+##
+define sm.tool.android-sdk.transform-intermediates-jar
+$(call sm-check-not-empty, sm._this \
+  $(sm._this).name \
+  $(sm._this).lang \
+  $(sm._this).type \
+ , android-sdk: unknown language)\
+$(eval #
+  $(sm._this).targets += $($(sm._this).out.jar)/library.jar
+ )
+endef #sm.tool.android-sdk.transform-intermediates-jar
 
 ##
 ##
