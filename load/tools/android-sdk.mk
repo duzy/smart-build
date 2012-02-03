@@ -20,7 +20,7 @@ sm.tool.android-sdk.path := $(ANDROID_SDK_PATH)
 sm.tool.android-sdk.aapt := $(sm.tool.android-sdk.path)/platform-tools/aapt
 sm.tool.android-sdk.dx := $(sm.tool.android-sdk.path)/platform-tools/dx
 sm.tool.android-sdk.zipalign := $(sm.tool.android-sdk.path)/tools/zipalign
-sm.tool.android-sdk.android_jar = $(sm.tool.android-sdk.path)/platforms/$(or $(sm.this.platform),$($(sm._this).platform))/android.jar
+sm.tool.android-sdk.android_jar = "$(sm.tool.android-sdk.path)/platforms/$(or $(sm.this.platform),$($(sm._this).platform))/android.jar"
 
 sm.tool.android-sdk.langs := java
 sm.tool.android-sdk.suffix.java := .java
@@ -60,7 +60,7 @@ endif
 ##
 ## Compile Commands
 define sm.tool.android-sdk.command.compile.sources
-javac $(sm.var.flags) $(sm.var.source.R) $(sm.var.sources.java) $(sm.var.argfiles)
+$(filter %,javac $(sm.var.flags) $(sm.var.source.R) $(sm.var.sources.java) $(sm.var.argfiles))
 endef #sm.tool.android-sdk.command.compile.sources
 
 ##
@@ -96,7 +96,8 @@ $(eval \
    sm.this.out.res := $(sm.out)/$(sm.this.name)/res
    sm.this.out.apk := $(sm.out)/$(sm.this.name)
    sm.this.out.jar := $(sm.out)/$(sm.this.name)
-   sm.this.compile.flags := -cp $(sm.tool.android-sdk.path)/platforms/$(sm.this.platform)/android.jar
+   sm.this.classpath := $(sm.tool.android-sdk.path)/platforms/$(sm.this.platform)/android.jar
+   sm.this.compile.flags :=
    sm.this.compile.flags += -sourcepath $(sm.this.dir)/src
    sm.this.compile.flags += -d $$(sm.this.out.classes)
    sm.this.link.flags :=
@@ -196,6 +197,7 @@ $(eval #
 	cd - > /dev/null && mv $(sm.this.out.classes)/_.dex $$@
   $(sm.this.out.classes).list: sm.var.source.R := `find $(sm.this.out.res) -type f -name R.java`
   $(sm.this.out.classes).list: sm.var.sources.java :=
+  $(sm.this.out.classes).list: sm.var.flags :=
   $(sm.this.out.classes).list: $(sm.this.out.res).list
 	@rm -rf $(sm.this.out.classes) && mkdir -p $(sm.this.out.classes)
 	$$(sm.tool.android-sdk.command.compile.sources)
@@ -255,14 +257,18 @@ $(call sm-check-not-empty, \
     sm.var.intermediate \
  , android-sdk: strange parameters for "$(sm.var.source)" of "$($(sm._this).name)")\
 $(eval #
+  sm.var._ :=
+  sm.var.space = $$(sm.var._) $$(sm.var._)
+ )\
+$(eval #
   sm.var.argfiles :=
-  sm.var.flags :=
+  sm.var.flags := -cp "$$(subst $$(sm.var.space),:,$(filter %,$($(sm._this).classpath) $($(sm._this).used.classpath)))"
   sm.var.flags += $($(sm._this).used.compile.flags)
   sm.var.flags += $($(sm._this).used.compile.flags.$(sm.var.source.lang))
   sm.var.flags += $($(sm._this).compile.flags)
   sm.var.flags += $($(sm._this).compile.flags.$(sm.var.source.lang))
 
-  $$(call sm-remove-duplicates,sm.var.flags)
+  #$$(call sm-remove-duplicates,sm.var.flags)
 
   sm.temp._flagsfile := $$(call sm.fun.shift-flags-to-file, sm.var.flags, compile.$(sm.var.source.lang), $($(sm._this).compile.flags.infile))
   ifdef sm.temp._flagsfile
@@ -271,13 +277,15 @@ $(eval #
     sm.var.flags :=
   endif
 
-  $$(call sm-remove-duplicates,sm.var.flags)
+  #$$(call sm-remove-duplicates,sm.var.flags)
  )\
 $(eval #
   $(sm._this).intermediates := $($(sm._this).out.classes).list
+  $($(sm._this).out.classes).list: sm.var.argfiles := $(sm.var.argfiles)
   $($(sm._this).out.classes).list: sm.var.flags := $(sm.var.flags)
   $($(sm._this).out.classes).list: sm.var.sources.java += $(sm.var.source.computed)
   $($(sm._this).out.classes).list: $(sm.var.source.computed)
+  sm.var.flags :=
  )
 endef #sm.tool.android-sdk.transform-source-apk
 
