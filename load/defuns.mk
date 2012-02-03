@@ -729,11 +729,11 @@ $(eval \
 $(eval $(subst #,\#,$($(sm.temp._vars)))
  )\
 $(if $(sm.temp._output),$(eval \
-  sm.temp._vars := $(subst $(newline),;,$(subst $(linefeed),,$(subst #,\#,$(subst ",\",$($(sm.temp._vars))))))
+  sm.temp._vars := $(subst $(sm.char.newline),;,$(subst $(sm.char.linefeed),,$(subst #,\#,$(subst ",\",$($(sm.temp._vars))))))
  )\
 $(eval \
   ifneq ($(strip $(sm.temp._flags)),)
-    sm.temp._flags := $(strip $(sm.temp._flags)) $(null)
+    sm.temp._flags := $(strip $(sm.temp._flags)) $(sm.char.null)
   endif
  )\
 $(eval \

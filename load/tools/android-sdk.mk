@@ -257,12 +257,8 @@ $(call sm-check-not-empty, \
     sm.var.intermediate \
  , android-sdk: strange parameters for "$(sm.var.source)" of "$($(sm._this).name)")\
 $(eval #
-  sm.var._ :=
-  sm.var.space = $$(sm.var._) $$(sm.var._)
- )\
-$(eval #
   sm.var.argfiles :=
-  sm.var.flags := -cp "$$(subst $$(sm.var.space),:,$(filter %,$($(sm._this).classpath) $($(sm._this).used.classpath)))"
+  sm.var.flags := -cp "$$(subst $$(sm.char.space),:,$(filter %,$($(sm._this).classpath) $($(sm._this).used.classpath)))"
   sm.var.flags += $($(sm._this).used.compile.flags)
   sm.var.flags += $($(sm._this).used.compile.flags.$(sm.var.source.lang))
   sm.var.flags += $($(sm._this).compile.flags)

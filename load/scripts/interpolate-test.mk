@@ -5,15 +5,6 @@ FOOBAR=foo'bar
 BLAH=blah'blah"blah=blah\;blah=blah
 endef #"
 
-define newline
-
-
-endef #newline
-
-define linefeed
-
-endef #linefeed
-
 sm.dir.buildsys := ..
 include ../defuns.mk
 $(call sm-interpolate, vars, interpolate-test)
