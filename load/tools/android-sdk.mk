@@ -105,16 +105,35 @@ $(eval \
 $(eval #
   sm.this.keystore.found := $(strip $(or \
     $(wildcard $(sm.this.keystore)),\
-    $(wildcard $(sm.this.dir)/.keystore),\
     ))
   sm.var.storepass := $(strip $(or \
     $(wildcard $(sm.this.storepass)),\
-    $(wildcard $(sm.this.dir)/.storepass),\
     ))
   sm.var.keypass := $(strip $(or \
     $(wildcard $(sm.this.keypass)),\
-    $(wildcard $(sm.this.dir)/.keypass),\
     ))
+
+  ifeq ($(sm.config.variant),debug)
+    ifndef sm.this.keystore.found
+      sm.this.keystore.found := $(wildcard $(sm.dir.buildsys)/tools/android-sdk/keystore)
+    endif
+    ifndef sm.var.storepass
+      sm.var.storepass := $(wildcard $(sm.dir.buildsys)/tools/android-sdk/storepass)
+    endif
+    ifndef sm.var.keypass
+      sm.var.keypass := $(wildcard $(sm.dir.buildsys)/tools/android-sdk/keypass)
+    endif
+  endif
+
+  ifndef sm.this.keystore.found
+    sm.this.keystore.found := $(wildcard $(sm.this.dir)/.keystore)
+  endif
+  ifndef sm.var.storepass
+    sm.var.storepass := $(wildcard $(sm.this.dir)/.storepass)
+  endif
+  ifndef sm.var.keypass
+    sm.var.keypass := $(wildcard $(sm.this.dir)/.keypass)
+  endif
  )\
 $(eval #
   ifdef sm.var.storepass

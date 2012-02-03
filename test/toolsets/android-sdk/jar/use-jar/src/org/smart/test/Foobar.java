@@ -14,7 +14,12 @@ public class Foobar extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        String s = Foo.getName();
-        Log.d("smart:", s);
+        Log.d("smart:", Foo.getName());
+        Log.d("smart:", ""+Foo.NUMBER);
+        Log.d("smart:", ""+org.smart.test.foo.R.string.app_name);
+        Log.d("smart:", ""+org.smart.test.foo.R.layout.main);
+        Log.d("smart:", ""+org.smart.test.foo.R.id.foo);
+
+        setContentView(org.smart.test.foo.R.layout.main);
     }
 }
